@@ -9,7 +9,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 
 import org.firstinspires.ftc.teamcode.util.DelegateOrVoidTelemetry;
 
-public abstract class MainTeleop extends CommandOpMode {
+public abstract class OpModeTemplate extends CommandOpMode {
 
     private static final String LOG_TAG = "AUTO_DEBUG";
     protected GamepadEx driverGamepad;
