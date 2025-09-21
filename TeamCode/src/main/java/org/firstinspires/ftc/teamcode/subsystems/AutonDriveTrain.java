@@ -6,6 +6,9 @@ import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import lombok.Getter;
+
+@Getter
 public class AutonDriveTrain extends DriveTrainBase {
 
     GoBildaPinpointDriver odo;
@@ -24,5 +27,16 @@ public class AutonDriveTrain extends DriveTrainBase {
         this.odo.resetPosAndIMU();
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
         odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.REVERSED);
+    }
+
+    public void setWheelsPower(double frontLeftPower, double frontRightPower, double backLeftPower, double backRightPower) {
+        frontLeft.motor.setPower(frontLeftPower);
+        frontRight.motor.setPower(frontRightPower);
+        backLeft.motor.setPower(backLeftPower);
+        backRight.motor.setPower(backRightPower);
+    }
+
+    public void stop() {
+        mecanumDrive.stop();
     }
 }

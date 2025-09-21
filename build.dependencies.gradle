@@ -16,5 +16,13 @@ dependencies {
     implementation 'org.firstinspires.ftc:Vision:11.0.0'
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'com.acmerobotics.dashboard:dashboard:0.5.0'
+
+    //noinspection AnnotationProcessorOnCompilePath
+    compileOnly("org.projectlombok:lombok:1.18.42")
+    annotationProcessor("org.projectlombok:lombok:1.18.42")
+
+    //noinspection AnnotationProcessorOnCompilePath
+    testCompileOnly("org.projectlombok:lombok:1.18.42")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.42")
 }
 

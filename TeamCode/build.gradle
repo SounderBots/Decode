@@ -10,6 +10,9 @@
 
 
 // Custom definitions may go here
+plugins {
+    id("io.freefair.lombok") version "9.0.0-rc2"
+}
 
 // Include common definitions from above.
 apply from: '../build.common.gradle'
