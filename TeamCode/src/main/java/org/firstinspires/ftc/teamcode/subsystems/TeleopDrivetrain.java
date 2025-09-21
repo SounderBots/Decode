@@ -8,30 +8,15 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-public class TeleopDrivetrain extends SubsystemBase {
+public class TeleopDrivetrain extends DriveTrainBase {
 
-    Telemetry telemetry;
     GamepadEx gamepad;
-
-    Motor backRight;
-    Motor backLeft;
-    Motor frontRight;
-    Motor frontLeft;
-
-    MecanumDrive mecanumDrive;
 
     double direction = 1;
 
     public TeleopDrivetrain(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
+        super(hardwareMap, telemetry);
         this.gamepad = gamepad;
-        this.telemetry = telemetry;
-
-        this.backLeft = new Motor(hardwareMap, "BL");
-        this.backRight = new Motor(hardwareMap, "BR");
-        this.frontLeft = new Motor(hardwareMap, "FL");
-        this.frontRight = new Motor(hardwareMap, "FR");
-
-        this.mecanumDrive = new MecanumDrive(frontLeft, frontRight, backLeft, backRight);
     }
 
     @Override
