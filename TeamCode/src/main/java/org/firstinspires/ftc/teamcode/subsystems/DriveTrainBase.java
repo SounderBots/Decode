@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import lombok.Getter;
+
 public class DriveTrainBase extends SubsystemBase {
 
     protected Telemetry telemetry;
@@ -17,6 +19,7 @@ public class DriveTrainBase extends SubsystemBase {
     Motor frontRight;
     Motor frontLeft;
 
+    @Getter
     MecanumDrive mecanumDrive;
 
     public DriveTrainBase(HardwareMap hardwareMap, Telemetry telemetry) {
@@ -42,4 +45,5 @@ public class DriveTrainBase extends SubsystemBase {
         motor.stopAndResetEncoder();
         motor.resetEncoder();
     }
+
 }

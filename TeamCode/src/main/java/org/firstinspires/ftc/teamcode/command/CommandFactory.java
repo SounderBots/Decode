@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.command;
 
 import com.arcrobotics.ftclib.command.Command;
+import com.arcrobotics.ftclib.geometry.Pose2d;
+import com.arcrobotics.ftclib.geometry.Rotation2d;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.AutonDriveTrain;
@@ -21,6 +23,10 @@ public class CommandFactory {
 
     public Command driveToTarget(DriveToTargetCommand.DriveParameters driveParameters) {
         return new DriveToTargetCommand(autonDriveTrain, telemetry, driveParameters);
+    }
+
+    public Command driveToTargetFieldCentric(double targetXInches, double targetYInches, double targetHeadingInDegrees) {
+        return new MecanumMoveToTargetCommand(autonDriveTrain.getMecanumDrive(), autonDriveTrain.getOdo(), new Pose2d(targetXInches, targetYInches, new Rotation2d(Math.toRadians(targetHeadingInDegrees))), 5000);
     }
 
     public Command intake() {
