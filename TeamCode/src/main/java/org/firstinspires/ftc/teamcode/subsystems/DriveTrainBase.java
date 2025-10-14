@@ -14,9 +14,16 @@ public class DriveTrainBase extends SubsystemBase {
 
     protected Telemetry telemetry;
 
+    @Getter
     Motor backRight;
+
+    @Getter
     Motor backLeft;
+
+    @Getter
     Motor frontRight;
+
+    @Getter
     Motor frontLeft;
 
     @Getter
