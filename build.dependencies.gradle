@@ -2,6 +2,7 @@ repositories {
     mavenCentral()
     maven { url = 'https://maven.brott.dev/' }
     google() // Needed for androidx
+    maven { url = "https://mymaven.bylazar.com/releases" }
 }
 
 dependencies {
@@ -28,5 +29,8 @@ dependencies {
     //noinspection AnnotationProcessorOnCompilePath
     testCompileOnly("org.projectlombok:lombok:1.18.42")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.42")
+    implementation 'com.pedropathing:ftc:2.0.2'
+    implementation 'com.pedropathing:telemetry:1.0.0'
+    implementation 'com.bylazar:fullpanels:1.0.6'
 }
 

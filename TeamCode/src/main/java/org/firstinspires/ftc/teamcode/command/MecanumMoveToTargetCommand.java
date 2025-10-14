@@ -28,7 +28,7 @@ public class MecanumMoveToTargetCommand extends SounderBotCommandBase {
     private final PIDController xController;
     private final PIDController yController;
     private final PIDController thetaController;
-    private static final double maxSpeed = 0.8;
+    private static final double maxSpeed = 0.4;
     private static final boolean debugMode = false;
 //    private final PIDController thetaController;
 

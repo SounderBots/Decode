@@ -4,6 +4,8 @@ import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.drivebase.RobotDrive;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
+import com.arcrobotics.ftclib.hardware.motors.MotorEx;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -15,16 +17,16 @@ public class DriveTrainBase extends SubsystemBase {
     protected Telemetry telemetry;
 
     @Getter
-    Motor backRight;
+    MotorEx backRight;
 
     @Getter
-    Motor backLeft;
+    MotorEx backLeft;
 
     @Getter
-    Motor frontRight;
+    MotorEx frontRight;
 
     @Getter
-    Motor frontLeft;
+    MotorEx frontLeft;
 
     @Getter
     MecanumDrive mecanumDrive;
@@ -35,10 +37,10 @@ public class DriveTrainBase extends SubsystemBase {
     }
 
     protected void initHardware(HardwareMap hardwareMap) {
-        this.backLeft = new Motor(hardwareMap, "BL");
-        this.backRight = new Motor(hardwareMap, "BR");
-        this.frontLeft = new Motor(hardwareMap, "FL");
-        this.frontRight = new Motor(hardwareMap, "FR");
+        this.backLeft = new MotorEx(hardwareMap, "BL", Motor.GoBILDA.RPM_435);
+        this.backRight = new MotorEx(hardwareMap, "BR", Motor.GoBILDA.RPM_435);
+        this.frontLeft = new MotorEx(hardwareMap, "FL", Motor.GoBILDA.RPM_435);
+        this.frontRight = new MotorEx(hardwareMap, "FR", Motor.GoBILDA.RPM_435);
 
         this.mecanumDrive = new MecanumDrive(frontLeft, frontRight, backLeft, backRight);
         resetMotor(backLeft);
