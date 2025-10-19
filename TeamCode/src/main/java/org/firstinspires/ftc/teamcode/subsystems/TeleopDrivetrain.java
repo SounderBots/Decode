@@ -10,6 +10,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class TeleopDrivetrain extends DriveTrainBase {
 
+    final double power = .5d;
     GamepadEx gamepad;
 
     double direction = 1;
@@ -24,9 +25,9 @@ public class TeleopDrivetrain extends DriveTrainBase {
         super.periodic();
 
         mecanumDrive.driveRobotCentric(
-                -1 * gamepad.getLeftX() * direction,
-                -1 * gamepad.getLeftY() * direction,
-                gamepad.getRightX() * -1
+                 gamepad.getLeftX() * power,
+                gamepad.getLeftY() * power,
+                gamepad.getRightX() * power
         );
     }
 

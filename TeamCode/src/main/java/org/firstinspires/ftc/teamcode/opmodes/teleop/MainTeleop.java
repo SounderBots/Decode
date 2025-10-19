@@ -23,11 +23,12 @@ public class MainTeleop extends OpModeTemplate {
         super.initialize();
 
         this.drive = new TeleopDrivetrain(hardwareMap, driverGamepad, telemetry);
-        this.intake = new Intake(hardwareMap, operatorGamepad, telemetry);
-        this.shooter = new Shooter(hardwareMap, operatorGamepad, telemetry);
+//        this.intake = new Intake(hardwareMap, operatorGamepad, telemetry);
+//        this.shooter = new Shooter(hardwareMap, operatorGamepad, telemetry);
 
         this.commandFactory = new CommandFactory(telemetry, null, drive, intake, shooter);
 
-        register(drive, intake, shooter);
+        register(drive);
+//        register(drive, intake, shooter);
     }
 }
