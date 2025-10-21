@@ -30,12 +30,12 @@ public class AutonDriveTrainCalibrate extends OpModeTemplate {
     }
 
     void setupOdoLine() {
-        autonDriveTrain.getOdo().update();
-        Log.i(LOG_TAG, String.format("Odo: X (inches): %1$f, Y (inches): %2$f, Heading (Degrees): %3$f", autonDriveTrain.getOdo().getPosX(DistanceUnit.INCH), autonDriveTrain.getOdo().getPosY(DistanceUnit.INCH), autonDriveTrain.getOdo().getHeading(AngleUnit.DEGREES)));
+        autonDriveTrain.getPinpoint().update();
+        Log.i(LOG_TAG, String.format("Odo: X (inches): %1$f, Y (inches): %2$f, Heading (Degrees): %3$f", autonDriveTrain.getPinpoint().getPosX(DistanceUnit.INCH), autonDriveTrain.getPinpoint().getPosY(DistanceUnit.INCH), autonDriveTrain.getPinpoint().getHeading(AngleUnit.DEGREES)));
         telemetry.addData("Odo", "");
-        telemetry.addData("X (inches)", autonDriveTrain.getOdo().getPosX(DistanceUnit.INCH));
-        telemetry.addData("Y (inches)", autonDriveTrain.getOdo().getPosY(DistanceUnit.INCH));
-        telemetry.addData("Heading (Degrees)", autonDriveTrain.getOdo().getHeading(AngleUnit.DEGREES));
+        telemetry.addData("X (inches)", autonDriveTrain.getPinpoint().getPosX(DistanceUnit.INCH));
+        telemetry.addData("Y (inches)", autonDriveTrain.getPinpoint().getPosY(DistanceUnit.INCH));
+        telemetry.addData("Heading (Degrees)", autonDriveTrain.getPinpoint().getHeading(AngleUnit.DEGREES));
     }
 
     void setupMotors() {
