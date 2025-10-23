@@ -2,18 +2,35 @@ repositories {
     mavenCentral()
     maven { url = 'https://maven.brott.dev/' }
     google() // Needed for androidx
+    maven { url = "https://mymaven.bylazar.com/releases" }
 }
 
 dependencies {
+    configurations.all {
+        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+    }
     implementation 'org.firstinspires.ftc:Inspection:11.0.0'
     implementation 'org.firstinspires.ftc:Blocks:11.0.0'
+    //noinspection Aligned16KB
     implementation 'org.firstinspires.ftc:RobotCore:11.0.0'
     implementation 'org.firstinspires.ftc:RobotServer:11.0.0'
     implementation 'org.firstinspires.ftc:OnBotJava:11.0.0'
     implementation 'org.firstinspires.ftc:Hardware:11.0.0'
     implementation 'org.firstinspires.ftc:FtcCommon:11.0.0'
     implementation 'org.firstinspires.ftc:Vision:11.0.0'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'com.acmerobotics.dashboard:dashboard:0.5.0'
+
+    //noinspection AnnotationProcessorOnCompilePath
+    compileOnly("org.projectlombok:lombok:1.18.42")
+    annotationProcessor("org.projectlombok:lombok:1.18.42")
+
+    //noinspection AnnotationProcessorOnCompilePath
+    testCompileOnly("org.projectlombok:lombok:1.18.42")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.42")
+    implementation 'com.pedropathing:ftc:2.0.2'
+    implementation 'com.pedropathing:telemetry:1.0.0'
+    implementation 'com.bylazar:fullpanels:1.0.6'
 }
 
