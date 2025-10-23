@@ -14,7 +14,7 @@ public class SingleShooter extends SubsystemBase {
     GamepadEx gamepad;
     Motor leftFlywheel, rightFlywheel;
 
-    Servo leftLauncher, rightLauncher;
+    Servo rightLauncher;
 
     public SingleShooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
         this.gamepad = gamepad;
