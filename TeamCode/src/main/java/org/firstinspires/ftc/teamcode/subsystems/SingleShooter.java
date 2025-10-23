@@ -42,10 +42,10 @@ public class SingleShooter extends SubsystemBase {
         leftFlywheel.set(-1);
     }
 
-    public void TurnShooterOff() {
-        rightFlywheel.set(0);
-        leftFlywheel.set(0);
-    }
+//    public void TurnShooterOff() {
+//        rightFlywheel.set(0);
+//        leftFlywheel.set(0);
+//    }
 
     public void BallLaunch() {
         rightLauncher.setPosition(1);
