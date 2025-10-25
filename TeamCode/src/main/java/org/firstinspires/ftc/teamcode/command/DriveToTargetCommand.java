@@ -93,7 +93,7 @@ public class DriveToTargetCommand extends SounderBotCommandBase {
 
     AutonDriveTrain driveTrain;
 
-    GoBildaPinpointDriver odo;
+    GoBildaPinpointDriver pinpoint;
 
     Telemetry telemetry;
     double targetX, targetY, targetHeading;
@@ -118,7 +118,7 @@ public class DriveToTargetCommand extends SounderBotCommandBase {
         super(driveParameters.timeout);
 
         this.driveTrain = driveTrain;
-        this.odo = driveTrain.getOdo();
+        this.pinpoint = driveTrain.getPinpoint();
         this.telemetry = telemetry;
         this.targetX = driveParameters.targetX;
         this.targetY = driveParameters.targetY;
@@ -154,7 +154,7 @@ public class DriveToTargetCommand extends SounderBotCommandBase {
 
     @Override
     public void doExecute() {
-        odo.update();
+        pinpoint.update();
 
         boolean addTelemetry = false;
 
@@ -163,17 +163,17 @@ public class DriveToTargetCommand extends SounderBotCommandBase {
             telemetry.addData("DriveToTarget ty: ", targetY);
             telemetry.addData("DriveToTarget th: ", targetHeading);
 
-            telemetry.addData("DriveToTarget x mm: ", odo.getPosX(DISTANCE_UNIT));
-            telemetry.addData("DriveToTarget y mm: ", odo.getPosY(DISTANCE_UNIT));
-            telemetry.addData("DriveToTarget heading degrees: ", Math.toDegrees(odo.getHeading(ANGLE_UNIT)));
+            telemetry.addData("DriveToTarget x mm: ", pinpoint.getPosX(DISTANCE_UNIT));
+            telemetry.addData("DriveToTarget y mm: ", pinpoint.getPosY(DISTANCE_UNIT));
+            telemetry.addData("DriveToTarget heading degrees: ", Math.toDegrees(pinpoint.getHeading(ANGLE_UNIT)));
         }
 
-        Log.i(LOG_TAG, String.format("tx=%f, ty=%f, x=%f, y=%f, heading=%f", targetX, targetY, odo.getPosX(DISTANCE_UNIT), odo.getPosY(DISTANCE_UNIT), Math.toDegrees(odo.getHeading(ANGLE_UNIT))));
+        Log.i(LOG_TAG, String.format("tx=%f, ty=%f, x=%f, y=%f, heading=%f", targetX, targetY, pinpoint.getPosX(DISTANCE_UNIT), pinpoint.getPosY(DISTANCE_UNIT), Math.toDegrees(pinpoint.getHeading(ANGLE_UNIT))));
 
         if(isTargetReached()) {
             // Give a 200ms to identify overshoot
             //sleep(200);
-            odo.update();
+            pinpoint.update();
 
             if(isTargetReached()) {
 
@@ -186,12 +186,12 @@ public class DriveToTargetCommand extends SounderBotCommandBase {
             }
         }
 
-        odo.update();
+        pinpoint.update();
 
         // Battery reading of 13.49 required a Kp of 0.015
-        double x = xPid.calculatePIDAlgorithm(targetX - odo.getPosX(DISTANCE_UNIT)) * xSpeedScale;
-        double y = yPid.calculatePIDAlgorithm(targetY - odo.getPosY(DISTANCE_UNIT)) * ySpeedScale;
-        double h = hPid.calculatePIDAlgorithm(targetHeading - odo.getHeading(ANGLE_UNIT));
+        double x = xPid.calculatePIDAlgorithm(targetX - pinpoint.getPosX(DISTANCE_UNIT)) * xSpeedScale;
+        double y = yPid.calculatePIDAlgorithm(targetY - pinpoint.getPosY(DISTANCE_UNIT)) * ySpeedScale;
+        double h = hPid.calculatePIDAlgorithm(targetHeading - pinpoint.getHeading(ANGLE_UNIT));
 
         onFlagEnabled(addTelemetry, () -> {
             telemetry.addData("drive to target xPid output", x);
@@ -200,7 +200,7 @@ public class DriveToTargetCommand extends SounderBotCommandBase {
         });
 
 
-        double botHeading = odo.getHeading(ANGLE_UNIT);
+        double botHeading = pinpoint.getHeading(ANGLE_UNIT);
 
         double rotY = y * Math.cos(-botHeading) - x * Math.sin(-botHeading);
         double rotX = y * Math.sin(-botHeading) + x * Math.cos(-botHeading);
@@ -246,9 +246,9 @@ public class DriveToTargetCommand extends SounderBotCommandBase {
 
     @Override
     protected boolean isTargetReached() {
-        return (Math.abs(targetX - odo.getPosX(DISTANCE_UNIT)) < distanceTolerance)
-                && (Math.abs(targetY - odo.getPosY(DISTANCE_UNIT)) < distanceTolerance)
-                && Math.abs(AngleUtils.angleDifference(targetHeading, odo.getHeading(ANGLE_UNIT))) < Math.toRadians(2.5);
+        return (Math.abs(targetX - pinpoint.getPosX(DISTANCE_UNIT)) < distanceTolerance)
+                && (Math.abs(targetY - pinpoint.getPosY(DISTANCE_UNIT)) < distanceTolerance)
+                && Math.abs(AngleUtils.angleDifference(targetHeading, pinpoint.getHeading(ANGLE_UNIT))) < Math.toRadians(2.5);
     }
 
     @Override
