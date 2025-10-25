@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
@@ -16,11 +17,18 @@ public class SingleShooter extends SubsystemBase {
 
     Servo rightLauncher;
 
+    @Config
+    public static class ShooterConfig {
+
+        public static double ShooterPower = 0.63;
+    }
+
     public SingleShooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
         this.gamepad = gamepad;
         this.telemetry = telemetry;
 
         this.rightFlywheel = new Motor(hardwareMap, "RightFlywheel");
+        this.leftFlywheel = new Motor(hardwareMap, "LeftFlywheel");
 
         this.rightLauncher = hardwareMap.get(Servo.class,"RightLauncher");
     }
@@ -38,8 +46,8 @@ public class SingleShooter extends SubsystemBase {
     }
 
     public void TurnShooterOn() {
-        rightFlywheel.set(1);
-        leftFlywheel.set(-1);
+        rightFlywheel.set(ShooterConfig.ShooterPower);
+        leftFlywheel.set(-1 * ShooterConfig.ShooterPower);
     }
 
 //    public void TurnShooterOff() {
