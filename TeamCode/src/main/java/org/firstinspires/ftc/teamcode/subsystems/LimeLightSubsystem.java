@@ -30,6 +30,12 @@ public class LimeLightSubsystem extends SubsystemBase {
 
         getTagID();
         getDistance();
+
+        try {
+            Thread.sleep(10000l);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
     public LimeLightSubsystem(HardwareMap hardwareMap, Telemetry telemetry) {
         this.telemetry = telemetry;
