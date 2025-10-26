@@ -6,6 +6,8 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 
 import static com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
 
@@ -53,16 +55,24 @@ public class LimeLightSubsystem extends SubsystemBase {
         double distance = 0d;
         if (fr != null) {
             int tagID = fr.getFiducialId();
-            double xDeg = fr.getTargetXDegrees(); // horizontal offset
-            double yDeg = fr.getTargetYDegrees();
+//            double xDeg = fr.getTargetXDegrees(); // horizontal offset
+//            double yDeg = fr.getTargetYDegrees();
 
+            Pose3D pose3D = fr.getCameraPoseTargetSpace();
+            Position p = pose3D.getPosition();
 
-            double ty = yDeg; // vertical offset in degrees
-            distance = estimateDistance(CAMERA_HEIGHT, TARGET_HEIGHT, CAMERA_MOUNT_ANGLE, ty);
+            double x = p.x;
+            double y = p.y;
+            double z = p.z;
+
+            distance = Math.sqrt(x*x + y*y + z*z);
+
+//            double ty = yDeg; // vertical offset in degrees
+//            distance = estimateDistance(CAMERA_HEIGHT, TARGET_HEIGHT, CAMERA_MOUNT_ANGLE, ty);
 
             telemetry.addData("Tag ID", tagID);
-            telemetry.addData("Horizontal Angle", "%.2f deg", xDeg);
-            telemetry.addData("Vertical Angle", "%.2f deg", yDeg);
+            //telemetry.addData("Horizontal Angle", "%.2f deg", xDeg);
+            //telemetry.addData("Vertical Angle", "%.2f deg", yDeg);
             telemetry.addData("Estimated Distance", "%.2f meters", distance);
             ;
         } else {
