@@ -31,11 +31,6 @@ public class LimeLightSubsystem extends SubsystemBase {
         getTagID();
         getDistance();
 
-        try {
-            Thread.sleep(10000l);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
     public LimeLightSubsystem(HardwareMap hardwareMap, Telemetry telemetry) {
         this.telemetry = telemetry;
@@ -64,7 +59,7 @@ public class LimeLightSubsystem extends SubsystemBase {
 //            double xDeg = fr.getTargetXDegrees(); // horizontal offset
 //            double yDeg = fr.getTargetYDegrees();
 
-            Pose3D pose3D = fr.getCameraPoseTargetSpace();
+            Pose3D pose3D = fr.getTargetPoseCameraSpace();
             Position p = pose3D.getPosition();
 
             double x = p.x;
@@ -77,6 +72,9 @@ public class LimeLightSubsystem extends SubsystemBase {
 //            distance = estimateDistance(CAMERA_HEIGHT, TARGET_HEIGHT, CAMERA_MOUNT_ANGLE, ty);
 
             telemetry.addData("Tag ID", tagID);
+            telemetry.addData("x", x);
+            telemetry.addData("y", y);
+            telemetry.addData("z", z);
             //telemetry.addData("Horizontal Angle", "%.2f deg", xDeg);
             //telemetry.addData("Vertical Angle", "%.2f deg", yDeg);
             telemetry.addData("Estimated Distance", "%.2f meters", distance);
