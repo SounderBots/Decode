@@ -25,9 +25,9 @@ public class TeleopDrivetrain extends DriveTrainBase {
         super.periodic();
 
         mecanumDrive.driveRobotCentric(
-                 gamepad.getLeftX() * power*-1,
-                gamepad.getLeftY() * power*-1,
-                gamepad.getRightX() * power*-1
+                 gamepad.getLeftX() * power * -1,
+                gamepad.getLeftY() * power * -1,
+                gamepad.getRightX() * power * -1
         );
     }
 

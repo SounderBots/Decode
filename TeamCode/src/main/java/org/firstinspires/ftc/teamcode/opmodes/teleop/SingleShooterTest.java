@@ -6,16 +6,16 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.DoubleShooter;
+import org.firstinspires.ftc.teamcode.subsystems.SingleShooter;
 import org.firstinspires.ftc.teamcode.subsystems.TeleopDrivetrain;
 
 @TeleOp
-public class MainTeleop extends OpModeTemplate {
+public class SingleShooterTest extends OpModeTemplate {
 
     TeleopDrivetrain drive;
     Intake intake;
 
-    DoubleShooter doubleShooter;
+    SingleShooter singleShooter;
 
     @Override
     public void initialize() {
@@ -23,20 +23,20 @@ public class MainTeleop extends OpModeTemplate {
 
         this.drive = new TeleopDrivetrain(hardwareMap, driverGamepad, telemetry);
         this.intake = new Intake(hardwareMap, operatorGamepad, telemetry);
-        this.doubleShooter = new DoubleShooter(hardwareMap, operatorGamepad, telemetry);
+        this.singleShooter = new SingleShooter(hardwareMap, operatorGamepad, telemetry);
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.Y)
-                .whenPressed(new InstantCommand(doubleShooter::TurnShooterOn, doubleShooter));
+                .whenPressed(new InstantCommand(singleShooter::TurnShooterOn, singleShooter));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.A)
-                .whenPressed(new InstantCommand(doubleShooter::RightBallLaunch, doubleShooter));
+                .whenPressed(new InstantCommand(singleShooter::BallLaunch, singleShooter));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.X)
-                .whenPressed(new InstantCommand(doubleShooter::RightBallReset, doubleShooter));
+                .whenPressed(new InstantCommand(singleShooter::BallReset, singleShooter));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.B)
-                .whenPressed(new InstantCommand(doubleShooter::RightBallStow, doubleShooter));
+                .whenPressed(new InstantCommand(singleShooter::BallStow, singleShooter));
 
-        register(drive, intake, doubleShooter);
+        register(drive, intake, singleShooter);
     }
 }

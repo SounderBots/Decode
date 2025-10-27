@@ -8,7 +8,7 @@ import com.arcrobotics.ftclib.geometry.Rotation2d;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.AutonDriveTrain;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.subsystems.DoubleShooter;
 import org.firstinspires.ftc.teamcode.subsystems.TeleopDrivetrain;
 
 import lombok.RequiredArgsConstructor;
@@ -20,14 +20,14 @@ public class CommandFactory {
     final AutonDriveTrain autonDriveTrain;
     final TeleopDrivetrain teleopDrivetrain;
     final Intake intake;
-    final Shooter shooter;
+    final DoubleShooter shooter;
 
     public Command driveToTarget(DriveToTargetCommand.DriveParameters driveParameters) {
         return new DriveToTargetCommand(autonDriveTrain, telemetry, driveParameters);
     }
 
     public Command driveToTargetFieldCentric(double targetXInches, double targetYInches, double targetHeadingInDegrees) {
-        return new MecanumMoveToTargetCommand(autonDriveTrain.getMecanumDrive(), autonDriveTrain.getOdo(), new Pose2d(targetXInches, targetYInches, new Rotation2d(Math.toRadians(targetHeadingInDegrees))), 2000);
+        return new MecanumMoveToTargetCommand(autonDriveTrain.getMecanumDrive(), autonDriveTrain.getPinpoint(), new Pose2d(targetXInches, targetYInches, new Rotation2d(Math.toRadians(targetHeadingInDegrees))), 2000);
     }
 
     public Command sleep(long durationMs) {
