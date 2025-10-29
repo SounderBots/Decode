@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.DoubleShooter;
 import org.firstinspires.ftc.teamcode.subsystems.SingleShooter;
 import org.firstinspires.ftc.teamcode.subsystems.TeleopDrivetrain;
 
