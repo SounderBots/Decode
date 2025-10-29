@@ -10,7 +10,7 @@ public class TeleopDrivetrain extends DriveTrainBase {
     final double power = 1d;
     GamepadEx gamepad;
 
-    double direction = 1;
+//    double direction = 1;
 
     public TeleopDrivetrain(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
         super(hardwareMap, telemetry);
