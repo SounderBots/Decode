@@ -16,7 +16,7 @@ public class Transfer extends SubsystemBase {
 
     protected DistanceSensor artifactSensor;
 
-    Servo rightLauncher, leftLauncher;
+    Servo rightLauncher, leftLauncher, feeder;
 
 
     public Transfer(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
@@ -27,6 +27,8 @@ public class Transfer extends SubsystemBase {
 
         this.rightLauncher = hardwareMap.get(Servo.class,"RightLauncher");
         this.leftLauncher = hardwareMap.get(Servo.class,"LeftLauncher");
+
+        this.feeder = hardwareMap.get(Servo.class,"Feeder");
     }
 
     @Override
@@ -54,11 +56,18 @@ public class Transfer extends SubsystemBase {
     public void BallStow() {
         rightLauncher.setPosition(SingleShooter.ShooterConfig.RightLauncherStow);
         leftLauncher.setPosition(SingleShooter.ShooterConfig.LeftLauncherStow);
-
     }
 
     public void BallReset() {
         rightLauncher.setPosition(0);
         leftLauncher.setPosition(1);
+    }
+
+    public void FeedArtifact() {
+        feeder.setPosition(SingleShooter.ShooterConfig.FeederShoot);
+    }
+
+    public void ResetFeeder() {
+        feeder.setPosition(0);
     }
 }

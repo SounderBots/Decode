@@ -18,8 +18,10 @@ public class SingleShooter extends SubsystemBase {
     public static class ShooterConfig {
 
         public static double ShooterPower = 0.63;
-        public static double RightLauncherStow = 0.63;
-        public static double LeftLauncherStow = 0.63;
+        public static double RightLauncherStow = 0.34;
+        public static double LeftLauncherStow = 0.53;
+
+        public static double FeederShoot = .3;
 
     }
 
@@ -43,9 +45,17 @@ public class SingleShooter extends SubsystemBase {
         }
     }
 
-    public void TurnShooterOn() {
-        rightFlywheel.set(ShooterConfig.ShooterPower);
-        leftFlywheel.set(-1 * ShooterConfig.ShooterPower);
+    boolean toggleShooter = false;
+    public void ToggleShooter() {
+        if(toggleShooter) {
+            rightFlywheel.set(ShooterConfig.ShooterPower);
+            leftFlywheel.set(-1 * ShooterConfig.ShooterPower);
+        } else {
+            rightFlywheel.set(0);
+            leftFlywheel.set(0);
+        }
+
+        toggleShooter = !toggleShooter;
     }
 
 //    public void TurnShooterOff() {

@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.InstantCommand;
+import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -19,7 +22,10 @@ public class MainTeleop extends OpModeTemplate {
     SingleShooter shooter;
 
     Transfer transfer;
-
+    @Config
+    public static class MainTeleopConfig {
+        public static long TransferDelay = 200;
+    }
 
     @Override
     public void initialize() {
@@ -31,16 +37,32 @@ public class MainTeleop extends OpModeTemplate {
         this.transfer = new Transfer(hardwareMap, operatorGamepad, telemetry);
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.Y)
-                .whenPressed(new InstantCommand(shooter::TurnShooterOn, shooter));
+                .whenPressed(new InstantCommand(shooter::ToggleShooter, shooter));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.A)
-                .whenPressed(new InstantCommand(transfer::BallLaunch, shooter));
+                .whenPressed(new InstantCommand(transfer::BallLaunch, transfer));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.X)
-                .whenPressed(new InstantCommand(transfer::BallReset, shooter));
+                .whenPressed(new InstantCommand(transfer::BallReset, transfer));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.B)
-                .whenPressed(new InstantCommand(transfer::BallStow, shooter));
+                .whenPressed(new InstantCommand(transfer::BallStow, transfer));
+
+        operatorGamepad.getGamepadButton(GamepadKeys.Button.DPAD_UP)
+                .whenPressed(new InstantCommand(transfer::FeedArtifact, transfer));
+
+        operatorGamepad.getGamepadButton(GamepadKeys.Button.DPAD_DOWN)
+                .whenPressed(new InstantCommand(transfer::ResetFeeder, transfer));
+
+        operatorGamepad.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
+                .whenPressed(
+                        new SequentialCommandGroup(
+                                new InstantCommand(transfer::FeedArtifact, transfer),
+                                new WaitCommand(MainTeleopConfig.TransferDelay),
+                                new InstantCommand(transfer::BallStow, transfer),
+                                new InstantCommand(transfer::ResetFeeder, transfer)
+                        )
+                );
 
         register(drive, intake, shooter);
     }
