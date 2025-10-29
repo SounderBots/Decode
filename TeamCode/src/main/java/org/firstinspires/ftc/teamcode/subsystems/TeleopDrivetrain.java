@@ -10,7 +10,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class TeleopDrivetrain extends DriveTrainBase {
 
-    final double power = .5d;
+    final double power = 1d;
     GamepadEx gamepad;
 
     double direction = 1;

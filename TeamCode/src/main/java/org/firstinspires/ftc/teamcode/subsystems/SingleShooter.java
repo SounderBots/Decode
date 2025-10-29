@@ -15,12 +15,15 @@ public class SingleShooter extends SubsystemBase {
     GamepadEx gamepad;
     Motor leftFlywheel, rightFlywheel;
 
-    Servo rightLauncher;
+    Servo rightLauncher, leftLauncher;
 
     @Config
     public static class ShooterConfig {
 
         public static double ShooterPower = 0.63;
+        public static double RightLauncherStow = 0.63;
+        public static double LeftLauncherStow = 0.63;
+
     }
 
     public SingleShooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
@@ -31,6 +34,7 @@ public class SingleShooter extends SubsystemBase {
         this.leftFlywheel = new Motor(hardwareMap, "LeftFlywheel");
 
         this.rightLauncher = hardwareMap.get(Servo.class,"RightLauncher");
+        this.leftLauncher = hardwareMap.get(Servo.class,"LeftLauncher");
     }
 
     @Override
@@ -57,13 +61,17 @@ public class SingleShooter extends SubsystemBase {
 
     public void BallLaunch() {
         rightLauncher.setPosition(1);
+        leftLauncher.setPosition(0);
     }
 
     public void BallStow() {
-        rightLauncher.setPosition(.45);
+        rightLauncher.setPosition(ShooterConfig.RightLauncherStow);
+        leftLauncher.setPosition(ShooterConfig.LeftLauncherStow);
+
     }
 
     public void BallReset() {
         rightLauncher.setPosition(0);
+        leftLauncher.setPosition(1);
     }
 }

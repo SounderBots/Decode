@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.DoubleShooter;
+import org.firstinspires.ftc.teamcode.subsystems.SingleShooter;
 import org.firstinspires.ftc.teamcode.subsystems.TeleopDrivetrain;
 
 @TeleOp
@@ -15,7 +16,7 @@ public class MainTeleop extends OpModeTemplate {
     TeleopDrivetrain drive;
     Intake intake;
 
-    DoubleShooter doubleShooter;
+    SingleShooter shooter;
 
     @Override
     public void initialize() {
@@ -23,20 +24,20 @@ public class MainTeleop extends OpModeTemplate {
 
         this.drive = new TeleopDrivetrain(hardwareMap, driverGamepad, telemetry);
         this.intake = new Intake(hardwareMap, operatorGamepad, telemetry);
-        this.doubleShooter = new DoubleShooter(hardwareMap, operatorGamepad, telemetry);
+        this.shooter = new SingleShooter(hardwareMap, operatorGamepad, telemetry);
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.Y)
-                .whenPressed(new InstantCommand(doubleShooter::TurnShooterOn, doubleShooter));
+                .whenPressed(new InstantCommand(shooter::TurnShooterOn, shooter));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.A)
-                .whenPressed(new InstantCommand(doubleShooter::RightBallLaunch, doubleShooter));
+                .whenPressed(new InstantCommand(shooter::BallLaunch, shooter));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.X)
-                .whenPressed(new InstantCommand(doubleShooter::RightBallReset, doubleShooter));
+                .whenPressed(new InstantCommand(shooter::BallReset, shooter));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.B)
-                .whenPressed(new InstantCommand(doubleShooter::RightBallStow, doubleShooter));
+                .whenPressed(new InstantCommand(shooter::BallStow, shooter));
 
-        register(drive, intake, doubleShooter);
+        register(drive, intake, shooter);
     }
 }
