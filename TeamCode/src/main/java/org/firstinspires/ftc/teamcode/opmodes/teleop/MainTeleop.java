@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.SingleShooter;
 import org.firstinspires.ftc.teamcode.subsystems.TeleopDrivetrain;
+import org.firstinspires.ftc.teamcode.subsystems.Transfer;
 
 @TeleOp
 public class MainTeleop extends OpModeTemplate {
@@ -17,6 +18,9 @@ public class MainTeleop extends OpModeTemplate {
 
     SingleShooter shooter;
 
+    Transfer transfer;
+
+
     @Override
     public void initialize() {
         super.initialize();
@@ -24,18 +28,19 @@ public class MainTeleop extends OpModeTemplate {
         this.drive = new TeleopDrivetrain(hardwareMap, driverGamepad, telemetry);
         this.intake = new Intake(hardwareMap, operatorGamepad, telemetry);
         this.shooter = new SingleShooter(hardwareMap, operatorGamepad, telemetry);
+        this.transfer = new Transfer(hardwareMap, operatorGamepad, telemetry);
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.Y)
                 .whenPressed(new InstantCommand(shooter::TurnShooterOn, shooter));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.A)
-                .whenPressed(new InstantCommand(shooter::BallLaunch, shooter));
+                .whenPressed(new InstantCommand(transfer::BallLaunch, shooter));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.X)
-                .whenPressed(new InstantCommand(shooter::BallReset, shooter));
+                .whenPressed(new InstantCommand(transfer::BallReset, shooter));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.B)
-                .whenPressed(new InstantCommand(shooter::BallStow, shooter));
+                .whenPressed(new InstantCommand(transfer::BallStow, shooter));
 
         register(drive, intake, shooter);
     }

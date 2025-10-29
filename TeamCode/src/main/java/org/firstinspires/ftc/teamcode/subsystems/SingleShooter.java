@@ -15,8 +15,6 @@ public class SingleShooter extends SubsystemBase {
     GamepadEx gamepad;
     Motor leftFlywheel, rightFlywheel;
 
-    Servo rightLauncher, leftLauncher;
-
     @Config
     public static class ShooterConfig {
 
@@ -32,9 +30,6 @@ public class SingleShooter extends SubsystemBase {
 
         this.rightFlywheel = new Motor(hardwareMap, "RightFlywheel");
         this.leftFlywheel = new Motor(hardwareMap, "LeftFlywheel");
-
-        this.rightLauncher = hardwareMap.get(Servo.class,"RightLauncher");
-        this.leftLauncher = hardwareMap.get(Servo.class,"LeftLauncher");
     }
 
     @Override
@@ -59,19 +54,4 @@ public class SingleShooter extends SubsystemBase {
 //        leftFlywheel.set(0);
 //    }
 
-    public void BallLaunch() {
-        rightLauncher.setPosition(1);
-        leftLauncher.setPosition(0);
-    }
-
-    public void BallStow() {
-        rightLauncher.setPosition(ShooterConfig.RightLauncherStow);
-        leftLauncher.setPosition(ShooterConfig.LeftLauncherStow);
-
-    }
-
-    public void BallReset() {
-        rightLauncher.setPosition(0);
-        leftLauncher.setPosition(1);
-    }
 }
