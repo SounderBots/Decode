@@ -10,6 +10,7 @@ import com.arcrobotics.ftclib.command.ParallelRaceGroup;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 
 import org.firstinspires.ftc.teamcode.command.CommandFactory;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.AutonDriveTrain;
 import org.firstinspires.ftc.teamcode.util.DelegateOrVoidTelemetry;
 
@@ -50,7 +51,7 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
 //        SampleSweeper sampleSweeper = new SampleSweeper(hardwareMap, operatorGamePad, telemetry, feedback);
 //        Bumper bumper = new Bumper(hardwareMap);
         logInitStep("all subsystems created");
-        commandFactory = new CommandFactory(telemetry, driveTrain, null, null, null);
+        commandFactory = new CommandFactory(telemetry, driveTrain, Constants.createFollower(hardwareMap), null, null, null);
 
         logInitStep("command factory created");
         logInitStep("before setting intake");
