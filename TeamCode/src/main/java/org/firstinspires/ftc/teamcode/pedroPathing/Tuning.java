@@ -68,9 +68,11 @@ public class Tuning extends SelectableOpMode {
                 p.add("Centripetal Tuner", CentripetalTuner::new);
             });
             s.folder("Tests", p -> {
-                p.add("Line", Line::new);
+                p.add("Forward and Backward", ForwardBackward::new);
+                p.add("Left and Right", LeftAndRight::new);
                 p.add("Triangle", Triangle::new);
                 p.add("Circle", Circle::new);
+                p.add("Square", Square::new);
             });
         });
     }
@@ -937,7 +939,7 @@ class DriveTuner extends OpMode {
  * @author Harrison Womack - 10158 Scott's Bots
  * @version 1.0, 3/12/2024
  */
-class Line extends OpMode {
+class ForwardBackward extends OpMode {
     public static double DISTANCE = 20;
     private boolean forward = true;
 
@@ -986,6 +988,110 @@ class Line extends OpMode {
 
         telemetryM.debug("Driving Forward?: " + forward);
         telemetryM.update(telemetry);
+    }
+}
+
+class LeftAndRight extends OpMode {
+    public static double DISTANCE = 20;
+    private boolean left = true;
+
+    private Path towardLeft;
+    private Path towardRight;
+
+    @Override
+    public void init() {}
+
+    /** This initializes the Follower and creates the forward and backward Paths. */
+    @Override
+    public void init_loop() {
+        telemetryM.debug("This will activate all the PIDF(s)");
+        telemetryM.debug("The robot will go forward and backward continuously along the path while correcting.");
+        telemetryM.debug("You can adjust the PIDF values to tune the robot's drive PIDF(s).");
+        telemetryM.update(telemetry);
+        follower.update();
+        drawOnlyCurrent();
+    }
+
+    @Override
+    public void start() {
+        follower.activateAllPIDFs();
+        towardLeft = new Path(new BezierLine(new Pose(0,0), new Pose(0,DISTANCE)));
+        towardLeft.setConstantHeadingInterpolation(0);
+        towardRight = new Path(new BezierLine(new Pose(0,DISTANCE), new Pose(0,0)));
+        towardRight.setConstantHeadingInterpolation(0);
+        follower.followPath(towardLeft);
+    }
+
+    /** This runs the OpMode, updating the Follower as well as printing out the debug statements to the Telemetry */
+    @Override
+    public void loop() {
+        follower.update();
+        draw();
+
+        if (!follower.isBusy()) {
+            if (left) {
+                left = false;
+                follower.followPath(towardRight);
+            } else {
+                left = true;
+                follower.followPath(towardLeft);
+            }
+        }
+
+        telemetryM.debug("Driving Forward?: " + left);
+        telemetryM.update(telemetry);
+    }
+}
+
+class Square extends OpMode {
+    public static double DISTANCE = 20;
+
+    private static final Pose FR = new Pose(DISTANCE, 0, Math.toRadians(-90));
+    private static final Pose FL = new Pose(DISTANCE, DISTANCE, Math.toRadians(-180));
+    private static final Pose BL = new Pose(0, DISTANCE, Math.toRadians(-270));
+    private static final Pose BR = new Pose(0, 0, Math.toRadians(0));
+
+    PathChain squareChain;
+
+    @Override
+    public void init() {}
+
+    /** This initializes the Follower and creates the forward and backward Paths. */
+    @Override
+    public void init_loop() {
+        telemetryM.debug("This will activate all the PIDF(s)");
+        telemetryM.debug("The robot will go square continuously along the path while correcting.");
+        telemetryM.debug("You can adjust the PIDF values to tune the robot's drive PIDF(s).");
+        telemetryM.update(telemetry);
+        follower.update();
+        drawOnlyCurrent();
+    }
+
+    @Override
+    public void start() {
+        follower.activateAllPIDFs();
+        follower.setStartingPose(BR);
+        squareChain = follower.pathBuilder().addPath(new BezierLine(BR, FR))
+                .setGlobalLinearHeadingInterpolation(BR.getHeading(), FR.getHeading())
+                .addPath(new BezierLine(FR, FL))
+                .setGlobalLinearHeadingInterpolation(FR.getHeading(), FL.getHeading())
+                .addPath(new BezierLine(FL, BL))
+                .setGlobalLinearHeadingInterpolation(FL.getHeading(), BL.getHeading())
+                .addPath(new BezierLine(BL, BR))
+                .setGlobalLinearHeadingInterpolation(BL.getHeading(), BR.getHeading())
+                .build();
+        follower.followPath(squareChain);
+    }
+
+    /** This runs the OpMode, updating the Follower as well as printing out the debug statements to the Telemetry */
+    @Override
+    public void loop() {
+        follower.update();
+        draw();
+
+        if (!follower.isBusy()) {
+            follower.followPath(squareChain);
+        }
     }
 }
 

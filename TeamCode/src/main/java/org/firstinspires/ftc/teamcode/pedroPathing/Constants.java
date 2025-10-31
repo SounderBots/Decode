@@ -35,12 +35,12 @@ public class Constants {
             .drivePIDFCoefficients(new FilteredPIDFCoefficients(
                     0.1,
                     0,
-                    0.00035,
+                    0.0005,
                     0.6,
                     0.015
             ))
             .drivePIDFSwitch(15)
-            .centripetalScaling(0.0005);
+            .centripetalScaling(0.00065);
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1)
             ;
