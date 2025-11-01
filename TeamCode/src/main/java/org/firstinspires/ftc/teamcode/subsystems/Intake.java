@@ -18,13 +18,13 @@ public class Intake extends SubsystemBase {
         this.gamepad = gamepad;
         this.telemetry = telemetry;
 
-        this.motor = new Motor(hardwareMap, "Intake");
+        this.motor = new Motor(hardwareMap, "FrontIntake");
     }
 
     @Override
     public void periodic() {
         super.periodic();
 
-        motor.set(gamepad.getRightY());
+        motor.set(gamepad.getRightY() * SingleShooter.ShooterConfig.IntakeMaxPower);
     }
 }

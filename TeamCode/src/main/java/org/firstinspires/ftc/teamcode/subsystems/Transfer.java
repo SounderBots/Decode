@@ -2,28 +2,35 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 
 public class Transfer extends SubsystemBase {
 
     Telemetry telemetry;
+
     GamepadEx gamepad;
 
-    protected DistanceSensor artifactSensor;
+    Motor chamberMotor;
+
+    protected DistanceSensor highArtifactSensor, frontArtifactSensor;
 
     Servo rightLauncher, leftLauncher, feeder;
-
 
     public Transfer(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
         this.gamepad = gamepad;
         this.telemetry = telemetry;
 
-        artifactSensor = hardwareMap.get(DistanceSensor.class, "BallSensor");
+        this.chamberMotor = new Motor(hardwareMap, "Intake");
+
+        highArtifactSensor = hardwareMap.get(DistanceSensor.class, "HighSensor");
+        frontArtifactSensor = hardwareMap.get(DistanceSensor.class, "FrontSensor");
 
         this.rightLauncher = hardwareMap.get(Servo.class,"RightLauncher");
         this.leftLauncher = hardwareMap.get(Servo.class,"LeftLauncher");
@@ -35,17 +42,47 @@ public class Transfer extends SubsystemBase {
     public void periodic() {
         super.periodic();
 
-        telemetry.addData("distance", GetArtifactSensorReading());
-        telemetry.addData("is ball detected", IsArtifactDetected());
-        telemetry.update();
+        boolean addTelemetry = true;
+        if(addTelemetry) {
+            telemetry.addData("high Sensor", GetArtifactSensorReading());
+            telemetry.addData("is ball detected on high side", IsArtifactDetected());
+
+            telemetry.addData("front Sensor", GetFrontSensorReading());
+            telemetry.addData("is ball detected on front", IsFrontArtifactDetected());
+
+            telemetry.addData("ball count", artifactCount);
+
+
+            telemetry.update();
+        }
+    }
+
+    public void TurnOnChamberRoller() {
+        chamberMotor.set(MainTeleop.MainTeleopConfig.ChamberIntakePower);
+    }
+
+    public void TurnOnSlowChamberRoller() {
+        chamberMotor.set(MainTeleop.MainTeleopConfig.ChamberIntakeSlowPower);
+    }
+
+    public void TurnOffChamberRoller() {
+        chamberMotor.set(0);
     }
 
     private double GetArtifactSensorReading() {
-        return this.artifactSensor.getDistance(DistanceUnit.MM);
+        return this.highArtifactSensor.getDistance(DistanceUnit.MM);
     }
 
-    private boolean IsArtifactDetected() {
-        return this.GetArtifactSensorReading() < 70;
+    public boolean IsArtifactDetected() {
+        return this.GetArtifactSensorReading() < 80;
+    }
+
+    private double GetFrontSensorReading() {
+        return this.frontArtifactSensor.getDistance(DistanceUnit.MM);
+    }
+
+    public boolean IsFrontArtifactDetected() {
+        return this.GetFrontSensorReading() < 140;
     }
 
     public void BallLaunch() {
@@ -69,5 +106,37 @@ public class Transfer extends SubsystemBase {
 
     public void ResetFeeder() {
         feeder.setPosition(0);
+    }
+
+    int artifactCount = 0;
+
+    public void IncrementArtifactCount() {
+        artifactCount++;
+    }
+
+    public void DecrementArtifactCount() {
+        artifactCount--;
+    }
+
+    public void ResetArtifactCount() {
+        artifactCount = 0;
+    }
+
+    public int GetArtifactCount() {
+        return artifactCount;
+    }
+
+    boolean tryingToLoadArtifactIntoShooter = false;
+
+    public void TryToLoadArtifactIntoShooter() {
+        tryingToLoadArtifactIntoShooter = true;
+    }
+
+    public void NotTryingToLoadArtifactIntoShooter() {
+        tryingToLoadArtifactIntoShooter = false;
+    }
+
+    public boolean IsAlreadyTryingToLoadArtifactIntoShooter() {
+        return tryingToLoadArtifactIntoShooter;
     }
 }

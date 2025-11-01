@@ -7,6 +7,8 @@ import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.command.AutoIntakeCommand;
+import org.firstinspires.ftc.teamcode.command.AutoLoadShooterCommand;
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.SingleShooter;
@@ -25,6 +27,12 @@ public class MainTeleop extends OpModeTemplate {
     @Config
     public static class MainTeleopConfig {
         public static long TransferDelay = 200;
+
+        public static long IntakeDelay = 200;
+
+        public static double ChamberIntakePower = -0.5;
+
+        public static double ChamberIntakeSlowPower = -0.3;
     }
 
     @Override
@@ -65,5 +73,9 @@ public class MainTeleop extends OpModeTemplate {
                 );
 
         register(drive, intake, shooter);
+        schedule(
+                new AutoLoadShooterCommand(telemetry, transfer),
+                new AutoIntakeCommand(telemetry, transfer)
+                );
     }
 }
