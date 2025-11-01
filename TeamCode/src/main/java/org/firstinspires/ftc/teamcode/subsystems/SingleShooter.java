@@ -18,13 +18,15 @@ public class SingleShooter extends SubsystemBase {
 
     double shooterCpr;
 
-    SonicPIDFController rightShooterPid = new SonicPIDFController(.01, 0, 0);
-    SonicPIDFController leftShooterPid = new SonicPIDFController(.01, 0, 0);
+    SonicPIDFController rightShooterPid = new SonicPIDFController(ShooterConfig.kP, 0, 0);
+    SonicPIDFController leftShooterPid = new SonicPIDFController(ShooterConfig.kP, 0, 0);
 
     @Config
     public static class ShooterConfig {
 
-        public static double ShooterRpm = 1200;
+        public static double ShooterRpmHi = 1800;
+
+        public static double ShooterRpmLo = 1200;
 
         public static double RightLauncherStow = 0.34;
 
@@ -34,7 +36,11 @@ public class SingleShooter extends SubsystemBase {
 
         public static double IntakeMaxPower = .7;
 
-        public static double kP = 20;
+        public static double kP = 0.000125;
+
+        public static double kI = 0.0001;
+
+        public static double kD = 0.00005;
     }
 
     public SingleShooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
@@ -56,48 +62,60 @@ public class SingleShooter extends SubsystemBase {
         leftFlywheel.setVeloCoefficients(ShooterConfig.kP, 0, 0);
     }
 
+    double currentLeftPower = 0.63;
+    double currentRightPower = 0.63;
+
+
     @Override
     public void periodic() {
         super.periodic();
 
         double rightError = targetVelocity - rightFlywheel.getVelocity();
-        double rightPower = rightShooterPid.calculatePIDAlgorithm(rightError);
+        double rightPowerDelta = rightShooterPid.calculatePIDAlgorithm(rightError);
 
         double leftError = targetVelocity - leftFlywheel.getVelocity();
-        double leftPower = leftShooterPid.calculatePIDAlgorithm(leftError);
+        double leftPowerDelta = leftShooterPid.calculatePIDAlgorithm(leftError);
 
-        rightFlywheel.set(rightPower);
-        leftFlywheel.set(leftPower);
+        currentRightPower += rightPowerDelta;
+        currentLeftPower += leftPowerDelta;
 
-        boolean addTelemetry = false;
+        rightFlywheel.set(currentRightPower);
+        leftFlywheel.set(currentLeftPower);
+
+        boolean addTelemetry = true;
         if(addTelemetry) {
             telemetry.addData("target", this.targetVelocity);
 
             telemetry.addData("right velocity", rightFlywheel.getVelocity());
             telemetry.addData("right error", rightError);
-            telemetry.addData("right power", rightPower);
+            telemetry.addData("right power delta", rightPowerDelta);
+            telemetry.addData("current right power", currentRightPower);
 
             telemetry.addData("left velocity", leftFlywheel.getVelocity());
             telemetry.addData("left error", leftError);
-            telemetry.addData("left power", leftPower);
+            telemetry.addData("left power delta", leftPowerDelta);
+            telemetry.addData("current left power", currentLeftPower);
+
 
             telemetry.update();
         }
     }
 
-    double targetTicksPerSecond = 0;
-
-    double targetVelocity = 0;
+    double targetVelocity = ShooterConfig.ShooterRpmHi;
 
     boolean toggleShooter = false;
     public void ToggleShooter() {
         if(toggleShooter) {
-            this.targetTicksPerSecond = shooterCpr * ShooterConfig.ShooterRpm / 60;
-            this.targetVelocity = ShooterConfig.ShooterRpm;
+            this.targetVelocity = ShooterConfig.ShooterRpmLo;
         } else {
-            this.targetTicksPerSecond = 0;
+            this.targetVelocity = ShooterConfig.ShooterRpmHi;
+
         }
 
         toggleShooter = !toggleShooter;
+    }
+
+    public void SetTargetRpm(double targetRpm) {
+        this.targetVelocity = targetRpm;
     }
 }

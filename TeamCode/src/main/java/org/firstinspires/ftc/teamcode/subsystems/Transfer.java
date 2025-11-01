@@ -42,7 +42,7 @@ public class Transfer extends SubsystemBase {
     public void periodic() {
         super.periodic();
 
-        boolean addTelemetry = true;
+        boolean addTelemetry = false;
         if(addTelemetry) {
             telemetry.addData("high Sensor", GetArtifactSensorReading());
             telemetry.addData("is ball detected on high side", IsArtifactDetected());
