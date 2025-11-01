@@ -11,10 +11,10 @@ public class AutonMoveAround extends CommandAutoOpMode {
     @Override
     protected Command createCommand() {
         return commandFactory
-                .startMove(new Pose(10, 15, 0))
+                .startMove(new Pose(20, 25, Math.toRadians(90)))
                 .andThen(commandFactory.sleep(1000))
-                .andThen(commandFactory.moveTo(new Pose(0, 15, 0)))
+                .andThen(commandFactory.moveTo(new Pose(0, 25, Math.toRadians(180))))
                 .andThen(commandFactory.sleep(1000))
-                .andThen(commandFactory.moveTo(new Pose(0, 0, 0)));
+                .andThen(commandFactory.moveTo(new Pose(0, 0, Math.toRadians(360))));
     }
 }

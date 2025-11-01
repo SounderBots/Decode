@@ -10,7 +10,7 @@ Coordinate:
 
 move forward -> +x
 move left -> +y
-turn clockwise (look down) -> degree increase
+turn anticlockwise (look down) -> degree increase
 
 How to tune
 ---
@@ -65,6 +65,7 @@ File to change running steps: org/firstinspires/ftc/teamcode/pedroPathing/Consta
     4.2 set p, push the robot sideways until robot could correct to original position with min overshoot (typical value: 0.x)
 
     4.3 set d, push the robot sideways until overshoot is acceptable
+
 5. Heading PIDF (changes should save to followerConstants) [Instruction](https://pedropathing.com/docs/pathing/tuning/pids/heading)
    
     5.1 set p, i, d, f in pannel to 0, and increase f until robot about to move
