@@ -56,7 +56,7 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
 
     @Override
     protected boolean isTargetReached() {
-        return following && follower.getCurrentPath().isAtParametricEnd();
+        return following && !(follower.isBusy());
     }
 
     @Override
