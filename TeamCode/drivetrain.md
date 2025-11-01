@@ -6,10 +6,17 @@ Use
 
 from command factory,
 use startMove for first move (move from 0, 0, could be changed), following moves, use move to. 
-Coordinate:
+
+Coordinate
+---
+![Coordinate](https://pedropathing.com/docs/fieldcoordinates-dark.png)
+
+Note: robot is facing **RIGHT** at *bottom left* corner
 
 move forward -> +x
+
 move left -> +y
+
 turn anticlockwise (look down) -> degree increase
 
 How to tune
