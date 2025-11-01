@@ -16,8 +16,6 @@ public class SingleShooter extends SubsystemBase {
     GamepadEx gamepad;
     MotorEx leftFlywheel, rightFlywheel;
 
-    double shooterCpr;
-
     SonicPIDFController rightShooterPid = new SonicPIDFController(ShooterConfig.kP, 0, 0);
     SonicPIDFController leftShooterPid = new SonicPIDFController(ShooterConfig.kP, 0, 0);
 
@@ -58,8 +56,8 @@ public class SingleShooter extends SubsystemBase {
         this.rightFlywheel.setZeroPowerBehavior( Motor.ZeroPowerBehavior.FLOAT);
         this.leftFlywheel.setZeroPowerBehavior( Motor.ZeroPowerBehavior.FLOAT);
 
-        rightFlywheel.setVeloCoefficients(ShooterConfig.kP, 0, 0);
-        leftFlywheel.setVeloCoefficients(ShooterConfig.kP, 0, 0);
+        rightFlywheel.setVeloCoefficients(ShooterConfig.kP, ShooterConfig.kI, ShooterConfig.kD);
+        leftFlywheel.setVeloCoefficients(ShooterConfig.kP, ShooterConfig.kI, ShooterConfig.kD);
     }
 
     double currentLeftPower = 0.63;
