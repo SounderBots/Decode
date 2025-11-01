@@ -2,14 +2,14 @@ package org.firstinspires.ftc.teamcode.command;
 
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.subsystems.Transfer;
+import org.firstinspires.ftc.teamcode.subsystems.TransferChamber;
 
 public class WaitUntilTopArtifactSeen extends SounderBotCommandBase {
 
-    private final Transfer transfer;
+    private final TransferChamber transfer;
     private final Telemetry telemetry;
 
-    public WaitUntilTopArtifactSeen(Telemetry telemetry, Transfer transfer)
+    public WaitUntilTopArtifactSeen(Telemetry telemetry, TransferChamber transfer)
     {
         super(3 * 1000);
 

@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.SingleShooter;
 import org.firstinspires.ftc.teamcode.subsystems.TeleopDrivetrain;
-import org.firstinspires.ftc.teamcode.subsystems.Transfer;
+import org.firstinspires.ftc.teamcode.subsystems.TransferChamber;
 
 @TeleOp
 public class MainTeleop extends OpModeTemplate {
@@ -24,7 +24,7 @@ public class MainTeleop extends OpModeTemplate {
 
     SingleShooter shooter;
 
-    Transfer transfer;
+    TransferChamber transfer;
     @Config
     public static class MainTeleopConfig {
         public static long TransferDelay = 200;
@@ -41,7 +41,7 @@ public class MainTeleop extends OpModeTemplate {
         this.drive = new TeleopDrivetrain(hardwareMap, driverGamepad, telemetry);
         this.intake = new Intake(hardwareMap, operatorGamepad, telemetry);
         this.shooter = new SingleShooter(hardwareMap, operatorGamepad, telemetry);
-        this.transfer = new Transfer(hardwareMap, operatorGamepad, telemetry);
+        this.transfer = new TransferChamber(hardwareMap, operatorGamepad, telemetry);
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.Y)
                 .whenPressed(new InstantCommand(shooter::ToggleShooter, shooter));

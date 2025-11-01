@@ -7,14 +7,14 @@ import com.arcrobotics.ftclib.command.ParallelDeadlineGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.subsystems.Transfer;
+import org.firstinspires.ftc.teamcode.subsystems.TransferChamber;
 
 public class AutoIntakeCommand extends CommandBase {
 
-    private final Transfer transfer;
+    private final TransferChamber transfer;
     private final Telemetry telemetry;
 
-    public AutoIntakeCommand(Telemetry telemetry, Transfer transfer) {
+    public AutoIntakeCommand(Telemetry telemetry, TransferChamber transfer) {
         this.transfer = transfer;
         this.telemetry = telemetry;
     }

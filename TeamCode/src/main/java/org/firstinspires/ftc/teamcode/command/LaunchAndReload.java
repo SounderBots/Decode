@@ -8,14 +8,14 @@ import com.arcrobotics.ftclib.command.WaitCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
-import org.firstinspires.ftc.teamcode.subsystems.Transfer;
+import org.firstinspires.ftc.teamcode.subsystems.TransferChamber;
 
 public class LaunchAndReload extends SounderBotCommandBase {
 
-    private final Transfer transfer;
+    private final TransferChamber transfer;
     private final Telemetry telemetry;
 
-    public LaunchAndReload(Telemetry telemetry, Transfer transfer) {
+    public LaunchAndReload(Telemetry telemetry, TransferChamber transfer) {
         super(30 * 60 * 1000);
 
         this.transfer = transfer;

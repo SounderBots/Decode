@@ -11,7 +11,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 
-public class Transfer extends SubsystemBase {
+public class TransferChamber extends SubsystemBase {
 
     Telemetry telemetry;
 
@@ -23,7 +23,7 @@ public class Transfer extends SubsystemBase {
 
     Servo rightLauncher, leftLauncher, feeder;
 
-    public Transfer(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
+    public TransferChamber(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
         this.gamepad = gamepad;
         this.telemetry = telemetry;
 

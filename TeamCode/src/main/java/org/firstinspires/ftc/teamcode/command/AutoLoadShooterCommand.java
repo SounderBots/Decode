@@ -9,14 +9,14 @@ import com.arcrobotics.ftclib.command.WaitCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
-import org.firstinspires.ftc.teamcode.subsystems.Transfer;
+import org.firstinspires.ftc.teamcode.subsystems.TransferChamber;
 
 public class AutoLoadShooterCommand extends CommandBase {
 
-    private final Transfer transfer;
+    private final TransferChamber transfer;
     private final Telemetry telemetry;
 
-    public AutoLoadShooterCommand(Telemetry telemetry, Transfer transfer) {
+    public AutoLoadShooterCommand(Telemetry telemetry, TransferChamber transfer) {
         this.transfer = transfer;
         this.telemetry = telemetry;
     }
