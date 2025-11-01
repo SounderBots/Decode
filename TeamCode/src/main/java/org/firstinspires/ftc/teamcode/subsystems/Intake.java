@@ -25,6 +25,17 @@ public class Intake extends SubsystemBase {
     public void periodic() {
         super.periodic();
 
-        motor.set(gamepad.getRightY() * SingleShooter.ShooterConfig.IntakeMaxPower);
+        if(Math.abs(gamepad.getLeftY()) > .2) {
+            motor.set(gamepad.getLeftY() * SingleShooter.ShooterConfig.IntakeMaxPower);
+        } else {
+            motor.set(0);
+
+            if(Math.abs(gamepad.getRightY()) > .2) {
+                motor.set(gamepad.getRightY() * SingleShooter.ShooterConfig.IntakeMaxPower);
+            } else {
+                motor.set(0);
+
+            }
+        }
     }
 }

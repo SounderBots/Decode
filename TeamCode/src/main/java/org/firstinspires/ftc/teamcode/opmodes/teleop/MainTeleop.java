@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.command.AutoIntakeCommand;
 import org.firstinspires.ftc.teamcode.command.AutoLoadShooterCommand;
+import org.firstinspires.ftc.teamcode.command.LaunchAndReload;
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.SingleShooter;
@@ -46,7 +47,7 @@ public class MainTeleop extends OpModeTemplate {
                 .whenPressed(new InstantCommand(shooter::ToggleShooter, shooter));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.A)
-                .whenPressed(new InstantCommand(transfer::BallLaunch, transfer));
+                .whenPressed(new LaunchAndReload(telemetry, transfer));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.X)
                 .whenPressed(new InstantCommand(transfer::BallReset, transfer));

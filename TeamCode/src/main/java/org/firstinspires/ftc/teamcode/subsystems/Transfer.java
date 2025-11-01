@@ -42,6 +42,13 @@ public class Transfer extends SubsystemBase {
     public void periodic() {
         super.periodic();
 
+        if(Math.abs(gamepad.getLeftY()) > .2) {
+            chamberMotor.set(-1 * gamepad.getLeftY() * SingleShooter.ShooterConfig.IntakeMaxPower);
+        }
+        else {
+            chamberMotor.set(0);
+        }
+
         boolean addTelemetry = false;
         if(addTelemetry) {
             telemetry.addData("high Sensor", GetArtifactSensorReading());
