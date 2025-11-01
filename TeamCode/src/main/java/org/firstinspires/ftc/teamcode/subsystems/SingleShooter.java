@@ -24,8 +24,6 @@ public class SingleShooter extends SubsystemBase {
     @Config
     public static class ShooterConfig {
 
-        public static double ShooterPower = 0.63;
-
         public static double ShooterRpm = 1200;
 
         public static double RightLauncherStow = 0.34;
@@ -62,13 +60,11 @@ public class SingleShooter extends SubsystemBase {
     public void periodic() {
         super.periodic();
 
-        double leftYValue = gamepad.getLeftY();
-
         double rightError = targetVelocity - rightFlywheel.getVelocity();
         double rightPower = rightShooterPid.calculatePIDAlgorithm(rightError);
 
         double leftError = targetVelocity - leftFlywheel.getVelocity();
-        double leftPower = rightShooterPid.calculatePIDAlgorithm(leftError);
+        double leftPower = leftShooterPid.calculatePIDAlgorithm(leftError);
 
         rightFlywheel.set(rightPower);
         leftFlywheel.set(leftPower);

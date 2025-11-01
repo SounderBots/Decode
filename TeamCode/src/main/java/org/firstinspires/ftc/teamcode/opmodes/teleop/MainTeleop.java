@@ -28,8 +28,6 @@ public class MainTeleop extends OpModeTemplate {
     public static class MainTeleopConfig {
         public static long TransferDelay = 200;
 
-        public static long IntakeDelay = 200;
-
         public static double ChamberIntakePower = -0.5;
 
         public static double ChamberIntakeSlowPower = -0.3;

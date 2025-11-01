@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Transfer;
 public class WaitUntilFrontArtifactIntaken extends SounderBotCommandBase {
 
     private final Transfer transfer;
-    private Telemetry telemetry;
+    private final Telemetry telemetry;
 
     public WaitUntilFrontArtifactIntaken(Telemetry telemetry, Transfer transfer)
     {
