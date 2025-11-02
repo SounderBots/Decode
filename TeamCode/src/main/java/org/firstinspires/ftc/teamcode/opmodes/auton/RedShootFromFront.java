@@ -15,7 +15,7 @@ public class RedShootFromFront extends AutonBase {
         return shootPreloads()
                 .andThen(intakeRowAndShoot(RowsOnFloor.THIRD))
                 .andThen(intakeRowAndShoot(RowsOnFloor.SECOND))
-                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST))
+//                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST))
         ;
     }
 
