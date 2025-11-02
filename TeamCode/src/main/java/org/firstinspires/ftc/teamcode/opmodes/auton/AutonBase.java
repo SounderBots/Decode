@@ -1,0 +1,64 @@
+package org.firstinspires.ftc.teamcode.opmodes.auton;
+
+import com.arcrobotics.ftclib.command.Command;
+import com.pedropathing.geometry.Pose;
+
+public abstract class AutonBase extends CommandAutoOpMode {
+
+    protected Command intakeRowAndShoot(RowsOnFloor row) {
+        Pose rowStartingPosition = getRowStartingPosition(row);
+
+        return commandFactory
+                .moveTo(rowStartingPosition)
+                .andThen(commandFactory.sleep(1000)) // intake row (3 balls)
+                .andThen(commandFactory.moveTo(getShootingPosition())) // move to shooting position
+                .andThen(commandFactory.sleep(1000)) // shoot row
+        ;
+    }
+
+    Pose getRowStartingPosition(RowsOnFloor row) {
+        return switch (getSide()) {
+            case RED -> switch (row) {
+                case FIRST -> RedSideRowsOnFloorPositions.firstRowStartingPosition;
+                case SECOND -> RedSideRowsOnFloorPositions.secondRowStartingPosition;
+                case THIRD -> RedSideRowsOnFloorPositions.thirdRowStartingPosition;
+            };
+            case BLUE -> switch (row) {
+                case FIRST -> BlueSideRowsOnFloorPositions.firstRowStartingPosition;
+                case SECOND -> BlueSideRowsOnFloorPositions.secondRowStartingPosition;
+                case THIRD -> BlueSideRowsOnFloorPositions.thirdRowStartingPosition;
+            };
+        };
+
+    }
+
+    Pose getRowEndingPosition(RowsOnFloor row) {
+        return switch (getSide()) {
+            case RED -> switch (row) {
+                case FIRST -> RedSideRowsOnFloorPositions.firstRowEndingPosition;
+                case SECOND -> RedSideRowsOnFloorPositions.secondRowEndingPosition;
+                case THIRD -> RedSideRowsOnFloorPositions.thirdRowEndingPosition;
+            };
+            case BLUE -> switch (row) {
+                case FIRST -> BlueSideRowsOnFloorPositions.firstRowEndingPosition;
+                case SECOND -> BlueSideRowsOnFloorPositions.secondRowEndingPosition;
+                case THIRD -> BlueSideRowsOnFloorPositions.thirdRowEndingPosition;
+            };
+        };
+
+    }
+
+    protected Command shootPreloads() {
+        return commandFactory
+                .startMove(getStartingPosition(), getShootingPosition()) // move to shooting position
+                .andThen(commandFactory.sleep(1000)) // shoot preloads
+        ;
+    }
+
+    abstract Pose getShootingPosition();
+
+    abstract Pose getStartingPosition();
+
+    abstract Side getSide();
+
+}
