@@ -6,6 +6,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.SonicPIDFController;
@@ -19,18 +20,22 @@ public class SingleShooter extends SubsystemBase {
     SonicPIDFController rightShooterPid = new SonicPIDFController(ShooterConfig.kP, 0, 0);
     SonicPIDFController leftShooterPid = new SonicPIDFController(ShooterConfig.kP, 0, 0);
 
+    Servo liftServo;
+
     @Config
     public static class ShooterConfig {
 
-        public static double ShooterRpmHi = 1800;
+        public static double ShooterRpmHi = 1600;
 
-        public static double ShooterRpmLo = 1200;
+        public static double ShooterRpmLo = 1350;
 
         public static double RightLauncherStow = 0.34;
 
         public static double LeftLauncherStow = 0.53;
 
         public static double FeederShoot = .4;
+
+        public static double FeederReset = .9;
 
         public static double IntakeMaxPower = .7;
 
@@ -39,6 +44,14 @@ public class SingleShooter extends SubsystemBase {
         public static double kI = 0.0001;
 
         public static double kD = 0.00005;
+
+
+        public static double TiltServoHi = .5;
+
+        public static double TiltServoLo = 0;
+
+
+
     }
 
     public SingleShooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
@@ -47,6 +60,9 @@ public class SingleShooter extends SubsystemBase {
 
         this.rightFlywheel = new MotorEx(hardwareMap, "RightFlywheel", Motor.GoBILDA.BARE);
         this.leftFlywheel = new MotorEx(hardwareMap, "LeftFlywheel", Motor.GoBILDA.BARE);
+
+        this.liftServo = hardwareMap.get(Servo.class,"LiftServo");
+
 
         this.rightFlywheel.setRunMode(Motor.RunMode.RawPower);
         this.leftFlywheel.setRunMode(Motor.RunMode.RawPower);
@@ -80,7 +96,7 @@ public class SingleShooter extends SubsystemBase {
         rightFlywheel.set(currentRightPower);
         leftFlywheel.set(currentLeftPower);
 
-        boolean addTelemetry = true;
+        boolean addTelemetry = false;
         if(addTelemetry) {
             telemetry.addData("target", this.targetVelocity);
 
@@ -115,5 +131,15 @@ public class SingleShooter extends SubsystemBase {
 
     public void SetTargetRpm(double targetRpm) {
         this.targetVelocity = targetRpm;
+    }
+
+    public void CloseShoot() {
+        this.liftServo.setPosition(ShooterConfig.TiltServoHi);
+        this.targetVelocity = ShooterConfig.ShooterRpmLo;
+    }
+
+    public void FarShoot() {
+        this.liftServo.setPosition(ShooterConfig.TiltServoLo);
+        this.targetVelocity = ShooterConfig.ShooterRpmHi;
     }
 }

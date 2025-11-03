@@ -59,7 +59,6 @@ public class TransferChamber extends SubsystemBase {
 
             telemetry.addData("ball count", artifactCount);
 
-
             telemetry.update();
         }
     }
@@ -112,7 +111,7 @@ public class TransferChamber extends SubsystemBase {
     }
 
     public void ResetFeeder() {
-        feeder.setPosition(0);
+        feeder.setPosition(SingleShooter.ShooterConfig.FeederReset);
     }
 
     int artifactCount = 0;

@@ -42,6 +42,12 @@ public class DriveTrainBase extends SubsystemBase {
         this.frontLeft = new MotorEx(hardwareMap, "FL", Motor.GoBILDA.RPM_435);
         this.frontRight = new MotorEx(hardwareMap, "FR", Motor.GoBILDA.RPM_435);
 
+        this.backLeft.setZeroPowerBehavior( Motor.ZeroPowerBehavior.BRAKE);
+        this.backRight.setZeroPowerBehavior( Motor.ZeroPowerBehavior.BRAKE);
+        this.frontLeft.setZeroPowerBehavior( Motor.ZeroPowerBehavior.BRAKE);
+        this.frontRight.setZeroPowerBehavior( Motor.ZeroPowerBehavior.BRAKE);
+
+
         this.mecanumDrive = new MecanumDrive(frontLeft, frontRight, backLeft, backRight);
         resetMotor(backLeft);
         resetMotor(backRight);

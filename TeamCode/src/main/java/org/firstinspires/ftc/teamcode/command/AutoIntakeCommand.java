@@ -5,8 +5,10 @@ import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelDeadlineGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.command.WaitCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.TransferChamber;
 
 public class AutoIntakeCommand extends CommandBase {
@@ -40,8 +42,9 @@ public class AutoIntakeCommand extends CommandBase {
                             new WaitUntilFrontArtifactIntaken(telemetry, transfer),
                             new InstantCommand(transfer::TurnOnChamberRoller, transfer)
                     ),
-                    new InstantCommand(transfer::TurnOffChamberRoller, transfer),
-                    new InstantCommand(transfer::IncrementArtifactCount, transfer)
+                    new InstantCommand(transfer::IncrementArtifactCount, transfer),
+                    new WaitCommand(MainTeleop.MainTeleopConfig.TransferDelay),
+                    new InstantCommand(transfer::TurnOffChamberRoller, transfer)
             );
 
             command.schedule();

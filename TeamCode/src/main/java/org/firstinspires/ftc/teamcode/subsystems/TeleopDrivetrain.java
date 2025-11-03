@@ -10,7 +10,7 @@ public class TeleopDrivetrain extends DriveTrainBase {
     final double power = 1d;
     GamepadEx gamepad;
 
-//    double direction = 1;
+    double direction = 1;
 
     public TeleopDrivetrain(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
         super(hardwareMap, telemetry);
@@ -22,13 +22,13 @@ public class TeleopDrivetrain extends DriveTrainBase {
         super.periodic();
 
         mecanumDrive.driveRobotCentric(
-                 gamepad.getLeftX() * power * -1,
-                gamepad.getLeftY() * power * -1,
-                gamepad.getRightX() * power * -1
+                 gamepad.getLeftX() * power * -1 * direction,
+                gamepad.getLeftY() * power * -1 * direction,
+                gamepad.getRightX() * power * -.7
         );
     }
 
-//    public void ToggleDirection() {
-//        direction = direction * -1;
-//    }
+    public void ToggleDirection() {
+        direction = direction * -1;
+    }
 }

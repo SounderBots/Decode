@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
+import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -43,17 +44,34 @@ public class MainTeleop extends OpModeTemplate {
         this.shooter = new SingleShooter(hardwareMap, operatorGamepad, telemetry);
         this.transfer = new TransferChamber(hardwareMap, operatorGamepad, telemetry);
 
+        new Trigger(() -> gamepad2.right_stick_y < -0.5)
+                .whenActive(new InstantCommand(intake::StartIntake, intake));
+
+        new Trigger(() -> gamepad2.right_stick_y < 0.5)
+                .whenActive(new InstantCommand(intake::StopIntake, intake));
+
+        new Trigger(() -> gamepad2.left_trigger > 0.5)
+                .whenActive(new InstantCommand(shooter::FarShoot, shooter));
+
+        new Trigger(() -> gamepad2.right_trigger > 0.5)
+                .whenActive(new InstantCommand(shooter::CloseShoot, shooter));
+
         operatorGamepad.getGamepadButton(GamepadKeys.Button.Y)
-                .whenPressed(new InstantCommand(shooter::ToggleShooter, shooter));
+                .whenPressed(new InstantCommand(transfer::BallStow, shooter));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.A)
-                .whenPressed(new LaunchAndReload(telemetry, transfer));
+                .whenPressed(
+                        new SequentialCommandGroup(
+                                new InstantCommand(transfer::BallLaunch, transfer),
+                                new WaitCommand(200),
+                                new InstantCommand(transfer::BallReset, transfer)
+                        ));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.X)
                 .whenPressed(new InstantCommand(transfer::BallReset, transfer));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.B)
-                .whenPressed(new InstantCommand(transfer::BallStow, transfer));
+                .whenPressed(new InstantCommand(transfer::ResetFeeder, transfer));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.DPAD_UP)
                 .whenPressed(new InstantCommand(transfer::FeedArtifact, transfer));
@@ -70,6 +88,9 @@ public class MainTeleop extends OpModeTemplate {
                                 new InstantCommand(transfer::ResetFeeder, transfer)
                         )
                 );
+
+        driverGamepad.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
+                .whenPressed(new InstantCommand(drive::ToggleDirection, drive));
 
         register(drive, intake, shooter);
         schedule(
