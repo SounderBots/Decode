@@ -17,31 +17,31 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class Constants {
     public static class RobotMain {
         public static FollowerConstants followerConstants = new FollowerConstants()
-                .mass(5.2)
-                .forwardZeroPowerAcceleration(-58.69)
-                .lateralZeroPowerAcceleration(-85.0)
+                .mass(10)
+                .forwardZeroPowerAcceleration(-30.01)
+                .lateralZeroPowerAcceleration(-74.366)
                 .translationalPIDFCoefficients(new PIDFCoefficients(
-                        0.03,
+                        0.08,
                         0,
-                        0,
-                        0.023
+                        0.01,
+                        0.025
                 ))
                 .translationalPIDFSwitch(4)
                 .headingPIDFCoefficients(new PIDFCoefficients(
-                        0.5,
+                        0.6,
                         0,
-                        0.005,
-                        0.018
+                        0,
+                        0.03
                 ))
                 .drivePIDFCoefficients(new FilteredPIDFCoefficients(
-                        0.1,
+                        0.09,
                         0,
-                        0.0005,
+                        0.001,
                         0.6,
                         0.015
                 ))
                 .drivePIDFSwitch(15)
-                .centripetalScaling(0.00065);
+                .centripetalScaling(0.0006);
 
         public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
@@ -55,17 +55,23 @@ public class Constants {
                 .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
                 .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
                 .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-                .xVelocity(93.1377)
+                .xVelocity(81.32)
                 .yVelocity(72.9280);
 
+        // axis distance: 11.375 inch (x direction)
+        // axis length: 15.5 inch (y direction, left wheel center to right wheel center)
+        // forward pod is 2 inch away from right side wheel center, so it is 15.5 / 2 - 2 = 5.75 off
+        // strafe pod is 2 inch front of back axis, so it is 11.375 / 2 - 2 = 3.6875 inch off
+        // according to this page: https://pedropathing.com/docs/pathing/tuning/localization/pinpoint
+        //
         public static PinpointConstants localizerConstants = new PinpointConstants()
-                .forwardPodY(-5.75)
-                .strafePodX(-6)
+                .forwardPodY(5.75)
+                .strafePodX(-3.6875)
                 .distanceUnit(DistanceUnit.INCH)
                 .hardwareMapName("pinpoint")
-                .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD)
+                .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
                 .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
-                .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
+                .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
     }
     public static class Backup {
