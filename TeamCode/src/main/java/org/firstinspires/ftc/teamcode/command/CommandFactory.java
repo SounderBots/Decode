@@ -23,7 +23,6 @@ public class CommandFactory {
     final Intake intake;
     final SingleShooter shooter;
 
-    private Pose previousEndPose;
 
 //    public Command driveToTarget(DriveToTargetCommand.DriveParameters driveParameters) {
 //        return new DriveToTargetCommand(autonDriveTrain, telemetry, driveParameters);
@@ -46,15 +45,11 @@ public class CommandFactory {
     }
 
     public Command startMove(Pose start, Pose end) {
-        Command result = new DriveToTargetPedroPathCommand(follower, start, end, true);
-        previousEndPose = end;
-        return result;
+        return new DriveToTargetPedroPathCommand(follower, start, end, true);
     }
 
     public Command moveTo(Pose end) {
-        Command result = new DriveToTargetPedroPathCommand(follower, previousEndPose, end, false);
-        previousEndPose = end;
-        return result;
+        return new DriveToTargetPedroPathCommand(follower, end, false);
     }
 
     public Command intake() {

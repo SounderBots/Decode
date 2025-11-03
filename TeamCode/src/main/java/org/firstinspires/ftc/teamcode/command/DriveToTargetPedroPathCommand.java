@@ -24,6 +24,10 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
     private final Pose end;
     private final boolean isFirstMove;
 
+    public DriveToTargetPedroPathCommand(Follower follower, @NonNull Pose end, boolean isFirstMove) {
+        this(follower, new Pose(0, 0, 0), end, 2, TimeUnit.SECONDS, isFirstMove);
+    }
+
     public DriveToTargetPedroPathCommand(Follower follower, @NonNull Pose start, @NonNull Pose end, boolean isFirstMove) {
         this(follower, start, end, 2, TimeUnit.SECONDS, isFirstMove);
     }
