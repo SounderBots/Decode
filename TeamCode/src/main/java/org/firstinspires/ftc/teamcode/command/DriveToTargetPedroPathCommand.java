@@ -20,21 +20,20 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
     PathChain pathChain;
     boolean following = false;
 
-    public DriveToTargetPedroPathCommand(Follower follower, @NonNull Pose start, @NonNull Pose end) {
-        this(follower, start, end, 2, TimeUnit.SECONDS);
+    private final Pose start;
+    private final Pose end;
+    private final boolean isFirstMove;
+
+    public DriveToTargetPedroPathCommand(Follower follower, @NonNull Pose start, @NonNull Pose end, boolean isFirstMove) {
+        this(follower, start, end, 2, TimeUnit.SECONDS, isFirstMove);
     }
-    public DriveToTargetPedroPathCommand(Follower follower, @NonNull Pose start, @NonNull Pose end, long timeOut,  TimeUnit timeUnit) {
+    public DriveToTargetPedroPathCommand(Follower follower, @NonNull Pose start, @NonNull Pose end, long timeOut,  TimeUnit timeUnit, boolean isFirstMove) {
         super(TimeUnit.MILLISECONDS.convert(timeOut, timeUnit));
 
-        Log.i(LOG_TAG, "start: " + start);
-        Log.i(LOG_TAG, "end: " + end);
-
         this.follower = follower;
-        this.follower.setStartingPose(start);
-        pathChain = follower.pathBuilder()
-                .addPath(new BezierLine(start, end))
-                .setGlobalLinearHeadingInterpolation(start.getHeading(), end.getHeading())
-                .build();
+        this.isFirstMove = isFirstMove;
+        this.start = start;
+        this.end = end;
     }
 
     @Override
@@ -46,10 +45,23 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
 
     @Override
     protected void doExecute() {
-        follower.update();
+        Pose startPos = start;
         if (!following) {
-            following = true;
+            if (isFirstMove) {
+                Log.i(LOG_TAG, "Starting position = " + start);
+                this.follower.setStartingPose(start);
+            } else {
+                startPos = follower.getPose();
+            }
+
+            pathChain = follower.pathBuilder()
+                    .addPath(new BezierLine(startPos, end))
+                    .setGlobalLinearHeadingInterpolation(start.getHeading(), end.getHeading())
+                    .build();
             follower.followPath(pathChain);
+            following = true;
+        } else {
+            follower.update();
         }
 
     }

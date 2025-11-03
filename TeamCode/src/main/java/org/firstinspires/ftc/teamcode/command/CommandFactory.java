@@ -46,13 +46,13 @@ public class CommandFactory {
     }
 
     public Command startMove(Pose start, Pose end) {
-        Command result = new DriveToTargetPedroPathCommand(follower, start, end);
+        Command result = new DriveToTargetPedroPathCommand(follower, start, end, true);
         previousEndPose = end;
         return result;
     }
 
     public Command moveTo(Pose end) {
-        Command result = new DriveToTargetPedroPathCommand(follower, previousEndPose, end);
+        Command result = new DriveToTargetPedroPathCommand(follower, previousEndPose, end, false);
         previousEndPose = end;
         return result;
     }
