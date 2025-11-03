@@ -9,7 +9,7 @@ public abstract class SounderBotCommandBase extends CommandBase {
     boolean finished = false;
     long TIME_OUT_MS = 1800; // 4 seconds
 
-    long startTime = -1;
+    protected long startTime = -1;
 
 
     public SounderBotCommandBase(long timeOut) {
@@ -37,7 +37,7 @@ public abstract class SounderBotCommandBase extends CommandBase {
         }
     }
 
-    private boolean isTimeout() {
+    protected boolean isTimeout () {
         if (!isDebugging()) {
             long timeUsed = System.currentTimeMillis() - startTime;
             return timeUsed > TIME_OUT_MS;
@@ -63,6 +63,14 @@ public abstract class SounderBotCommandBase extends CommandBase {
     protected void onFlagEnabled(boolean flag, Runnable runnable) {
         if (flag) {
             runnable.run();
+        }
+    }
+
+    protected double timePassedMs() {
+        if (startTime > 0) {
+            return System.currentTimeMillis() - startTime;
+        } else {
+            return 0;
         }
     }
 }
