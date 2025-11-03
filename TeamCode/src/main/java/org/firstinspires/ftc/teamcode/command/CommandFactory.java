@@ -7,8 +7,8 @@ import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.AutonDriveTrain;
-import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.SingleShooter;
+import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.scoring.SingleShooter;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
 
 import lombok.RequiredArgsConstructor;

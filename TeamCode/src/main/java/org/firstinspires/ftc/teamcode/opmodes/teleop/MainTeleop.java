@@ -11,11 +11,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.command.AutoIntakeCommand;
 import org.firstinspires.ftc.teamcode.command.AutoLoadShooterCommand;
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
-import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.LimeLightSubsystem;
-import org.firstinspires.ftc.teamcode.subsystems.SingleShooter;
+import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.scoring.SingleShooter;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
-import org.firstinspires.ftc.teamcode.subsystems.TransferChamber;
+import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
 
 @TeleOp
 public class MainTeleop extends OpModeTemplate {

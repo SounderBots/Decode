@@ -9,7 +9,7 @@ import com.arcrobotics.ftclib.command.WaitCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
-import org.firstinspires.ftc.teamcode.subsystems.TransferChamber;
+import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
 
 public class AutoLoadShooterCommand extends CommandBase {
 

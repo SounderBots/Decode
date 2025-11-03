@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.command;
 
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.subsystems.TransferChamber;
+import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
 
 public class WaitUntilTopArtifactSeen extends SounderBotCommandBase {
 
