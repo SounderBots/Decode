@@ -15,11 +15,7 @@ public class BlueShootFromBack extends AutonBase {
 
     @Override
     protected Command createCommand() {
-        return shootPreloads() // move to shooting position
-            .andThen(intakeRowAndShoot(RowsOnFloor.FIRST)) // shoot first row
-            .andThen(intakeRowAndShoot(RowsOnFloor.SECOND)) // shoot second row
-//            .andThen(intakeRowAndShoot(RowsOnFloor.THIRD)) // shoot third row
-        ;
+        return shootFromBackCommand();
     }
 
     @Override

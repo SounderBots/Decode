@@ -61,4 +61,19 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     abstract Side getSide();
 
+    protected Command shootFromBackCommand() {
+        return shootPreloads() // move to shooting position
+                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST)) // shoot first row
+                .andThen(intakeRowAndShoot(RowsOnFloor.SECOND)) // shoot second row
+//            .andThen(intakeRowAndShoot(RowsOnFloor.THIRD)) // shoot third row
+                ;
+    }
+
+    protected Command shootFromFrontCommand() {
+        return shootPreloads()
+                .andThen(intakeRowAndShoot(RowsOnFloor.THIRD))
+                .andThen(intakeRowAndShoot(RowsOnFloor.SECOND))
+//                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST))
+                ;
+    }
 }

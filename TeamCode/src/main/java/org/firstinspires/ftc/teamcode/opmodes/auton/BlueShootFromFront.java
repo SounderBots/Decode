@@ -12,11 +12,7 @@ public class BlueShootFromFront extends AutonBase {
 
     @Override
     protected Command createCommand() {
-        return shootPreloads()
-                .andThen(intakeRowAndShoot(RowsOnFloor.THIRD))
-                .andThen(intakeRowAndShoot(RowsOnFloor.SECOND))
-//                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST))
-        ;
+        return shootFromFrontCommand();
     }
 
     @Override
