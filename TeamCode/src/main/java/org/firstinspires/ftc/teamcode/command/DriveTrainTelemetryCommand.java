@@ -5,7 +5,7 @@ import com.arcrobotics.ftclib.command.RunCommand;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.subsystems.AutonDriveTrain;
+import org.firstinspires.ftc.teamcode.subsystems.drivetrain.AutonDriveTrain;
 
 public class DriveTrainTelemetryCommand extends RunCommand {
     private static final String LOG_TAG = DriveTrainTelemetryCommand.class.getSimpleName();

@@ -2,16 +2,14 @@ package org.firstinspires.ftc.teamcode.command;
 
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.WaitCommand;
-import com.arcrobotics.ftclib.geometry.Pose2d;
-import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.subsystems.AutonDriveTrain;
+import org.firstinspires.ftc.teamcode.subsystems.drivetrain.AutonDriveTrain;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.SingleShooter;
-import org.firstinspires.ftc.teamcode.subsystems.TeleopDrivetrain;
+import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
 
 import lombok.RequiredArgsConstructor;
 
