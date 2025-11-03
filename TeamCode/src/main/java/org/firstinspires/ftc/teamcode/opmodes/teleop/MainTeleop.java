@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.command.AutoLoadShooterCommand;
 import org.firstinspires.ftc.teamcode.command.LaunchAndReload;
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.LimeLightSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SingleShooter;
 import org.firstinspires.ftc.teamcode.subsystems.TeleopDrivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.TransferChamber;
@@ -24,6 +25,8 @@ public class MainTeleop extends OpModeTemplate {
     Intake intake;
 
     SingleShooter shooter;
+
+    LimeLightSubsystem limeLight;
 
     TransferChamber transfer;
     @Config
@@ -43,6 +46,7 @@ public class MainTeleop extends OpModeTemplate {
         this.intake = new Intake(hardwareMap, operatorGamepad, telemetry);
         this.shooter = new SingleShooter(hardwareMap, operatorGamepad, telemetry);
         this.transfer = new TransferChamber(hardwareMap, operatorGamepad, telemetry);
+        this.limeLight = new LimeLightSubsystem(hardwareMap, telemetry);
 
         new Trigger(() -> gamepad2.right_stick_y < -0.5)
                 .whenActive(new InstantCommand(intake::StartIntake, intake));
