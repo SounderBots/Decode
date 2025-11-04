@@ -10,9 +10,9 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
         return commandFactory
                 .moveTo(rowStartingPosition)
-                .andThen(commandFactory.sleep(1000)) // intake row (3 balls)
+                .andThen(intakeRow(row)) // intake row (3 balls)
                 .andThen(commandFactory.moveTo(getShootingPosition())) // move to shooting position
-                .andThen(commandFactory.sleep(1000)) // shoot row
+                .andThen(commandFactory.shoot()) // shoot row
         ;
     }
 
@@ -48,10 +48,10 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     }
 
-    protected Command shootPreloads() {
+    protected Command moveAndShootPreloads() {
         return commandFactory
                 .startMove(getStartingPosition(), getShootingPosition()) // move to shooting position
-                .andThen(commandFactory.sleep(1000)) // shoot preloads
+                .andThen(commandFactory.shoot()) // shoot preloads
         ;
     }
 
@@ -62,7 +62,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
     abstract Side getSide();
 
     protected Command shootFromBackCommand() {
-        return shootPreloads() // move to shooting position
+        return moveAndShootPreloads() // move to shooting position
                 .andThen(intakeRowAndShoot(RowsOnFloor.FIRST)) // shoot first row
                 .andThen(intakeRowAndShoot(RowsOnFloor.SECOND)) // shoot second row
                 .andThen(intakeRowAndShoot(RowsOnFloor.THIRD)) // shoot third row
@@ -70,10 +70,15 @@ public abstract class AutonBase extends CommandAutoOpMode {
     }
 
     protected Command shootFromFrontCommand() {
-        return shootPreloads()
+        return moveAndShootPreloads()
                 .andThen(intakeRowAndShoot(RowsOnFloor.THIRD))
                 .andThen(intakeRowAndShoot(RowsOnFloor.SECOND))
                 .andThen(intakeRowAndShoot(RowsOnFloor.FIRST))
                 ;
+    }
+
+    protected Command intakeRow(RowsOnFloor row) {
+        Pose rowEndPose = getRowEndingPosition(row);
+        return commandFactory.prepareIntake().andThen(commandFactory.moveTo(rowEndPose).alongWith(commandFactory.intake()));
     }
 }
