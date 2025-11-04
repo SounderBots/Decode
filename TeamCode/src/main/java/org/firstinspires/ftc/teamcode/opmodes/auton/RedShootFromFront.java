@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.opmodes.auton;
 
 import com.arcrobotics.ftclib.command.Command;
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 @Autonomous(name="Red shoot from front", group="Red")
+@Configurable
 public class RedShootFromFront extends AutonBase {
 
     public static Pose startingPosition = new Pose(60, 60, Math.toRadians(0));
