@@ -63,6 +63,7 @@ public class Constants {
         // forward pod is 2 inch away from right side wheel center, so it is 15.5 / 2 - 2 = 5.75 off
         // strafe pod is 2 inch front of back axis, so it is 11.375 / 2 - 2 = 3.6875 inch off
         // according to this page: https://pedropathing.com/docs/pathing/tuning/localization/pinpoint
+        // Mecanum Wheel radius is 52mm or 2.472 inch
         //
         public static PinpointConstants localizerConstants = new PinpointConstants()
                 .forwardPodY(5.75)
