@@ -9,7 +9,7 @@ use startMove for first move (move from 0, 0, could be changed), following moves
 
 Coordinate
 ---
-![Coordinate](https://pedropathing.com/docs/fieldcoordinates-dark.png)
+![Coordinate](fieldcoordinates-light.png)
 
 Note: robot is facing **RIGHT** at *bottom left* corner
 

@@ -52,11 +52,18 @@ public class CommandFactory {
         return new DriveToTargetPedroPathCommand(follower, end, false);
     }
 
-    public Command intake() {
-        throw new NotImplementedException();
+    /**
+     * Prepare for intake, like start roller etc.
+     */
+    public Command prepareIntake() {
+        return sleep(200);
     }
 
-    public void shoot() {
-        throw new NotImplementedException();
+    public Command intake() {
+        return sleep(1000);
+    }
+
+    public Command shoot() {
+        return sleep(1000);
     }
 }
