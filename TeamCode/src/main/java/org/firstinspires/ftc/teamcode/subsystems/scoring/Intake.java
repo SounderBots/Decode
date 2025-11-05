@@ -40,7 +40,7 @@ public class Intake extends SubsystemBase {
     }
 
     public void StartIntake() {
-        motor.set(SingleShooter.ShooterConfig.IntakeMaxPower);
+        motor.set(Shooter.ShooterConfig.IntakeMaxPower);
     }
 
     public void StopIntake() {
