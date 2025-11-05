@@ -9,7 +9,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
-import org.firstinspires.ftc.teamcode.subsystems.RGBLightIndicator;
+import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.DriverFeedback;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightSubsystem;
@@ -28,8 +28,6 @@ public class MainTeleop extends OpModeTemplate {
     LimeLightSubsystem limeLight;
 
     TransferChamber transfer;
-
-    DriverFeedback feedback;
 
     RGBLightIndicator light;
 
@@ -51,7 +49,6 @@ public class MainTeleop extends OpModeTemplate {
         this.shooter = new SingleShooter(hardwareMap, operatorGamepad, telemetry);
         this.transfer = new TransferChamber(hardwareMap, operatorGamepad, telemetry);
         //this.limeLight = new LimeLightSubsystem(hardwareMap, telemetry);
-        this.feedback = new DriverFeedback(hardwareMap, driverGamepad, operatorGamepad, telemetry);
         this.light = new RGBLightIndicator(hardwareMap, telemetry, "RGBIndicator");
 
         new Trigger(() -> gamepad2.right_stick_y < -0.5)
@@ -108,7 +105,7 @@ public class MainTeleop extends OpModeTemplate {
         driverGamepad.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
                 .whenPressed(new InstantCommand(drive::ToggleDirection, drive));
 
-        register(drive, intake, shooter, feedback, light);
+        register(drive, intake, shooter, light);
 
 //        schedule(
 //                new AutoLoadShooterCommand(telemetry, transfer),

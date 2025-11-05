@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.subsystems;
+package org.firstinspires.ftc.teamcode.subsystems.feedback;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
@@ -13,9 +13,6 @@ public class RGBLightIndicator extends SubsystemBase {
     Servo rgbIndicator;
     Telemetry telemetry;
     String configString;
-
-    private static Double PURPLE_COL = 0.75;
-    private static Double GREEN_COL = 0.6;
     private static Double OFF_COL = 0.0;
 
     @Config
