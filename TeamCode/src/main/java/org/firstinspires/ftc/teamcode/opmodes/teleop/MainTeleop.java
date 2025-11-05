@@ -8,9 +8,9 @@ import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.command.AutoIntakeCommand;
-import org.firstinspires.ftc.teamcode.command.AutoLoadShooterCommand;
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
+import org.firstinspires.ftc.teamcode.subsystems.RGBLightIndicator;
+import org.firstinspires.ftc.teamcode.subsystems.feedback.DriverFeedback;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.SingleShooter;
@@ -28,6 +28,11 @@ public class MainTeleop extends OpModeTemplate {
     LimeLightSubsystem limeLight;
 
     TransferChamber transfer;
+
+    DriverFeedback feedback;
+
+    RGBLightIndicator light;
+
     @Config
     public static class MainTeleopConfig {
         public static long TransferDelay = 200;
@@ -45,7 +50,9 @@ public class MainTeleop extends OpModeTemplate {
         this.intake = new Intake(hardwareMap, operatorGamepad, telemetry);
         this.shooter = new SingleShooter(hardwareMap, operatorGamepad, telemetry);
         this.transfer = new TransferChamber(hardwareMap, operatorGamepad, telemetry);
-        this.limeLight = new LimeLightSubsystem(hardwareMap, telemetry);
+        //this.limeLight = new LimeLightSubsystem(hardwareMap, telemetry);
+        this.feedback = new DriverFeedback(hardwareMap, driverGamepad, operatorGamepad, telemetry);
+        this.light = new RGBLightIndicator(hardwareMap, telemetry, "RGBIndicator");
 
         new Trigger(() -> gamepad2.right_stick_y < -0.5)
                 .whenActive(new InstantCommand(intake::StartIntake, intake));
@@ -92,13 +99,20 @@ public class MainTeleop extends OpModeTemplate {
                         )
                 );
 
+        driverGamepad.getGamepadButton(GamepadKeys.Button.DPAD_UP)
+                .whenPressed(new InstantCommand(light::changeGreen, light));
+
+        driverGamepad.getGamepadButton(GamepadKeys.Button.DPAD_DOWN)
+                .whenPressed(new InstantCommand(light::changeGreen, light));
+
         driverGamepad.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
                 .whenPressed(new InstantCommand(drive::ToggleDirection, drive));
 
-        register(drive, intake, shooter);
-        schedule(
-                new AutoLoadShooterCommand(telemetry, transfer),
-                new AutoIntakeCommand(telemetry, transfer)
-                );
+        register(drive, intake, shooter, feedback, light);
+
+//        schedule(
+//                new AutoLoadShooterCommand(telemetry, transfer),
+//                new AutoIntakeCommand(telemetry, transfer)
+//                );
     }
 }

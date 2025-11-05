@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PwmControl;
@@ -17,6 +18,13 @@ public class RGBLightIndicator extends SubsystemBase {
     private static Double GREEN_COL = 0.6;
     private static Double OFF_COL = 0.0;
 
+    @Config
+    public static class LightConfig {
+        public static double GreenColor = 0.5;
+
+        public static double RedColor = 0.277;
+    }
+
     public RGBLightIndicator(HardwareMap hardwareMap, Telemetry telemetry, String configString) {
         this.telemetry = telemetry;
         this.configString = configString;
@@ -26,18 +34,15 @@ public class RGBLightIndicator extends SubsystemBase {
         }
     }
 
-    public void changePurple(){
-        telemetry.addData("Status", "RGB " + configString + " change to purple");
-        setColor(PURPLE_COL);
+    public void changeGreen(){
+        setColor(LightConfig.GreenColor);
     }
 
-    public void changeGreen(){
-        telemetry.addData("Status", "RGB " + configString + " change to green");
-        setColor(GREEN_COL);
+    public void changeRed(){
+        setColor(LightConfig.RedColor);
     }
 
     public void changeOff(){
-        telemetry.addData("Status", "RGB " + configString + " change to off");
         setColor(OFF_COL);
     }
 

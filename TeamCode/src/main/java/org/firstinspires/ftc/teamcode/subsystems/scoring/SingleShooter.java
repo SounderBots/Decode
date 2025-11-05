@@ -25,9 +25,9 @@ public class SingleShooter extends SubsystemBase {
     @Config
     public static class ShooterConfig {
 
-        public static double ShooterRpmHi = 1600;
+        public static double ShooterRpmHi = 1550;
 
-        public static double ShooterRpmLo = 1350;
+        public static double ShooterRpmLo = 1375;
 
         public static double RightLauncherStow = 0.34;
 
@@ -37,16 +37,16 @@ public class SingleShooter extends SubsystemBase {
 
         public static double FeederReset = .9;
 
-        public static double IntakeMaxPower = .7;
+        public static double IntakeMaxPower = 1;
 
-        public static double kP = 0.000125;
+        public static double kP = 0.00001;
 
-        public static double kI = 0.0001;
+        public static double kI = 0;
 
         public static double kD = 0.00005;
 
 
-        public static double TiltServoHi = .5;
+        public static double TiltServoHi = .6;
 
         public static double TiltServoLo = 0;
 
@@ -96,7 +96,7 @@ public class SingleShooter extends SubsystemBase {
         rightFlywheel.set(currentRightPower);
         leftFlywheel.set(currentLeftPower);
 
-        boolean addTelemetry = false;
+        boolean addTelemetry = true;
         if(addTelemetry) {
             telemetry.addData("target", this.targetVelocity);
 
