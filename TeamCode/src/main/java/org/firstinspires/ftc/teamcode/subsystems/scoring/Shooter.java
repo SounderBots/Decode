@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.SonicPIDFController;
 
-public class SingleShooter extends SubsystemBase {
+public class Shooter extends SubsystemBase {
 
     Telemetry telemetry;
     GamepadEx gamepad;
@@ -54,7 +54,7 @@ public class SingleShooter extends SubsystemBase {
 
     }
 
-    public SingleShooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
+    public Shooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
         this.gamepad = gamepad;
         this.telemetry = telemetry;
 

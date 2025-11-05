@@ -10,10 +10,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
-import org.firstinspires.ftc.teamcode.subsystems.feedback.DriverFeedback;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightSubsystem;
-import org.firstinspires.ftc.teamcode.subsystems.scoring.SingleShooter;
+import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
 
@@ -23,7 +22,7 @@ public class MainTeleop extends OpModeTemplate {
     TeleopDrivetrain drive;
     Intake intake;
 
-    SingleShooter shooter;
+    Shooter shooter;
 
     LimeLightSubsystem limeLight;
 
@@ -46,7 +45,7 @@ public class MainTeleop extends OpModeTemplate {
 
         this.drive = new TeleopDrivetrain(hardwareMap, driverGamepad, telemetry);
         this.intake = new Intake(hardwareMap, operatorGamepad, telemetry);
-        this.shooter = new SingleShooter(hardwareMap, operatorGamepad, telemetry);
+        this.shooter = new Shooter(hardwareMap, operatorGamepad, telemetry);
         this.transfer = new TransferChamber(hardwareMap, operatorGamepad, telemetry);
         //this.limeLight = new LimeLightSubsystem(hardwareMap, telemetry);
         this.light = new RGBLightIndicator(hardwareMap, telemetry, "RGBIndicator");

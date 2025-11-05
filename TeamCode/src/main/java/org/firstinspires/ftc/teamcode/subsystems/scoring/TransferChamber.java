@@ -43,7 +43,7 @@ public class TransferChamber extends SubsystemBase {
         super.periodic();
 
         if(Math.abs(gamepad.getLeftY()) > .2) {
-            chamberMotor.set(-1 * gamepad.getLeftY() * SingleShooter.ShooterConfig.IntakeMaxPower);
+            chamberMotor.set(-1 * gamepad.getLeftY() * Shooter.ShooterConfig.IntakeMaxPower);
         }
         else {
             chamberMotor.set(0);
@@ -97,8 +97,8 @@ public class TransferChamber extends SubsystemBase {
     }
 
     public void BallStow() {
-        rightLauncher.setPosition(SingleShooter.ShooterConfig.RightLauncherStow);
-        leftLauncher.setPosition(SingleShooter.ShooterConfig.LeftLauncherStow);
+        rightLauncher.setPosition(Shooter.ShooterConfig.RightLauncherStow);
+        leftLauncher.setPosition(Shooter.ShooterConfig.LeftLauncherStow);
     }
 
     public void BallReset() {
@@ -107,11 +107,11 @@ public class TransferChamber extends SubsystemBase {
     }
 
     public void FeedArtifact() {
-        feeder.setPosition(SingleShooter.ShooterConfig.FeederShoot);
+        feeder.setPosition(Shooter.ShooterConfig.FeederShoot);
     }
 
     public void ResetFeeder() {
-        feeder.setPosition(SingleShooter.ShooterConfig.FeederReset);
+        feeder.setPosition(Shooter.ShooterConfig.FeederReset);
     }
 
     int artifactCount = 0;
