@@ -60,7 +60,7 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
 
             pathChain = follower.pathBuilder()
                     .addPath(new BezierLine(startPos, end))
-                    .setGlobalLinearHeadingInterpolation(start.getHeading(), end.getHeading())
+                    .setLinearHeadingInterpolation(startPos.getHeading(), end.getHeading())
                     .build();
             follower.followPath(pathChain);
             following = true;
