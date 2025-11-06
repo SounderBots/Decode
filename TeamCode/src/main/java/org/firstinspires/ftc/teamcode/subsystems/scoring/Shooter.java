@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 import org.firstinspires.ftc.teamcode.util.SonicPIDFController;
 
 public class Shooter extends SubsystemBase {
@@ -21,6 +22,8 @@ public class Shooter extends SubsystemBase {
     SonicPIDFController leftShooterPid = new SonicPIDFController(ShooterConfig.kP, 0, 0);
 
     Servo liftServo;
+
+    RGBLightIndicator speedIndicator;
 
     @Config
     public static class ShooterConfig {
@@ -50,19 +53,19 @@ public class Shooter extends SubsystemBase {
 
         public static double TiltServoLo = 0;
 
-
-
+        public static double FlywheelAcceptableRpmError = 40;
     }
 
-    public Shooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
+    public Shooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator) {
         this.gamepad = gamepad;
         this.telemetry = telemetry;
+
+        this.speedIndicator = speedIndicator;
 
         this.rightFlywheel = new MotorEx(hardwareMap, "RightFlywheel", Motor.GoBILDA.BARE);
         this.leftFlywheel = new MotorEx(hardwareMap, "LeftFlywheel", Motor.GoBILDA.BARE);
 
         this.liftServo = hardwareMap.get(Servo.class,"LiftServo");
-
 
         this.rightFlywheel.setRunMode(Motor.RunMode.RawPower);
         this.leftFlywheel.setRunMode(Motor.RunMode.RawPower);
@@ -74,21 +77,38 @@ public class Shooter extends SubsystemBase {
 
         rightFlywheel.setVeloCoefficients(ShooterConfig.kP, ShooterConfig.kI, ShooterConfig.kD);
         leftFlywheel.setVeloCoefficients(ShooterConfig.kP, ShooterConfig.kI, ShooterConfig.kD);
+
+        speedIndicator.changeRed();
     }
 
     double currentLeftPower = 0.63;
     double currentRightPower = 0.63;
 
+    boolean wasLastColorGreen = false;
 
     @Override
     public void periodic() {
         super.periodic();
 
-        double rightError = targetVelocity - rightFlywheel.getVelocity();
+        double rightVelocity = rightFlywheel.getVelocity();
+        double rightError = targetVelocity - rightVelocity;
         double rightPowerDelta = rightShooterPid.calculatePIDAlgorithm(rightError);
 
-        double leftError = targetVelocity - leftFlywheel.getVelocity();
+        double leftVelocity = leftFlywheel.getVelocity();
+        double leftError = targetVelocity - leftVelocity;
         double leftPowerDelta = leftShooterPid.calculatePIDAlgorithm(leftError);
+
+        if(Math.abs(rightError) < ShooterConfig.FlywheelAcceptableRpmError && Math.abs(leftError) < ShooterConfig.FlywheelAcceptableRpmError){
+            if(!wasLastColorGreen) {
+                wasLastColorGreen = true;
+                speedIndicator.changeGreen();
+            }
+        } else {
+            if(wasLastColorGreen) {
+                wasLastColorGreen = false;
+                speedIndicator.changeRed();
+            }
+        }
 
         currentRightPower += rightPowerDelta;
         currentLeftPower += leftPowerDelta;
@@ -100,12 +120,12 @@ public class Shooter extends SubsystemBase {
         if(addTelemetry) {
             telemetry.addData("target", this.targetVelocity);
 
-            telemetry.addData("right velocity", rightFlywheel.getVelocity());
+            telemetry.addData("right velocity", rightVelocity);
             telemetry.addData("right error", rightError);
             telemetry.addData("right power delta", rightPowerDelta);
             telemetry.addData("current right power", currentRightPower);
 
-            telemetry.addData("left velocity", leftFlywheel.getVelocity());
+            telemetry.addData("left velocity", leftVelocity);
             telemetry.addData("left error", leftError);
             telemetry.addData("left power delta", leftPowerDelta);
             telemetry.addData("current left power", currentLeftPower);

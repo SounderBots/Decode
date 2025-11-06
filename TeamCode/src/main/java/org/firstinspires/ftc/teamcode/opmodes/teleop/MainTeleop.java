@@ -44,11 +44,11 @@ public class MainTeleop extends OpModeTemplate {
         super.initialize();
 
         this.drive = new TeleopDrivetrain(hardwareMap, driverGamepad, telemetry);
+        this.light = new RGBLightIndicator(hardwareMap, telemetry, "RGBIndicator");
         this.intake = new Intake(hardwareMap, operatorGamepad, telemetry);
-        this.shooter = new Shooter(hardwareMap, operatorGamepad, telemetry);
+        this.shooter = new Shooter(hardwareMap, operatorGamepad, telemetry, light);
         this.transfer = new TransferChamber(hardwareMap, operatorGamepad, telemetry);
         //this.limeLight = new LimeLightSubsystem(hardwareMap, telemetry);
-        this.light = new RGBLightIndicator(hardwareMap, telemetry, "RGBIndicator");
 
         new Trigger(() -> gamepad2.right_stick_y < -0.5)
                 .whenActive(new InstantCommand(intake::StartIntake, intake));
