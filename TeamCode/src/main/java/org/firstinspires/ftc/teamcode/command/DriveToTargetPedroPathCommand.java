@@ -24,6 +24,8 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
     private final Pose end;
     private final boolean isFirstMove;
 
+    private double tempMaxPower = -1;
+
     public DriveToTargetPedroPathCommand(Follower follower, @NonNull Pose end, boolean isFirstMove) {
         this(follower, new Pose(0, 0, 0), end, 2, TimeUnit.SECONDS, isFirstMove);
     }
@@ -38,6 +40,11 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
         this.isFirstMove = isFirstMove;
         this.start = start;
         this.end = end;
+    }
+
+    public DriveToTargetPedroPathCommand withTempMaxPower(double tempMaxPower) {
+        this.tempMaxPower = tempMaxPower;
+        return this;
     }
 
     @Override
@@ -62,6 +69,9 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
                     .addPath(new BezierLine(startPos, end))
                     .setLinearHeadingInterpolation(startPos.getHeading(), end.getHeading())
                     .build();
+            if (tempMaxPower > 0) {
+                follower.setMaxPower(tempMaxPower);
+            }
             follower.followPath(pathChain);
             following = true;
         } else {
@@ -80,6 +90,8 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
         super.end(interrupted);
         following = false;
         follower.breakFollowing();
+        follower.setMaxPower(1);
+        tempMaxPower = -1;
         follower.deactivateAllPIDFs();
     }
 }

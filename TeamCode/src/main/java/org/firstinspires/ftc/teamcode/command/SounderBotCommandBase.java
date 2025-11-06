@@ -25,6 +25,7 @@ public abstract class SounderBotCommandBase extends CommandBase {
     public final void execute() {
         if (startTime < 0) {
             startTime = System.currentTimeMillis();
+            firstTimeExecute();
             doExecute();
         } else {
             if (isTimeout()) {
@@ -35,6 +36,10 @@ public abstract class SounderBotCommandBase extends CommandBase {
                 doExecute();
             }
         }
+    }
+
+    protected void firstTimeExecute() {
+
     }
 
     protected boolean isTimeout () {

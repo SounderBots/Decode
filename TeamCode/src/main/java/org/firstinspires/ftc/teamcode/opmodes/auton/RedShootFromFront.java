@@ -31,4 +31,9 @@ public class RedShootFromFront extends AutonBase {
     Side getSide() {
         return Side.RED;
     }
+
+    @Override
+    protected ShootMode shootMode() {
+        return ShootMode.CLOSE;
+    }
 }

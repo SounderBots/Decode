@@ -6,10 +6,14 @@ package org.firstinspires.ftc.teamcode.opmodes.auton;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.ParallelRaceGroup;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
 
 import org.firstinspires.ftc.teamcode.command.CommandFactory;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.AutonDriveTrain;
+import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
+import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
 import org.firstinspires.ftc.teamcode.util.DelegateOrVoidTelemetry;
 
 public abstract class CommandAutoOpMode extends CommandOpMode {
@@ -30,10 +34,19 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
     public void initialize() {
         logInitStep("Beginning");
         telemetry = new DelegateOrVoidTelemetry(telemetry, emitTelemetry);
+        GamepadEx driverGamePad = new GamepadEx(gamepad1);
+        GamepadEx operatorGamePad = new GamepadEx(gamepad2);
         AutonDriveTrain driveTrain = new AutonDriveTrain(hardwareMap, telemetry);
+        TransferChamber transferChamber = new TransferChamber(hardwareMap, operatorGamePad, telemetry) {
+            @Override
+            public void periodic() {
+                // do nothing
+            }
+        };
+        Intake intake = new Intake(hardwareMap, operatorGamePad, telemetry);
+        Shooter shooter = new Shooter(hardwareMap, operatorGamePad, telemetry);
 
-//        GamepadEx driverGamePad = new GamepadEx(gamepad1);
-//        GamepadEx operatorGamePad = new GamepadEx(gamepad2);
+//
 
         logInitStep("telemetry, gamepads created");
 
@@ -49,7 +62,7 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
 //        SampleSweeper sampleSweeper = new SampleSweeper(hardwareMap, operatorGamePad, telemetry, feedback);
 //        Bumper bumper = new Bumper(hardwareMap);
         logInitStep("all subsystems created");
-        commandFactory = new CommandFactory(telemetry, driveTrain, Constants.createFollower(hardwareMap), null, null, null);
+        commandFactory = new CommandFactory(telemetry, driveTrain, Constants.createFollower(hardwareMap), null, intake, shooter, transferChamber);
 
         logInitStep("command factory created");
         logInitStep("before setting intake");

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.scoring;
 
+import android.util.Log;
+
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
@@ -68,6 +70,7 @@ public class TransferChamber extends SubsystemBase {
     }
 
     public void TurnOnSlowChamberRoller() {
+        Log.i("Chamber Roller", "Turning on slow roller");
         chamberMotor.set(MainTeleop.MainTeleopConfig.ChamberIntakeSlowPower);
     }
 
@@ -144,5 +147,9 @@ public class TransferChamber extends SubsystemBase {
 
     public boolean IsAlreadyTryingToLoadArtifactIntoShooter() {
         return tryingToLoadArtifactIntoShooter;
+    }
+
+    public boolean isChamberRollerOn() {
+        return chamberMotor.get() != 0;
     }
 }

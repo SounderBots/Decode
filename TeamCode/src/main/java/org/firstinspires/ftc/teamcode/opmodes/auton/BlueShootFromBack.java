@@ -32,4 +32,9 @@ public class BlueShootFromBack extends AutonBase {
     Side getSide() {
         return Side.BLUE;
     }
+
+    @Override
+    protected ShootMode shootMode() {
+        return ShootMode.FAR;
+    }
 }
