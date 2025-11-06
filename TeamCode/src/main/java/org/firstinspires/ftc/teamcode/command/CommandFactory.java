@@ -92,10 +92,6 @@ public class CommandFactory {
         return sleep(1000);
     }
 
-    public Command shoot() {
-        return sleep(1000);
-    }
-
     /**
      * intake 3 or 2 seconds timeout
      */
@@ -168,8 +164,13 @@ public class CommandFactory {
                 .andThen(ballStow())
                 .andThen(resetFeeder())
                 .andThen(shootCommand)
-                .andThen(sleep(1000))
-                .andThen(ballLaunch());
+                .andThen(sleep(1200))
+                .andThen(ballLaunch())
+                .andThen(sleep(transferDelay));
+    }
+
+    public Pose getCurrentFollowerPose() {
+        return follower.getPose();
     }
 
 }

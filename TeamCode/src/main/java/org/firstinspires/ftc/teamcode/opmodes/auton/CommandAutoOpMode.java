@@ -11,6 +11,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import org.firstinspires.ftc.teamcode.command.CommandFactory;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.AutonDriveTrain;
+import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
@@ -44,7 +45,8 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
             }
         };
         Intake intake = new Intake(hardwareMap, operatorGamePad, telemetry);
-        Shooter shooter = new Shooter(hardwareMap, operatorGamePad, telemetry);
+        RGBLightIndicator rgbLightIndicator = new RGBLightIndicator(hardwareMap, telemetry, "RGBIndicator");
+        Shooter shooter = new Shooter(hardwareMap, operatorGamePad, telemetry, rgbLightIndicator);
 
 //
 
