@@ -58,6 +58,19 @@ public class Constants {
                 .xVelocity(81.32)
                 .yVelocity(72.9280);
 
+        public static MecanumConstants intakeDriveConstants = new MecanumConstants()
+                .maxPower(.5)
+                .rightFrontMotorName("FR")
+                .rightRearMotorName("BR")
+                .leftRearMotorName("BL")
+                .leftFrontMotorName("FL")
+                .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+                .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+                .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+                .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+                .xVelocity(81.32)
+                .yVelocity(72.9280);
+
         // axis distance: 11.375 inch (x direction)
         // axis length: 15.5 inch (y direction, left wheel center to right wheel center)
         // forward pod is 2 inch away from right side wheel center, so it is 15.5 / 2 - 2 = 5.75 off

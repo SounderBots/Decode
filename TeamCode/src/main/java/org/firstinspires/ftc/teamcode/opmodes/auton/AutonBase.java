@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.opmodes.auton;
 
 import com.arcrobotics.ftclib.command.Command;
+import com.arcrobotics.ftclib.command.ParallelDeadlineGroup;
 import com.pedropathing.geometry.Pose;
+
+import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
 
 public abstract class AutonBase extends CommandAutoOpMode {
 
@@ -50,7 +53,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     protected Command moveAndShootPreloads() {
         return commandFactory
-                .startMove(getStartingPosition(), getShootingPosition()) // move to shooting position
+                .startMove(getStartingPosition(), getShootingPosition(), .4) // move to shooting position
                 .andThen(commandFactory.shoot()) // shoot preloads
         ;
     }
@@ -79,6 +82,20 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     protected Command intakeRow(RowsOnFloor row) {
         Pose rowEndPose = getRowEndingPosition(row);
-        return commandFactory.prepareIntake().andThen(commandFactory.moveTo(rowEndPose).alongWith(commandFactory.intake()));
+        return commandFactory.startIntake().andThen(
+                new ParallelDeadlineGroup(
+                        commandFactory.intakeRowDeadline(),
+                        commandFactory.moveTo(rowEndPose, AutonCommonConfigs.DrivetrainIntakePower)
+                )
+        ).andThen(commandFactory.stopIntake());
+    }
+
+    protected abstract ShootMode shootMode();
+
+    public Command getShootCommand() {
+        return switch (shootMode()) {
+            case FAR -> commandFactory.farShoot();
+            case CLOSE -> commandFactory.closeShoot();
+        };
     }
 }
