@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems.vision;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -11,10 +12,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.command.CommonConstants;
 import org.firstinspires.ftc.teamcode.common.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.common.AprilTagPosition;
+import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 
 import static com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
 
-public class LimeLightSubsystem extends SubsystemBase {
+public class LimeLightAlign extends SubsystemBase {
 
     private Limelight3A limelight;
 
@@ -22,18 +24,51 @@ public class LimeLightSubsystem extends SubsystemBase {
 
     private static final int PIPELINE_ID = 4; // April tag pipeline id
 
+    private double horizontalAngle, verticalAngle;
+
+    @Config
+    public static class LimelightConfig {
+        public static double leftLimit = -0.1;
+
+        public static double rightLimit = -0.14;
+    }
+
+    RGBLightIndicator leftIndicator, rightIndicator;
+
     //Needs to be removed
     @Override
     public void periodic() {
         super.periodic();
 
-        getObeliskAprilTag();
-        getAprilTagPosition();
+        //getObeliskAprilTag();
+        AprilTagPosition aprilTagPosition = getAprilTagPosition();
 
+        if(aprilTagPosition == null) {
+            leftIndicator.changeOff();
+            rightIndicator.changeOff();
+        }
+        else {
+            this.horizontalAngle = aprilTagPosition.horizontalAngle();
+
+            if(horizontalAngle > LimelightConfig.leftLimit) {
+                leftIndicator.changeRed();
+                rightIndicator.changeGreen();
+            } else if(horizontalAngle < LimelightConfig.rightLimit) {
+                rightIndicator.changeRed();
+                leftIndicator.changeGreen();
+            } else {
+                leftIndicator.changeGreen();
+                rightIndicator.changeGreen();
+            }
+        }
     }
-    public LimeLightSubsystem(HardwareMap hardwareMap, Telemetry telemetry) {
+    public LimeLightAlign(HardwareMap hardwareMap, Telemetry telemetry) {
         this.telemetry = telemetry;
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
+
+        this.leftIndicator = new RGBLightIndicator(hardwareMap, telemetry, "LeftAlign");
+        this.rightIndicator = new RGBLightIndicator(hardwareMap, telemetry, "RightAlign");
+
         start();
     }
 
@@ -79,13 +114,16 @@ public class LimeLightSubsystem extends SubsystemBase {
 
                 aprilTagPosition = new AprilTagPosition(aprilTagEnum, distance, (fr.getTargetXDegrees() * Math.PI)/180.0d, (fr.getTargetYDegrees() * Math.PI)/180.0d);
 
-                telemetry.addData("Tag ID", aprilTagEnum.getValue());
-                telemetry.addData("x", x);
-                telemetry.addData("y", y);
-                telemetry.addData("z", z);
-                telemetry.addData("Estimated Distance", aprilTagPosition.distance());
-                telemetry.addData("Estimated Horizontal shift", aprilTagPosition.horizontalAngle());
-                telemetry.addData("Estimated Vertical Shift", aprilTagPosition.verticalAngle());
+                boolean addTelemetry = true;
+                if(addTelemetry) {
+                    telemetry.addData("Tag ID", aprilTagEnum.getValue());
+                    telemetry.addData("x", x);
+                    telemetry.addData("y", y);
+                    telemetry.addData("z", z);
+                    telemetry.addData("Estimated Distance", aprilTagPosition.distance());
+                    telemetry.addData("Estimated Horizontal shift", aprilTagPosition.horizontalAngle());
+                    telemetry.addData("Estimated Vertical Shift", aprilTagPosition.verticalAngle());
+                }
 
             } catch (Exception e) {
                 telemetry.addData("Limelight", "No Valid AprilTags detected");

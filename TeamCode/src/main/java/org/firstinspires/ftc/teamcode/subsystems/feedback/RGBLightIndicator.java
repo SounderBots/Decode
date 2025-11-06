@@ -19,7 +19,7 @@ public class RGBLightIndicator extends SubsystemBase {
     public static class LightConfig {
         public static double GreenColor = 0.5;
 
-        public static double RedColor = 0.277;
+        public static double RedColor = .3;
     }
 
     public RGBLightIndicator(HardwareMap hardwareMap, Telemetry telemetry, String configString) {

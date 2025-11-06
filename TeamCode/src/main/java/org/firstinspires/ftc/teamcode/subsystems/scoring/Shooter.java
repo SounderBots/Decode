@@ -116,7 +116,7 @@ public class Shooter extends SubsystemBase {
         rightFlywheel.set(currentRightPower);
         leftFlywheel.set(currentLeftPower);
 
-        boolean addTelemetry = true;
+        boolean addTelemetry = false;
         if(addTelemetry) {
             telemetry.addData("target", this.targetVelocity);
 

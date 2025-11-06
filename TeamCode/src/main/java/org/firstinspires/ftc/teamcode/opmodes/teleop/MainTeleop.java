@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
@@ -24,7 +24,7 @@ public class MainTeleop extends OpModeTemplate {
 
     Shooter shooter;
 
-    LimeLightSubsystem limeLight;
+    LimeLightAlign limeLight;
 
     TransferChamber transfer;
 
@@ -48,7 +48,7 @@ public class MainTeleop extends OpModeTemplate {
         this.intake = new Intake(hardwareMap, operatorGamepad, telemetry);
         this.shooter = new Shooter(hardwareMap, operatorGamepad, telemetry, light);
         this.transfer = new TransferChamber(hardwareMap, operatorGamepad, telemetry);
-        //this.limeLight = new LimeLightSubsystem(hardwareMap, telemetry);
+        this.limeLight = new LimeLightAlign(hardwareMap, telemetry);
 
         new Trigger(() -> gamepad2.right_stick_y < -0.5)
                 .whenActive(new InstantCommand(intake::StartIntake, intake));
@@ -104,7 +104,7 @@ public class MainTeleop extends OpModeTemplate {
         driverGamepad.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
                 .whenPressed(new InstantCommand(drive::ToggleDirection, drive));
 
-        register(drive, intake, shooter, light);
+        register(drive, intake, shooter, light, limeLight);
 
 //        schedule(
 //                new AutoLoadShooterCommand(telemetry, transfer),
