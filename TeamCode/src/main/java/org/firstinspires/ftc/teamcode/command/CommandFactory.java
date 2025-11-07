@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CommandFactory {
 
+    public static final int DEFAULT_TIME_OUT = 2000;
     final Telemetry telemetry;
     final AutonDriveTrain autonDriveTrain;
     final Follower follower;
@@ -110,7 +111,7 @@ public class CommandFactory {
     }
 
     public Command intakeRow() {
-        return new IntakeRowCommand(transferChamber, intake, telemetry, 2000);
+        return new IntakeRowCommand(transferChamber, intake, telemetry, DEFAULT_TIME_OUT);
     }
 
     public Command ballReset() {
@@ -164,13 +165,17 @@ public class CommandFactory {
                 .andThen(ballStow())
                 .andThen(resetFeeder())
                 .andThen(shootCommand)
-                .andThen(sleep(1200))
+                .andThen(waitForShooterReady())
                 .andThen(ballLaunch())
                 .andThen(sleep(transferDelay));
     }
 
     public Pose getCurrentFollowerPose() {
         return follower.getPose();
+    }
+
+    public Command waitForShooterReady() {
+        return new WaitShooterReadyCommand(DEFAULT_TIME_OUT, shooter);
     }
 
 }

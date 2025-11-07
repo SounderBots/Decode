@@ -162,4 +162,8 @@ public class Shooter extends SubsystemBase {
         this.liftServo.setPosition(ShooterConfig.TiltServoLo);
         this.targetVelocity = ShooterConfig.ShooterRpmHi;
     }
+
+    public boolean isReadyToShoot() {
+        return wasLastColorGreen;
+    }
 }
