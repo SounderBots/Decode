@@ -166,8 +166,7 @@ public class CommandFactory {
                 .andThen(resetFeeder())
                 .andThen(shootCommand)
                 .andThen(waitForShooterReady())
-                .andThen(ballLaunch())
-                .andThen(sleep(transferDelay));
+                .andThen(ballLaunch());
     }
 
     public Pose getCurrentFollowerPose() {
