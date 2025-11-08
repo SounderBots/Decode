@@ -31,6 +31,12 @@ public class MainTeleop extends OpModeTemplate {
     RGBLightIndicator light;
 
     @Config
+    public static class Telemetry {
+        public static boolean ShooterTelemetry = false;
+    }
+
+
+    @Config
     public static class MainTeleopConfig {
         public static long TransferDelay = 200;
 
@@ -56,6 +62,9 @@ public class MainTeleop extends OpModeTemplate {
         new Trigger(() -> gamepad2.right_stick_y < 0.5)
                 .whenActive(new InstantCommand(intake::StopIntake, intake));
 
+        operatorGamepad.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER)
+                .whenPressed(new InstantCommand(intake::ToggleOuttake, intake));
+
         new Trigger(() -> gamepad2.left_trigger > 0.5)
                 .whenActive(new InstantCommand(shooter::FarShoot, shooter));
 
@@ -69,6 +78,7 @@ public class MainTeleop extends OpModeTemplate {
                 .whenPressed(
                         new SequentialCommandGroup(
                                 new InstantCommand(transfer::BallLaunch, transfer),
+                                new InstantCommand(shooter::BeginFeedForwardBoost, shooter),
                                 new WaitCommand(200),
                                 new InstantCommand(transfer::BallReset, transfer)
                         ));
@@ -103,6 +113,9 @@ public class MainTeleop extends OpModeTemplate {
 
         driverGamepad.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
                 .whenPressed(new InstantCommand(drive::ToggleDirection, drive));
+
+        driverGamepad.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
+                .whenPressed(new InstantCommand(intake::StopIntake, intake));
 
         register(drive, intake, shooter, light, limeLight);
 
