@@ -12,7 +12,7 @@ public class BlueShootFromBack extends AutonBase {
     public static double shootingAngle = 137;
     public static Pose startPosition = new Pose(88.25, 8.16, Math.toRadians(90));
     public static Pose shootingPosition = new Pose(86, 11, Math.toRadians(shootingAngle));
-    public static double shootVelocityScale = .995;
+    public static double shootVelocityScale = 1.027;
 
 
     @Override

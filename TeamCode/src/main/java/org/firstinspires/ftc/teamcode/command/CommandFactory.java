@@ -161,7 +161,7 @@ public class CommandFactory {
     }
 
     public Command loadAndShoot(Command shootCommand) {
-        long transferDelay = MainTeleop.MainTeleopConfig.TransferDelay;
+        long transferDelay = 200;
         return ballReset()
                 .andThen(resetFeeder())
                 .andThen(loadArtifact())
@@ -174,6 +174,7 @@ public class CommandFactory {
                 .andThen(resetFeeder())
                 .andThen(shootCommand)
                 .andThen(waitForShooterReady())
+                .andThen(sleep(transferDelay + 200))
                 .andThen(ballLaunch());
     }
 
