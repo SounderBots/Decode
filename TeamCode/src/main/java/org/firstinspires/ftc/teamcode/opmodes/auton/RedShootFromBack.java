@@ -9,8 +9,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 @Configurable
 public class RedShootFromBack extends AutonBase {
 
+    public static double shootingAngle = 54;
     public static Pose startPosition = new Pose(55.75, 8.16, Math.toRadians(90));
-    public static Pose shootingPosition = new Pose(56, 18, Math.toRadians(55));
+    public static Pose shootingPosition = new Pose(56, 18, Math.toRadians(shootingAngle));
 
 
     @Override

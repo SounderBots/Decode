@@ -9,8 +9,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 @Configurable
 public class BlueShootFromBack extends AutonBase {
 
-    public static Pose startPosition = new Pose(94, 8.16, Math.toRadians(90));
-    public static Pose shootingPosition = new Pose(78, 18, Math.toRadians(120));
+    public static double shootingAngle = 64;
+    public static Pose startPosition = new Pose(88.25, 8.16, Math.toRadians(90));
+    public static Pose shootingPosition = new Pose(86, 11, Math.toRadians(shootingAngle));
+    public static double shootVelocityScale = .995;
 
 
     @Override
@@ -36,5 +38,10 @@ public class BlueShootFromBack extends AutonBase {
     @Override
     protected ShootMode shootMode() {
         return ShootMode.FAR;
+    }
+
+    @Override
+    protected double getShootVelocityScale() {
+        return shootVelocityScale;
     }
 }

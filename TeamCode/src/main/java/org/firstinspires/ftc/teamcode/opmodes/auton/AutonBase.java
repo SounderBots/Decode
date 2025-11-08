@@ -80,10 +80,10 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     protected Command shootFromBackCommand() {
         return moveAndShootPreloads() // move to shooting position
-                .andThen(alignWithFirstRow())
-                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST)) // shoot first row
-                .andThen(intakeRowAndShoot(RowsOnFloor.SECOND)) // shoot second row
-                .andThen(intakeRowAndShoot(RowsOnFloor.THIRD)) // shoot third row
+//                .andThen(alignWithFirstRow())
+//                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST)) // shoot first row
+//                .andThen(intakeRowAndShoot(RowsOnFloor.SECOND)) // shoot second row
+//                .andThen(intakeRowAndShoot(RowsOnFloor.THIRD)) // shoot third row
                 ;
     }
 
@@ -117,10 +117,10 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     protected Command shootFromFrontCommand() {
         return moveAndShootPreloads()
-                .andThen(alignWithFirstRow())
-                .andThen(intakeRowAndShoot(RowsOnFloor.THIRD))
-                .andThen(intakeRowAndShoot(RowsOnFloor.SECOND))
-                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST))
+//                .andThen(alignWithFirstRow())
+//                .andThen(intakeRowAndShoot(RowsOnFloor.THIRD))
+//                .andThen(intakeRowAndShoot(RowsOnFloor.SECOND))
+//                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST))
                 ;
     }
 
@@ -136,8 +136,8 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     public Command getShootCommand() {
         return switch (shootMode()) {
-            case FAR -> commandFactory.farShoot();
-            case CLOSE -> commandFactory.closeShoot();
+            case FAR -> commandFactory.farShootWithScale(getShootVelocityScale());
+            case CLOSE -> commandFactory.closeShootWithScale(getShootVelocityScale());
         };
     }
 
@@ -147,5 +147,9 @@ public abstract class AutonBase extends CommandAutoOpMode {
                 .andThen(commandFactory.loadAndShoot(getShootCommand()))
                 .andThen(commandFactory.sleep(AutonCommonConfigs.betweenShootDelays))
                 .andThen(commandFactory.loadAndShoot(getShootCommand()));
+    }
+
+    protected double getShootVelocityScale() {
+        return 1;
     }
 }

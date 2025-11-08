@@ -152,6 +152,14 @@ public class CommandFactory {
         return new SingleExecuteCommand(shooter::CloseShoot);
     }
 
+    public Command farShootWithScale(double scale) {
+        return new SingleExecuteCommand(() -> shooter.FarShootWithScale(scale));
+    }
+
+    public Command closeShootWithScale(double scale) {
+        return new SingleExecuteCommand(() -> shooter.CloseShootWithScale(scale));
+    }
+
     public Command loadAndShoot(Command shootCommand) {
         long transferDelay = MainTeleop.MainTeleopConfig.TransferDelay;
         return ballReset()
