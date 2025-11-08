@@ -164,6 +164,7 @@ public class CommandFactory {
         long transferDelay = 200;
         return ballReset()
                 .andThen(resetFeeder())
+                .andThen(shootCommand)
                 .andThen(loadArtifact())
                 .andThen(sleep(transferDelay))
                 .andThen(turnOffChamberRoller())
@@ -172,7 +173,6 @@ public class CommandFactory {
                 .andThen(sleep(transferDelay))
                 .andThen(ballStow())
                 .andThen(resetFeeder())
-                .andThen(shootCommand)
                 .andThen(waitForShooterReady())
                 .andThen(sleep(transferDelay + 200))
                 .andThen(ballLaunch());
