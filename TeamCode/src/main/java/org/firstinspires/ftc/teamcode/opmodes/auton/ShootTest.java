@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class ShootTest extends AutonBase{
 
     @Override
-    Pose getShootingPosition() {
+    Pose getPreloadShootingPosition() {
         return null;
     }
 
@@ -24,6 +24,11 @@ public class ShootTest extends AutonBase{
 
     @Override
     protected ShootMode shootMode() {
+        return null;
+    }
+
+    @Override
+    protected Pose getRowShootingPosition() {
         return null;
     }
 

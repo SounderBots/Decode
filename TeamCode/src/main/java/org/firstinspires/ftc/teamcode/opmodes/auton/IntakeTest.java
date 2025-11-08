@@ -16,7 +16,7 @@ public class IntakeTest extends AutonBase {
     public static double drivePower = .4;
     public static long intakeStopDelay = 2000;
     @Override
-    Pose getShootingPosition() {
+    Pose getPreloadShootingPosition() {
         return null;
     }
 
@@ -32,6 +32,11 @@ public class IntakeTest extends AutonBase {
 
     @Override
     protected ShootMode shootMode() {
+        return null;
+    }
+
+    @Override
+    protected Pose getRowShootingPosition() {
         return null;
     }
 

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.auton;
 
 import com.arcrobotics.ftclib.command.Command;
+import com.arcrobotics.ftclib.command.ParallelDeadlineGroup;
 import com.arcrobotics.ftclib.command.ParallelRaceGroup;
 import com.pedropathing.geometry.Pose;
 
@@ -12,67 +13,37 @@ public abstract class AutonBase extends CommandAutoOpMode {
         return commandFactory
                 .moveTo(rowStartingPosition)
                 .andThen(intakeRow(row)) // intake row (3 balls)
-                .andThen(commandFactory.moveTo(getShootingPosition())) // move to shooting position
+                .andThen(commandFactory.moveTo(getRowShootingPosition())) // move to shooting position
                 .andThen(getShootRowCommand()) // shoot row
         ;
     }
 
     Pose getRowStartingPosition(RowsOnFloor row) {
-//        Pose firstRowPose = switch (getSide()) {
-//            case RED -> RedSideRowsOnFloorPositions.firstRowStartingPosition;
-//            case BLUE -> BlueSideRowsOnFloorPositions.firstRowStartingPosition;
-//        };
-//
-//        return switch (row) {
-//            case FIRST -> firstRowPose;
-//            case SECOND -> firstRowPose.copy().withY(firstRowPose.getY() + AutonCommonConfigs.rowDistance);
-//            case THIRD -> firstRowPose.copy().withY(firstRowPose.getY() + AutonCommonConfigs.rowDistance * 2);
-//        };
-        return switch (getSide()) {
-            case RED -> switch (row) {
-                case FIRST -> RedSideRowsOnFloorPositions.firstRowStartingPosition;
-                case SECOND -> RedSideRowsOnFloorPositions.secondRowStartingPosition;
-                case THIRD -> RedSideRowsOnFloorPositions.thirdRowStartingPosition;
-            };
-            case BLUE -> switch (row) {
-                case FIRST -> BlueSideRowsOnFloorPositions.firstRowStartingPosition;
-                case SECOND -> BlueSideRowsOnFloorPositions.secondRowStartingPosition;
-                case THIRD -> BlueSideRowsOnFloorPositions.thirdRowStartingPosition;
-            };
+        RowOnFloorPositions positions = getRowOnFloorPositions();
+        return switch (row) {
+            case FIRST -> positions.getFirstRowStartPosition();
+            case SECOND -> positions.getSecondRowStartPosition();
+            case THIRD -> positions.getThirdRowStartPosition();
         };
-
     }
 
     Pose getRowEndingPosition(RowsOnFloor row) {
-//        Pose startPos = getRowStartingPosition(row);
-//        double xDelta = switch (getSide()) {
-//            case RED -> AutonCommonConfigs.intakeDriveDistance * -1;
-//            case BLUE -> AutonCommonConfigs.intakeDriveDistance;
-//        };
-//        return startPos.copy().withX(startPos.getX() + xDelta);
-
-        return switch (getSide()) {
-            case RED -> switch (row) {
-                case FIRST -> RedSideRowsOnFloorPositions.firstRowEndingPosition;
-                case SECOND -> RedSideRowsOnFloorPositions.secondRowEndingPosition;
-                case THIRD -> RedSideRowsOnFloorPositions.thirdRowEndingPosition;
-            };
-            case BLUE -> switch (row) {
-                case FIRST -> BlueSideRowsOnFloorPositions.firstRowEndingPosition;
-                case SECOND -> BlueSideRowsOnFloorPositions.secondRowEndingPosition;
-                case THIRD -> BlueSideRowsOnFloorPositions.thirdRowEndingPosition;
-            };
+        RowOnFloorPositions positions = getRowOnFloorPositions();
+        return switch (row) {
+            case FIRST -> positions.getFirstRowEndPosition();
+            case SECOND -> positions.getSecondRowEndPosition();
+            case THIRD -> positions.getThirdRowEndPosition();
         };
     }
 
     protected Command moveAndShootPreloads() {
         return commandFactory
-                .startMove(getStartingPosition(), getShootingPosition(), .4) // move to shooting position
+                .startMove(getStartingPosition(), getPreloadShootingPosition(), .4) // move to shooting position
                 .andThen(getShootRowCommand()) // shoot preloads
         ;
     }
 
-    abstract Pose getShootingPosition();
+    abstract Pose getPreloadShootingPosition();
 
     abstract Pose getStartingPosition();
 
@@ -84,6 +55,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
 //                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST)) // shoot first row
                 .andThen(intakeRowAndShoot(RowsOnFloor.SECOND)) // shoot second row
                 .andThen(intakeRowAndShoot(RowsOnFloor.THIRD)) // shoot third row
+                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST))
                 ;
     }
 
@@ -118,9 +90,10 @@ public abstract class AutonBase extends CommandAutoOpMode {
     protected Command shootFromFrontCommand() {
         return moveAndShootPreloads()
 //                .andThen(alignWithFirstRow())
-//                .andThen(intakeRowAndShoot(RowsOnFloor.THIRD))
+
                 .andThen(intakeRowAndShoot(RowsOnFloor.SECOND))
                 .andThen(intakeRowAndShoot(RowsOnFloor.FIRST))
+                .andThen(intakeRowAndShoot(RowsOnFloor.THIRD))
                 ;
     }
 
@@ -151,5 +124,42 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     protected double getShootVelocityScale() {
         return 1;
+    }
+
+    protected abstract Pose getRowShootingPosition();
+
+    protected Command moveOutAtLastSecond(Command autonCommand) {
+//        return autonCommand;
+        return new ParallelDeadlineGroup(commandFactory.sleep(29000),
+                autonCommand).andThen(commandFactory.moveTo(getFinishPosition(getSide())));
+    }
+
+    protected Pose getFinishPosition(Side side) {
+        return switch (side) {
+            case BLUE -> AutonCommonConfigs.blueFinishPosition;
+            case RED -> AutonCommonConfigs.redFinishPosition;
+        };
+    }
+
+    @Override
+    protected Command createCommand() {
+        return switch (shootMode()) {
+            case FAR -> moveOutAtLastSecond(shootFromBackCommand());
+            case CLOSE -> moveOutAtLastSecond(shootFromFrontCommand());
+        };
+    }
+
+    public RowOnFloorPositions getRowOnFloorPositions() {
+        return switch (getSide()) {
+            case RED -> switch (shootMode()) {
+                    case FAR -> new RedSideBackRowsOnFloorPositions();
+                    case CLOSE -> new RedSideFrontRowsOnFloorPositions();
+                };
+            case BLUE -> switch (shootMode()) {
+                case FAR -> new BlueSideBackRowsOnFloorPositions();
+                case CLOSE -> new BlueSideFrontRowsOnFloorPositions();
+            };
+
+        };
     }
 }

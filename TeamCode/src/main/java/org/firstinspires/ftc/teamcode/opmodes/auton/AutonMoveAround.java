@@ -5,16 +5,36 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 @Autonomous(name="AutonMoveAround", group="Test")
-public class AutonMoveAround extends CommandAutoOpMode {
+public class AutonMoveAround extends AutonBase {
 
 
     @Override
+    Pose getPreloadShootingPosition() {
+        return null;
+    }
+
+    @Override
+    Pose getStartingPosition() {
+        return null;
+    }
+
+    @Override
+    Side getSide() {
+        return null;
+    }
+
+    @Override
+    protected ShootMode shootMode() {
+        return null;
+    }
+
+    @Override
+    protected Pose getRowShootingPosition() {
+        return null;
+    }
+
+    @Override
     protected Command createCommand() {
-        return commandFactory
-                .startMove(new Pose(20, 25, Math.toRadians(90)))
-                .andThen(commandFactory.sleep(1000))
-                .andThen(commandFactory.moveTo(new Pose(0, 25, Math.toRadians(180))))
-                .andThen(commandFactory.sleep(1000))
-                .andThen(commandFactory.moveTo(new Pose(0, 0, Math.toRadians(360))));
+        return commandFactory.startMove(BlueShootFromFront.startingPosition, AutonCommonConfigs.blueFinishPosition);
     }
 }

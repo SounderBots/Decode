@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.command.SingleExecuteCommand;
 @Autonomous(name = "single execute test", group = "Test")
 public class SingleExecuteTest extends AutonBase{
     @Override
-    Pose getShootingPosition() {
+    Pose getPreloadShootingPosition() {
         return null;
     }
 
@@ -26,6 +26,11 @@ public class SingleExecuteTest extends AutonBase{
 
     @Override
     protected ShootMode shootMode() {
+        return null;
+    }
+
+    @Override
+    protected Pose getRowShootingPosition() {
         return null;
     }
 
