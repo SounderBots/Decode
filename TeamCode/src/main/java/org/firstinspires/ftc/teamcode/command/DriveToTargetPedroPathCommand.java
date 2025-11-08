@@ -7,6 +7,8 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 
+import org.firstinspires.ftc.teamcode.pedroPathing.DrawingToPanel;
+
 import java.util.concurrent.TimeUnit;
 
 import lombok.NonNull;
@@ -52,6 +54,7 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
         super.initialize();
         following = false;
         follower.activateAllPIDFs();
+        DrawingToPanel.init();
     }
 
     @Override
@@ -76,6 +79,7 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
             following = true;
         } else {
             follower.update();
+            DrawingToPanel.drawDebug(follower);
         }
 
     }

@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CommandFactory {
 
+    public static final int DEFAULT_TIME_OUT = 2000;
     final Telemetry telemetry;
     final AutonDriveTrain autonDriveTrain;
     final Follower follower;
@@ -110,7 +111,7 @@ public class CommandFactory {
     }
 
     public Command intakeRow() {
-        return new IntakeRowCommand(transferChamber, intake, telemetry, 2000);
+        return new IntakeRowCommand(transferChamber, intake, telemetry, DEFAULT_TIME_OUT);
     }
 
     public Command ballReset() {
@@ -151,10 +152,19 @@ public class CommandFactory {
         return new SingleExecuteCommand(shooter::CloseShoot);
     }
 
+    public Command farShootWithScale(double scale) {
+        return new SingleExecuteCommand(() -> shooter.FarShootWithScale(scale));
+    }
+
+    public Command closeShootWithScale(double scale) {
+        return new SingleExecuteCommand(() -> shooter.CloseShootWithScale(scale));
+    }
+
     public Command loadAndShoot(Command shootCommand) {
-        long transferDelay = MainTeleop.MainTeleopConfig.TransferDelay;
+        long transferDelay = 200;
         return ballReset()
                 .andThen(resetFeeder())
+                .andThen(shootCommand)
                 .andThen(loadArtifact())
                 .andThen(sleep(transferDelay))
                 .andThen(turnOffChamberRoller())
@@ -163,14 +173,17 @@ public class CommandFactory {
                 .andThen(sleep(transferDelay))
                 .andThen(ballStow())
                 .andThen(resetFeeder())
-                .andThen(shootCommand)
-                .andThen(sleep(1200))
-                .andThen(ballLaunch())
-                .andThen(sleep(transferDelay));
+                .andThen(waitForShooterReady())
+                .andThen(sleep(transferDelay + 200))
+                .andThen(ballLaunch());
     }
 
     public Pose getCurrentFollowerPose() {
         return follower.getPose();
+    }
+
+    public Command waitForShooterReady() {
+        return new WaitShooterReadyCommand(DEFAULT_TIME_OUT, shooter);
     }
 
 }

@@ -181,6 +181,11 @@ public class Shooter extends SubsystemBase {
         this.targetVelocity = ShooterConfig.ShooterRpmLo;
     }
 
+    public void CloseShootWithScale(double scale) {
+        this.liftServo.setPosition(ShooterConfig.TiltServoHi);
+        this.targetVelocity = ShooterConfig.ShooterRpmLo * scale;
+    }
+
     public void FarShoot() {
         this.liftServo.setPosition(ShooterConfig.TiltServoLo);
         this.targetVelocity = ShooterConfig.ShooterRpmHi;
@@ -191,5 +196,14 @@ public class Shooter extends SubsystemBase {
     public void BeginFeedForwardBoost() {
         //feedforwardTimer.reset();
         //currentBoost = ShooterFeedforwardConfig.FeedforwardBoost;
+    }
+
+    public void FarShootWithScale(double scale) {
+        this.liftServo.setPosition(ShooterConfig.TiltServoLo);
+        this.targetVelocity = ShooterConfig.ShooterRpmHi * scale;
+    }
+
+    public boolean isReadyToShoot() {
+        return wasLastColorGreen;
     }
 }
