@@ -13,6 +13,8 @@ public class RedShootFromBack extends AutonBase {
     public static Pose startPosition = new Pose(55.75, 8.16, Math.toRadians(90));
     public static Pose shootingPosition = new Pose(56, 18, Math.toRadians(shootingAngle));
 
+    public static double shootVelocityScale = 1.04;
+
 
     @Override
     protected Command createCommand() {
@@ -38,8 +40,6 @@ public class RedShootFromBack extends AutonBase {
     protected ShootMode shootMode() {
         return ShootMode.FAR;
     }
-
-    public static double shootVelocityScale = 1.04;
 
     @Override
     protected double getShootVelocityScale() {
