@@ -10,10 +10,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class RedShootFromBack extends AutonBase {
 
     public static double preloadShootingAngle = 55;
-    public static double rowShootingAngle = 55;
+    public static double rowShootingAngle = 60;
     public static Pose startPosition = new Pose(88.25, 8.16, Math.toRadians(90));// new Pose(55.75, 8.16, Math.toRadians(90));
     public static Pose preloadShootingPosition = new Pose(88, 10, Math.toRadians(preloadShootingAngle));
-    public static Pose rowShootingPosition = new Pose(88, 10, Math.toRadians(rowShootingAngle));
+    public static Pose rowShootingPosition = new Pose(88, 18, Math.toRadians(rowShootingAngle));
 
     public static double shootVelocityScale = 1.04;
 

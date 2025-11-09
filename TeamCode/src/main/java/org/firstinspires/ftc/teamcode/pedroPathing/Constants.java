@@ -43,7 +43,7 @@ public class Constants {
                 .drivePIDFSwitch(15)
                 .centripetalScaling(0.0006);
 
-        public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1.2);
+        public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1.3);
 
         public static MecanumConstants driveConstants = new MecanumConstants()
                 .maxPower(1)

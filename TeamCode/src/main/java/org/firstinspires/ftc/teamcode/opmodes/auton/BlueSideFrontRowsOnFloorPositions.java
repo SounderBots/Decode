@@ -7,7 +7,7 @@ import com.pedropathing.geometry.Pose;
 public class BlueSideFrontRowsOnFloorPositions implements RowOnFloorPositions {
 
     public static double rowStartX = 50;
-    public static double rowEndX = 20;
+    public static double rowEndX = 21;
 
     // each row y increase 24 inches
     public static double firstRowStartY = 42;
@@ -16,7 +16,7 @@ public class BlueSideFrontRowsOnFloorPositions implements RowOnFloorPositions {
 
     public static double rowEndYOffset = -4;
 
-    public static double headingDegrees = 180;
+    public static double headingDegrees = 185;
 
     @Override
     public Pose getFirstRowStartPosition() {
