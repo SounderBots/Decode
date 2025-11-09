@@ -73,9 +73,9 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
 
         // sleep 30s after createCommand is a fill gap command to avoid IndexOutOfBoundException
         Command finalGroup = new ParallelRaceGroup(
-                commandFactory.sleep(32000),
+                commandFactory.sleep(3200000),
                 createCommand().andThen(
-                        commandFactory.sleep(30000)
+                        commandFactory.sleep(3000000)
                 ));
         logInitStep("Commands created");
         schedule(finalGroup);
