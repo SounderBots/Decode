@@ -3,20 +3,21 @@ package org.firstinspires.ftc.teamcode.opmodes.auton;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 
-//@Configurable
-public class BlueSideFrontRowsOnFloorPositions implements RowOnFloorPositions {
+@Configurable
+public class BlueRowsOnFloorPositions implements RowOnFloorPositions {
 
-    public static double rowStartX = 50;
-    public static double rowEndX = 21;
+    public static double rowStartX = 40;
+    public static double rowEndX = 0;
 
     // each row y increase 24 inches
-    public static double firstRowStartY = 42;
-    public static double secondRowStartY = 66;
-    public static double thirdRowStartY = 90;
+    //first row is the row close to the trangle
+    public static double firstRowStartY = 35.1;
+    public static double secondRowStartY = 59.1;
+    public static double thirdRowStartY = 83.1;
 
-    public static double rowEndYOffset = -4;
+    public static double rowEndYOffset = 0;
 
-    public static double headingDegrees = 185;
+    public static double headingDegrees = 180;
 
     @Override
     public Pose getFirstRowStartPosition() {

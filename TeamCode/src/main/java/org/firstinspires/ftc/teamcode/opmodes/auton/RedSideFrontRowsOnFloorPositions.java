@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.auton;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 
-@Configurable
+//@Configurable
 public class RedSideFrontRowsOnFloorPositions implements RowOnFloorPositions {
 
     public static double rowStartX = 92;

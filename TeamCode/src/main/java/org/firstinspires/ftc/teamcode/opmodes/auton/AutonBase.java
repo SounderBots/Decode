@@ -155,15 +155,19 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     public RowOnFloorPositions getRowOnFloorPositions() {
         return switch (getSide()) {
-            case RED -> switch (shootMode()) {
-                    case FAR -> new RedSideBackRowsOnFloorPositions();
-                    case CLOSE -> new RedSideFrontRowsOnFloorPositions();
-                };
-            case BLUE -> switch (shootMode()) {
-                case FAR -> new BlueSideBackRowsOnFloorPositions();
-                case CLOSE -> new BlueSideFrontRowsOnFloorPositions();
-            };
-
+            case RED -> new RedRowsOnFloorPositions();
+            case BLUE -> new BlueRowsOnFloorPositions();
         };
+//        return switch (getSide()) {
+//            case RED -> switch (shootMode()) {
+//                    case FAR -> new RedSideBackRowsOnFloorPositions();
+//                    case CLOSE -> new RedSideFrontRowsOnFloorPositions();
+//                };
+//            case BLUE -> switch (shootMode()) {
+//                case FAR -> new BlueSideBackRowsOnFloorPositions();
+//                case CLOSE -> new BlueSideFrontRowsOnFloorPositions();
+//            };
+//
+//        };
     }
 }
