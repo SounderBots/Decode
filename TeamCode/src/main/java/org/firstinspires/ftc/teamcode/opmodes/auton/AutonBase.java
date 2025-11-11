@@ -127,12 +127,12 @@ public abstract class AutonBase extends CommandAutoOpMode {
     protected abstract Pose getRowShootingPosition();
 
     protected Command moveOutAtLastSecond(Command autonCommand) {
-        return autonCommand.andThen(commandFactory.moveTo(getFinishPosition(getSide())));
+        return autonCommand.andThen(commandFactory.moveTo(getFinishPosition()));
 //        return new ParallelDeadlineGroup(commandFactory.sleep(29000),
 //                autonCommand).andThen(commandFactory.moveTo(getFinishPosition(getSide())));
     }
 
-    protected Pose getFinishPosition(Side side) {
+    protected Pose getFinishPosition() {
         return switch (getSide()) {
             case BLUE -> switch (shootMode()) {
                 case CLOSE -> AutonCommonConfigs.blueFrontFinishPosition;
