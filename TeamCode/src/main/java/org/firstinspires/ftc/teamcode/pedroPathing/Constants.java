@@ -26,6 +26,12 @@ public class Constants {
                         0.01,
                         0.025
                 ))
+                .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(
+                        0.15,
+                        0,
+                        0.005,
+                        0.0006
+                ))
                 .translationalPIDFSwitch(4)
                 .headingPIDFCoefficients(new PIDFCoefficients(
                         0.6,
@@ -33,20 +39,33 @@ public class Constants {
                         0,
                         0.03
                 ))
+                .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(
+                        2.5,
+                        0,
+                        0.1,
+                        0.0005
+                ))
                 .drivePIDFCoefficients(new FilteredPIDFCoefficients(
-                        0.09,
+                        0.08,
                         0,
                         0.001,
                         0.6,
                         0.015
                 ))
+                .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(
+                        0.025,
+                        0,
+                        0.000010,
+                        0.6,
+                        0.01
+                ))
                 .drivePIDFSwitch(15)
                 .centripetalScaling(0.0006);
 
-        public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1.3);
+        public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1.9);
 
         public static MecanumConstants driveConstants = new MecanumConstants()
-                .maxPower(1)
+                .maxPower(.8)
                 .rightFrontMotorName("FR")
                 .rightRearMotorName("BR")
                 .leftRearMotorName("BL")
