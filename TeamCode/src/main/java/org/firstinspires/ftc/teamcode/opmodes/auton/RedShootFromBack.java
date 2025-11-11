@@ -12,13 +12,13 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 // center to front (8.5 inches)
 public class RedShootFromBack extends AutonBase {
 
-    public static double preloadShootingAngle = 55;
-    public static double rowShootingAngle = 60;
+    public static double preloadShootingAngle = 76;
+    public static double rowShootingAngle = 65;
     public static Pose startPosition = new Pose(87.5, 8.3, Math.toRadians(90));// new Pose(55.75, 8.16, Math.toRadians(90));
     public static Pose preloadShootingPosition = new Pose(88, 10, Math.toRadians(preloadShootingAngle));
     public static Pose rowShootingPosition = new Pose(88, 18, Math.toRadians(rowShootingAngle));
 
-    public static double shootVelocityScale = 1.04;
+    public static double shootVelocityScale = 1.03;
 
     @Override
     Pose getPreloadShootingPosition() {

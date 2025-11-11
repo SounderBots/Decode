@@ -11,9 +11,9 @@ public class RedRowsOnFloorPositions implements RowOnFloorPositions {
 
     // each row y increase 24 inches
     //first row is the row close to the trangle
-    public static double firstRowStartY = 35.1;
-    public static double secondRowStartY = 59.1;
-    public static double thirdRowStartY = 83.1;
+    public static double firstRowStartY = 35;
+    public static double secondRowStartY = 58.8;
+    public static double thirdRowStartY = 82.5;
 
     public static double rowEndYOffset = 0;
 

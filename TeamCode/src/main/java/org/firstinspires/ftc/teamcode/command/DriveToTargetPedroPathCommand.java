@@ -29,11 +29,11 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
     private double tempMaxPower = -1;
 
     public DriveToTargetPedroPathCommand(Follower follower, @NonNull Pose end, boolean isFirstMove) {
-        this(follower, new Pose(0, 0, 0), end, 2, TimeUnit.SECONDS, isFirstMove);
+        this(follower, new Pose(0, 0, 0), end, 4, TimeUnit.SECONDS, isFirstMove);
     }
 
     public DriveToTargetPedroPathCommand(Follower follower, @NonNull Pose start, @NonNull Pose end, boolean isFirstMove) {
-        this(follower, start, end, 2, TimeUnit.SECONDS, isFirstMove);
+        this(follower, start, end, 4, TimeUnit.SECONDS, isFirstMove);
     }
     public DriveToTargetPedroPathCommand(Follower follower, @NonNull Pose start, @NonNull Pose end, long timeOut,  TimeUnit timeUnit, boolean isFirstMove) {
         super(TimeUnit.MILLISECONDS.convert(timeOut, timeUnit));
