@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.auton;
 
-import com.arcrobotics.ftclib.command.Command;
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 @Autonomous(name="Red shoot from back", group="Red")
@@ -26,7 +24,7 @@ public class RedShootFromBack extends AutonBase {
     }
 
     @Override
-    protected ShootMode shootMode() {
-        return ShootMode.FAR;
+    protected ShootRange shootRange() {
+        return ShootRange.LONG;
     }
 }

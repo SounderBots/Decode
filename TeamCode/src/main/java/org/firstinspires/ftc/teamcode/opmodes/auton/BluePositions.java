@@ -4,7 +4,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 
 @Configurable
-public class BluePositions implements RowOnFloorPositions {
+public class BluePositions implements Positions {
 
     public static double rowStartX = 40;
     public static double rowEndX = 0;
@@ -19,14 +19,22 @@ public class BluePositions implements RowOnFloorPositions {
 
     public static double headingDegrees = 180;
 
-    public static Pose backShootPosition = new Pose(54, 15, Math.toRadians(115));
-    public static Pose frontShootPosition = new Pose(56, 10, Math.toRadians(104));
+    public static double backShootAngleInDegrees = 115;
+    public static double frontShootAngleInDegrees = 104;
+
+    public static Pose backShootPosition = new Pose(54, 15, Math.toRadians(backShootAngleInDegrees));
+    public static Pose frontShootPosition = new Pose(56, 10, Math.toRadians(frontShootAngleInDegrees));
 
     public static Pose backStartPosition = new Pose(55.75, 8.16, Math.toRadians(90));
     public static Pose frontStartPosition = new Pose(23.5, 125.75, Math.toRadians(140));
 
     public static Pose backFinishPosition = new Pose(48, 24, 0);
     public static Pose frontFinishPosition = new Pose(48, 120, 0);
+
+    public BluePositions () {
+        backShootPosition = backShootPosition.setHeading(Math.toRadians(backShootAngleInDegrees));
+        frontShootPosition = frontShootPosition.setHeading(Math.toRadians(frontShootAngleInDegrees));
+    }
 
     @Override
     public Pose getFrontShootPosition() {

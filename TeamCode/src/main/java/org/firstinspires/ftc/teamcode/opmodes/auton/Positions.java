@@ -4,7 +4,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 
 @Configurable
-public interface RowOnFloorPositions {
+public interface Positions {
     public Pose getFirstRowStartPosition();
     public Pose getFirstRowEndPosition();
     public Pose getSecondRowStartPosition();

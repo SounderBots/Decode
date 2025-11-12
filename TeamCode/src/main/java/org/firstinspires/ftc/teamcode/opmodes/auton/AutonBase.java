@@ -5,6 +5,8 @@ import com.arcrobotics.ftclib.command.ParallelDeadlineGroup;
 import com.arcrobotics.ftclib.command.ParallelRaceGroup;
 import com.pedropathing.geometry.Pose;
 
+import java.util.List;
+
 public abstract class AutonBase extends CommandAutoOpMode {
 
     protected Command intakeRowAndShoot(RowsOnFloor row) {
@@ -19,7 +21,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
     }
 
     Pose getRowStartingPosition(RowsOnFloor row) {
-        RowOnFloorPositions positions = getPositions();
+        Positions positions = getPositions();
         return switch (row) {
             case FIRST -> positions.getFirstRowStartPosition();
             case SECOND -> positions.getSecondRowStartPosition();
@@ -28,7 +30,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
     }
 
     Pose getRowEndingPosition(RowsOnFloor row) {
-        RowOnFloorPositions positions = getPositions();
+        Positions positions = getPositions();
         return switch (row) {
             case FIRST -> positions.getFirstRowEndPosition();
             case SECOND -> positions.getSecondRowEndPosition();
@@ -44,29 +46,19 @@ public abstract class AutonBase extends CommandAutoOpMode {
     }
 
     Pose getStartingPosition() {
-        return switch (shootMode()) {
-            case CLOSE -> getPositions().getFrontStartPosition();
-            case FAR -> getPositions().getBackStartPosition();
+        return switch (shootRange()) {
+            case SHORT -> getPositions().getFrontStartPosition();
+            case LONG -> getPositions().getBackStartPosition();
         };
     }
 
     abstract Side getSide();
 
-    protected Command shootFromBackCommand() {
-        return moveAndShootPreloads() // move to shooting position
-                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST)) // shoot first row
-                .andThen(intakeRowAndShoot(RowsOnFloor.SECOND)) // shoot second row
-                .andThen(intakeRowAndShoot(RowsOnFloor.THIRD)) // shoot third row
-                ;
-    }
-
-    protected Command shootFromFrontCommand() {
-        return moveAndShootPreloads()
-//                .andThen(alignWithFirstRow())
-                .andThen(intakeRowAndShoot(RowsOnFloor.THIRD))
-                .andThen(intakeRowAndShoot(RowsOnFloor.SECOND))
-                .andThen(intakeRowAndShoot(RowsOnFloor.THIRD))
-                ;
+    protected List<RowsOnFloor> getRowSequence() {
+        return switch (shootRange()) {
+            case LONG -> List.of(RowsOnFloor.FIRST, RowsOnFloor.SECOND, RowsOnFloor.THIRD);
+            case SHORT -> List.of(RowsOnFloor.THIRD, RowsOnFloor.SECOND, RowsOnFloor.FIRST);
+        };
     }
 
     protected Command intakeRow(RowsOnFloor row) {
@@ -77,12 +69,12 @@ public abstract class AutonBase extends CommandAutoOpMode {
         );
     }
 
-    protected abstract ShootMode shootMode();
+    protected abstract ShootRange shootRange();
 
     public Command getShootCommand() {
-        return switch (shootMode()) {
-            case FAR -> commandFactory.farShootWithScale(AutonCommonConfigs.backShootVelocityScale);
-            case CLOSE -> commandFactory.closeShootWithScale(AutonCommonConfigs.frontShootVelocityScale);
+        return switch (shootRange()) {
+            case LONG -> commandFactory.farShootWithScale(AutonCommonConfigs.backShootVelocityScale);
+            case SHORT -> commandFactory.closeShootWithScale(AutonCommonConfigs.frontShootVelocityScale);
         };
     }
 
@@ -95,9 +87,9 @@ public abstract class AutonBase extends CommandAutoOpMode {
     }
 
     protected Pose getRowShootingPosition() {
-        return switch (shootMode()) {
-            case CLOSE -> getPositions().getFrontShootPosition();
-            case FAR -> getPositions().getBackShootPosition();
+        return switch (shootRange()) {
+            case SHORT -> getPositions().getFrontShootPosition();
+            case LONG -> getPositions().getBackShootPosition();
         };
     }
 
@@ -107,35 +99,27 @@ public abstract class AutonBase extends CommandAutoOpMode {
     }
 
     protected Pose getFinishPosition() {
-        return switch (shootMode()) {
-            case FAR -> getPositions().getBackFinishPosition();
-            case CLOSE -> getPositions().getFrontFinishPosition();
+        return switch (shootRange()) {
+            case LONG -> getPositions().getBackFinishPosition();
+            case SHORT -> getPositions().getFrontFinishPosition();
         };
     }
 
     @Override
     protected Command createCommand() {
-        return switch (shootMode()) {
-            case FAR -> moveOutAtLastSecond(shootFromBackCommand());
-            case CLOSE -> moveOutAtLastSecond(shootFromFrontCommand());
-        };
+        Command command = moveAndShootPreloads();
+        List<RowsOnFloor> rowSequence = getRowSequence();
+        for (RowsOnFloor row : rowSequence) {
+            command = command.andThen(intakeRowAndShoot(row));
+        }
+
+        return moveOutAtLastSecond(command);
     }
 
-    public RowOnFloorPositions getPositions() {
+    public Positions getPositions() {
         return switch (getSide()) {
             case RED -> new RedPositions();
             case BLUE -> new BluePositions();
         };
-//        return switch (getSide()) {
-//            case RED -> switch (shootMode()) {
-//                    case FAR -> new RedSideBackRowsOnFloorPositions();
-//                    case CLOSE -> new RedSideFrontRowsOnFloorPositions();
-//                };
-//            case BLUE -> switch (shootMode()) {
-//                case FAR -> new BlueSideBackRowsOnFloorPositions();
-//                case CLOSE -> new BlueSideFrontRowsOnFloorPositions();
-//            };
-//
-//        };
     }
 }
