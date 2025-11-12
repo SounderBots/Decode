@@ -49,8 +49,8 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     Pose getStartingPosition() {
         return switch (shootRange()) {
-            case SHORT -> getPositions().getFrontStartPosition();
-            case LONG -> getPositions().getBackStartPosition();
+            case SHORT -> getPositions().getShortStartPosition();
+            case LONG -> getPositions().getLongStartPosition();
         };
     }
 
@@ -90,8 +90,8 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     protected Pose getRowShootingPosition() {
         return switch (shootRange()) {
-            case SHORT -> getPositions().getFrontShootPosition();
-            case LONG -> getPositions().getBackShootPosition();
+            case SHORT -> getPositions().getShortShootPosition();
+            case LONG -> getPositions().getLongShootPosition();
         };
     }
 
@@ -102,8 +102,8 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     protected Pose getFinishPosition() {
         return switch (shootRange()) {
-            case LONG -> getPositions().getBackFinishPosition();
-            case SHORT -> getPositions().getFrontFinishPosition();
+            case LONG -> getPositions().getLongFinishPosition();
+            case SHORT -> getPositions().getShortFinishPosition();
         };
     }
 

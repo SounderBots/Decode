@@ -37,34 +37,34 @@ public class BluePositions implements Positions {
     }
 
     @Override
-    public Pose getFrontShootPosition() {
+    public Pose getShortShootPosition() {
         return frontShootPosition;
     }
 
     @Override
-    public Pose getBackShootPosition() {
+    public Pose getLongShootPosition() {
         return backShootPosition;
     }
 
     //
 
     @Override
-    public Pose getBackStartPosition() {
+    public Pose getLongStartPosition() {
         return backStartPosition;
     }
 
     @Override
-    public Pose getFrontStartPosition() {
+    public Pose getShortStartPosition() {
         return frontStartPosition;
     }
 
     @Override
-    public Pose getBackFinishPosition() {
+    public Pose getLongFinishPosition() {
         return backFinishPosition;
     }
 
     @Override
-    public Pose getFrontFinishPosition() {
+    public Pose getShortFinishPosition() {
         return frontFinishPosition;
     }
 

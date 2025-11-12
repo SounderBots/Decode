@@ -12,12 +12,12 @@ public interface Positions {
     public Pose getThirdRowStartPosition();
     public Pose getThirdRowEndPosition();
 
-    public Pose getFrontStartPosition();
-    public Pose getBackStartPosition();
+    public Pose getShortStartPosition();
+    public Pose getLongStartPosition();
 
-    public Pose getFrontFinishPosition();
-    public Pose getBackFinishPosition();
+    public Pose getShortFinishPosition();
+    public Pose getLongFinishPosition();
 
-    public Pose getBackShootPosition();
-    public Pose getFrontShootPosition();
+    public Pose getLongShootPosition();
+    public Pose getShortShootPosition();
 }
