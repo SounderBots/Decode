@@ -14,22 +14,11 @@ public class RedShootFromBack extends AutonBase {
 
     public static double preloadShootingAngle = 76;
     public static double rowShootingAngle = 65;
-    public static Pose startPosition = new Pose(87.5, 8.3, Math.toRadians(90));// new Pose(55.75, 8.16, Math.toRadians(90));
-    public static Pose preloadShootingPosition = new Pose(88, 10, Math.toRadians(preloadShootingAngle));
-    public static Pose rowShootingPosition = new Pose(88, 18, Math.toRadians(rowShootingAngle));
+    //public static Pose startPosition = new Pose(87.5, 8.3, Math.toRadians(90));// new Pose(55.75, 8.16, Math.toRadians(90));
+//    public static Pose preloadShootion = RongPosition = RowOnFloorPositions.getBackShootPosition();
+    ////    public static Pose rowShootingPositionwOnFloorPositions.getBackShootPosition();
 
-    public static double shootVelocityScale = 1.03;
-
-    @Override
-    Pose getPreloadShootingPosition() {
-        return preloadShootingPosition;
-    }
-
-    @Override
-
-    Pose getStartingPosition() {
-        return startPosition;
-    }
+//    public static double shootVelocityScale = 1.03;
 
     @Override
     Side getSide() {
@@ -39,15 +28,5 @@ public class RedShootFromBack extends AutonBase {
     @Override
     protected ShootMode shootMode() {
         return ShootMode.FAR;
-    }
-
-    @Override
-    protected double getShootVelocityScale() {
-        return shootVelocityScale;
-    }
-
-    @Override
-    protected Pose getRowShootingPosition() {
-        return rowShootingPosition;
     }
 }

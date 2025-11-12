@@ -11,4 +11,13 @@ public interface RowOnFloorPositions {
     public Pose getSecondRowEndPosition();
     public Pose getThirdRowStartPosition();
     public Pose getThirdRowEndPosition();
+
+    public Pose getFrontStartPosition();
+    public Pose getBackStartPosition();
+
+    public Pose getFrontFinishPosition();
+    public Pose getBackFinishPosition();
+
+    public Pose getBackShootPosition();
+    public Pose getFrontShootPosition();
 }
