@@ -54,25 +54,22 @@ public class CommandFactory {
 //    public Command driveTrainTelemetry() {
 //        return new DriveTrainTelemetryCommand(autonDriveTrain, telemetry);
 //    }
-
-    public Command startMove(Pose end) {
-        return startMove(new Pose(0, 0, 0), end);
-    }
-
     public Command startMove(Pose start, Pose end) {
         return new DriveToTargetPedroPathCommand(follower, start, end, true);
     }
 
-    public Command startMove(Pose start, Pose end, double maxPower) {
-        return new DriveToTargetPedroPathCommand(follower, start, end, true).withTempMaxPower(maxPower);
+    public Command startMove(Pose start, Pose end, PathType pathType, double maxPower) {
+        return new DriveCommand(follower, start, end, pathType, true).withTempMaxPower(maxPower);
+//        return new DriveToTargetPedroPathCommand(follower, start, end, true).withTempMaxPower(maxPower);
     }
 
-    public Command moveTo(Pose end) {
-        return new DriveToTargetPedroPathCommand(follower, end, false);
+    public Command moveTo(Pose end, PathType pathType) {
+        return new DriveCommand(follower, end, pathType, false);
+//        return new DriveToTargetPedroPathCommand(follower, end, false);
     }
 
-    public Command moveTo(Pose end, double maxPower) {
-        return new DriveToTargetPedroPathCommand(follower, end, false).withTempMaxPower(maxPower);
+    public Command moveTo(Pose end, PathType pathType, double maxPower) {
+        return new DriveCommand(follower, end, pathType, false).withTempMaxPower(maxPower);
     }
 
     /**
