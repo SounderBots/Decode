@@ -114,7 +114,7 @@ public class LimeLightAlign extends SubsystemBase {
 
                 aprilTagPosition = new AprilTagPosition(aprilTagEnum, distance, (fr.getTargetXDegrees() * Math.PI)/180.0d, (fr.getTargetYDegrees() * Math.PI)/180.0d);
 
-                boolean addTelemetry = true;
+                boolean addTelemetry = false;
                 if(addTelemetry) {
                     telemetry.addData("Tag ID", aprilTagEnum.getValue());
                     telemetry.addData("x", x);

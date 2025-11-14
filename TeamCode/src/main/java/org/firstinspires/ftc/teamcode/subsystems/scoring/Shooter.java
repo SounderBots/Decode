@@ -100,8 +100,6 @@ public class Shooter extends SubsystemBase {
 
     boolean wasLastColorGreen = false;
 
-    double currentBoost = 0;
-
     @Override
     public void periodic() {
         super.periodic();
@@ -129,30 +127,20 @@ public class Shooter extends SubsystemBase {
         currentRightPower += rightPowerDelta;
         currentLeftPower += leftPowerDelta;
 
-        double elaspedTime = feedforwardTimer.milliseconds();
-//        if(elaspedTime > ShooterFeedforwardConfig.FeedforwardBoostStartMs && elaspedTime < ShooterFeedforwardConfig.FeedforwardBoostEndMs) {
-//            currentRightPower += currentBoost;
-//            currentLeftPower += currentBoost;
-//            currentBoost *= ShooterFeedforwardConfig.FeedForwardDampner;
-//        }
-
         rightFlywheel.set(currentRightPower);
         leftFlywheel.set(currentLeftPower);
 
         if(MainTeleop.Telemetry.ShooterTelemetry) {
             telemetry.addData("target", this.targetVelocity);
-            telemetry.addData("feedforward timer", elaspedTime);
 
             telemetry.addData("right velocity", rightVelocity);
             telemetry.addData("right error", rightError);
             telemetry.addData("right power delta", rightPowerDelta);
-            telemetry.addData("right feedforward boost", currentBoost);
             telemetry.addData("current right power", currentRightPower);
 
             telemetry.addData("left velocity", leftVelocity);
             telemetry.addData("left error", leftError);
             telemetry.addData("left power delta", leftPowerDelta);
-            telemetry.addData("left feedforward boost", currentBoost);
             telemetry.addData("current left power", currentLeftPower);
 
             telemetry.update();
@@ -189,13 +177,6 @@ public class Shooter extends SubsystemBase {
     public void FarShoot() {
         this.liftServo.setPosition(ShooterConfig.TiltServoLo);
         this.targetVelocity = ShooterConfig.ShooterRpmHi;
-    }
-
-    ElapsedTime feedforwardTimer = new ElapsedTime();
-
-    public void BeginFeedForwardBoost() {
-        //feedforwardTimer.reset();
-        //currentBoost = ShooterFeedforwardConfig.FeedforwardBoost;
     }
 
     public void FarShootWithScale(double scale) {

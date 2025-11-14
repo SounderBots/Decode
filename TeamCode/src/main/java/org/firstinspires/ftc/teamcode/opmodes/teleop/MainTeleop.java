@@ -78,7 +78,6 @@ public class MainTeleop extends OpModeTemplate {
                 .whenPressed(
                         new SequentialCommandGroup(
                                 new InstantCommand(transfer::BallLaunch, transfer),
-                                new InstantCommand(shooter::BeginFeedForwardBoost, shooter),
                                 new WaitCommand(200),
                                 new InstantCommand(transfer::BallReset, transfer)
                         ));
