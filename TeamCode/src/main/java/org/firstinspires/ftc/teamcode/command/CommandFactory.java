@@ -149,12 +149,12 @@ public class CommandFactory {
         return new SingleExecuteCommand(shooter::CloseShoot);
     }
 
-    public Command farShootWithScale(double scale) {
-        return new SingleExecuteCommand(() -> shooter.FarShootWithScale(scale));
+    public Command farShootWithScale(double scale, double elevationScale) {
+        return new SingleExecuteCommand(() -> shooter.FarShootWithScale(scale, elevationScale));
     }
 
-    public Command closeShootWithScale(double scale) {
-        return new SingleExecuteCommand(() -> shooter.CloseShootWithScale(scale));
+    public Command closeShootWithScale(double scale, double elevationScale) {
+        return new SingleExecuteCommand(() -> shooter.CloseShootWithScale(scale, elevationScale));
     }
 
     public Command loadAndShoot(Command shootCommand) {

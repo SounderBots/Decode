@@ -13,8 +13,8 @@ public class BluePositions implements Positions {
     // each row y increase 24 inches
     //first row is the row close to the trangle
     public static double firstRowStartY = 35;
-    public static double secondRowStartY = 58;
-    public static double thirdRowStartY = 82.5;
+    public static double secondRowStartY = 59;
+    public static double thirdRowStartY = 83;
 
     public static double rowEndYOffset = 0;
 
@@ -22,7 +22,7 @@ public class BluePositions implements Positions {
 
     public static double backShootAngleInDegrees = 110;
     public static Pose backShootPosition = new Pose(56, 11, Math.toRadians(backShootAngleInDegrees));
-    public static double frontShootAngleInDegrees = 142;
+    public static double frontShootAngleInDegrees = 141;
     public static Pose frontShootPosition = new Pose(64.5, 84.75, Math.toRadians(frontShootAngleInDegrees));
 
     public static Pose backStartPosition = new Pose(55.75, 8.16, Math.toRadians(90));

@@ -13,11 +13,24 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     protected Command intakeRowAndShoot(RowsOnFloor row) {
         Pose rowStartingPosition = getRowStartingPosition(row);
+        double driveMaxPower = switch (row) {
+            case FIRST ->
+                switch (shootRange()) {
+                    case LONG -> AutonCommonConfigs.slowMoveSpeed;
+                    case SHORT -> AutonCommonConfigs.fastMoveSpeed;
+                };
+            case SECOND -> AutonCommonConfigs.middleMoveSpeed;
+            case THIRD ->
+                switch (shootRange()) {
+                    case LONG -> AutonCommonConfigs.fastMoveSpeed;
+                    case SHORT -> AutonCommonConfigs.slowMoveSpeed;
+                };
+        };
 
         return commandFactory
-                .moveTo(rowStartingPosition, PathType.CURVE, .7)
+                .moveTo(rowStartingPosition, PathType.CURVE, driveMaxPower)
                 .andThen(intakeRow(row)) // intake row (3 balls)
-                .andThen(commandFactory.moveTo(getRowShootingPosition(), PathType.CURVE, .7)) // move to shooting position
+                .andThen(commandFactory.moveTo(getRowShootingPosition(), PathType.CURVE, driveMaxPower)) // move to shooting position
                 .andThen(getShootRowCommand()) // shoot row
         ;
     }
@@ -75,8 +88,8 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     public Command getShootCommand() {
         return switch (shootRange()) {
-            case LONG -> commandFactory.farShootWithScale(AutonCommonConfigs.backShootVelocityScale);
-            case SHORT -> commandFactory.closeShootWithScale(AutonCommonConfigs.frontShootVelocityScale);
+            case LONG -> commandFactory.farShootWithScale(AutonCommonConfigs.backShootVelocityScale, AutonCommonConfigs.TiltServoHi);
+            case SHORT -> commandFactory.closeShootWithScale(AutonCommonConfigs.frontShootVelocityScale, AutonCommonConfigs.TiltServoLo);
         };
     }
 

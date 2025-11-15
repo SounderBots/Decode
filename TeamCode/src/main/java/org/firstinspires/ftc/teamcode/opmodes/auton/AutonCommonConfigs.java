@@ -11,6 +11,13 @@ public class AutonCommonConfigs {
 
     public static long betweenShootDelays = 400;
 
+    public static double TiltServoHi = 1.1;
+    public static double TiltServoLo = 1;
+
+    public static double slowMoveSpeed = .65;
+    public static double middleMoveSpeed = .7;
+    public static double fastMoveSpeed = .8;
+
 //    public static Pose blueFrontFinishPosition = new Pose(48, 130, 0);
 //    public static Pose redFrontFinishPosition = new Pose(96, 120, 0);
 //

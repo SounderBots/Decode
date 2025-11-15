@@ -36,13 +36,13 @@ public class Constants {
                 ))
                 .translationalPIDFSwitch(4)
                 .headingPIDFCoefficients(new PIDFCoefficients(
-                        1,
+                        1.2,
                         0,
                         0.0001,
                         0.03
                 ))
                 .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(
-                        2,
+                        1,
                         0,
                         0.1,
                         0.0005
@@ -55,9 +55,9 @@ public class Constants {
                         0.015
                 ))
                 .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(
-                        0.025,
+                        0.0175,
                         0,
-                        0.00007,
+                        0.00008,
                         0.6,
                         0.01
                 ))
