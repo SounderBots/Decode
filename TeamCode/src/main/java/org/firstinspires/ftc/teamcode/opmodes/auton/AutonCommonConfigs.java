@@ -7,7 +7,7 @@ import com.pedropathing.geometry.Pose;
 public class AutonCommonConfigs {
     public static double DrivetrainIntakePower = .35; //The speed the robot moves when intaking, not intake wheel speed
     public static double backShootVelocityScale = 1.022;
-    public static double frontShootVelocityScale = 1.006;
+    public static double frontShootVelocityScale = 1.007;
 
     public static long betweenShootDelays = 400;
 

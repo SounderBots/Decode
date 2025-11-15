@@ -7,7 +7,8 @@ import com.pedropathing.geometry.Pose;
 public class RedPositions implements Positions {
 
     public static double rowStartX = 100;
-    public static double rowEndX = 138;
+    public static double rowEndXLongIntake = 138;
+    public static double rowEndXShortIntake = 132;
 
     // each row y increase 24 inches
     //first row is the row close to the trangle
@@ -71,7 +72,7 @@ public class RedPositions implements Positions {
 
     @Override
     public Pose getFirstRowEndPosition() {
-        return new Pose(rowEndX, firstRowStartY, Math.toRadians(intakeHeadingDegrees));
+        return new Pose(rowEndXLongIntake, firstRowStartY, Math.toRadians(intakeHeadingDegrees));
     }
 
     @Override
@@ -81,7 +82,7 @@ public class RedPositions implements Positions {
 
     @Override
     public Pose getSecondRowEndPosition() {
-        return new Pose(rowEndX, secondRowStartY, Math.toRadians(intakeHeadingDegrees));
+        return new Pose(rowEndXLongIntake, secondRowStartY, Math.toRadians(intakeHeadingDegrees));
     }
 
     @Override
@@ -91,6 +92,6 @@ public class RedPositions implements Positions {
 
     @Override
     public Pose getThirdRowEndPosition() {
-        return new Pose(rowEndX, thirdRowStartY, Math.toRadians(intakeHeadingDegrees));
+        return new Pose(rowEndXShortIntake, thirdRowStartY, Math.toRadians(intakeHeadingDegrees));
     }
 }

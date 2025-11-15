@@ -24,9 +24,4 @@ public class BlueShootFromBack extends AutonBase {
     protected ShootRange shootRange() {
         return ShootRange.LONG;
     }
-
-    @Override
-    protected Pose getRowShootingPosition() {
-        return null;
-    }
 }

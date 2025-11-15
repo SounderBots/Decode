@@ -6,24 +6,24 @@ import com.pedropathing.geometry.Pose;
 @Configurable
 public class BluePositions implements Positions {
 
-    public static double rowStartX = 40;
-    public static double rowEndX = 0;
+    public static double rowStartX = 44;
+    public static double rowEndXLongIntake = 6;
+    public static double rowEndXShortIntake = 12;
 
     // each row y increase 24 inches
     //first row is the row close to the trangle
     public static double firstRowStartY = 35;
-    public static double secondRowStartY = 58.8;
+    public static double secondRowStartY = 58;
     public static double thirdRowStartY = 82.5;
 
     public static double rowEndYOffset = 0;
 
     public static double headingDegrees = 180;
 
-    public static double backShootAngleInDegrees = 115;
-    public static double frontShootAngleInDegrees = 104;
-
-    public static Pose backShootPosition = new Pose(54, 15, Math.toRadians(backShootAngleInDegrees));
-    public static Pose frontShootPosition = new Pose(56, 10, Math.toRadians(frontShootAngleInDegrees));
+    public static double backShootAngleInDegrees = 110;
+    public static Pose backShootPosition = new Pose(56, 11, Math.toRadians(backShootAngleInDegrees));
+    public static double frontShootAngleInDegrees = 142;
+    public static Pose frontShootPosition = new Pose(64.5, 84.75, Math.toRadians(frontShootAngleInDegrees));
 
     public static Pose backStartPosition = new Pose(55.75, 8.16, Math.toRadians(90));
     public static Pose frontStartPosition = new Pose(23.5, 125.75, Math.toRadians(140));
@@ -77,7 +77,7 @@ public class BluePositions implements Positions {
 
     @Override
     public Pose getFirstRowEndPosition() {
-        return new Pose(rowEndX, firstRowStartY + rowEndYOffset, Math.toRadians(headingDegrees));
+        return new Pose(rowEndXLongIntake, firstRowStartY + rowEndYOffset, Math.toRadians(headingDegrees));
     }
 
     @Override
@@ -87,7 +87,7 @@ public class BluePositions implements Positions {
 
     @Override
     public Pose getSecondRowEndPosition() {
-        return new Pose(rowEndX, secondRowStartY + rowEndYOffset, Math.toRadians(headingDegrees));
+        return new Pose(rowEndXLongIntake, secondRowStartY + rowEndYOffset, Math.toRadians(headingDegrees));
     }
 
     @Override
@@ -97,7 +97,7 @@ public class BluePositions implements Positions {
 
     @Override
     public Pose getThirdRowEndPosition() {
-        return new Pose(rowEndX, thirdRowStartY + rowEndYOffset, Math.toRadians(headingDegrees));
+        return new Pose(rowEndXShortIntake, thirdRowStartY + rowEndYOffset, Math.toRadians(headingDegrees));
     }
 //    // each row y increase 24 inches
 //    public static Pose firstRowStartingPosition = new Pose(108, 32.16, Math.toRadians(0));
