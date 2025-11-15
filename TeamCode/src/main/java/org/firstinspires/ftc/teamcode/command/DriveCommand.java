@@ -33,7 +33,7 @@ public class DriveCommand extends SounderBotCommandBase {
 
     private List<Pose> points;
 
-    public static long DEFAULT_TIMEOUT_IN_SECONDS = 4;
+    public static long DEFAULT_TIMEOUT_IN_SECONDS = 8;
     private final PathType pathType;
 
     public DriveCommand(Follower follower, @NonNull Pose end, PathType pathType, boolean isFirstMove) {
@@ -46,6 +46,7 @@ public class DriveCommand extends SounderBotCommandBase {
     public DriveCommand(Follower follower, List<Pose> points, PathType pathType, long timeOut, TimeUnit timeUnit, boolean isFirstMove) {
         super(TimeUnit.MILLISECONDS.convert(timeOut, timeUnit));
 
+        Log.i(LOG_TAG, "Points = " + points);
         this.follower = follower;
         this.isFirstMove = isFirstMove;
         this.start = points.get(0);
@@ -97,9 +98,10 @@ public class DriveCommand extends SounderBotCommandBase {
         return switch (pathType) {
             case LINE -> new BezierLine(startPos, end);
             case CURVE -> {
-                List<Pose> controlPoints = new ArrayList<>(points.size() + 1);
+                List<Pose> controlPoints = new ArrayList<>(points.size());
                 controlPoints.add(startPos);
-                controlPoints.addAll(points);
+                controlPoints.addAll(points.subList(1, points.size()));
+                Log.i(LOG_TAG, "Curve control points: " + controlPoints);
                 yield new BezierCurve(controlPoints);
             }
         };

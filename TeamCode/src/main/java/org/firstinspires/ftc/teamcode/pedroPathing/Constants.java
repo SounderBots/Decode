@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.control.FilteredPIDFCoefficients;
 import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
@@ -14,6 +15,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
+@Configurable
 public class Constants {
     public static class RobotMain {
         public static FollowerConstants followerConstants = new FollowerConstants()
@@ -40,22 +42,22 @@ public class Constants {
                         0.03
                 ))
                 .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(
-                        2.5,
+                        2,
                         0,
                         0.1,
                         0.0005
                 ))
                 .drivePIDFCoefficients(new FilteredPIDFCoefficients(
-                        0.08,
+                        0.0675,
                         0,
-                        0.001,
+                        0.02,
                         0.6,
                         0.015
                 ))
                 .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(
                         0.025,
                         0,
-                        0.000010,
+                        0.00007,
                         0.6,
                         0.01
                 ))

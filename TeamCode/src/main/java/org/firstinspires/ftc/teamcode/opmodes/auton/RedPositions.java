@@ -7,7 +7,7 @@ import com.pedropathing.geometry.Pose;
 public class RedPositions implements Positions {
 
     public static double rowStartX = 100;
-    public static double rowEndX = 140;
+    public static double rowEndX = 138;
 
     // each row y increase 24 inches
     //first row is the row close to the trangle
@@ -17,8 +17,8 @@ public class RedPositions implements Positions {
 
     public static double intakeHeadingDegrees = 0;
 
-    public static double backShootAngleInDegrees = 71.35;
-    public static Pose backShootPosition = new Pose(88, 10, Math.toRadians(backShootAngleInDegrees));
+    public static double backShootAngleInDegrees = 70;
+    public static Pose backShootPosition = new Pose(88, 11, Math.toRadians(backShootAngleInDegrees));
     public static double frontShootAngleInDegrees = 38;
     public static Pose frontShootPosition = new Pose(79.5, 84.75, Math.toRadians(frontShootAngleInDegrees));
 

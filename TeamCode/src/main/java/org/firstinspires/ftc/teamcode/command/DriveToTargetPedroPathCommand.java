@@ -38,7 +38,7 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
     }
     public DriveToTargetPedroPathCommand(Follower follower, @NonNull Pose start, @NonNull Pose end, long timeOut,  TimeUnit timeUnit, boolean isFirstMove) {
         super(TimeUnit.MILLISECONDS.convert(timeOut, timeUnit));
-
+        Log.i(LOG_TAG,"start="+start+" end="+end);
         this.follower = follower;
         this.isFirstMove = isFirstMove;
         this.start = start;
