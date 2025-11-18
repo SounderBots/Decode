@@ -14,7 +14,7 @@ public class RedShootFromFront extends AutonBase {
     public static double rowShootingAngle = 38;
     public static Pose startingPosition = new Pose(120.5, 125.75, Math.toRadians(preloadShootingAngle));
     public static Pose preloadShootingPosition = new Pose(79.5, 84.75, Math.toRadians(preloadShootingAngle));
-    public static Pose rowShootingPosition = new Pose(79.5, 84.75, Math.toRadians(rowShootingAngle));
+    public static Pose rowShootingPosition = new Pose(88.5, 93.75, Math.toRadians(rowShootingAngle));
 
     public static double shootVelocityScale = 1.006;
 

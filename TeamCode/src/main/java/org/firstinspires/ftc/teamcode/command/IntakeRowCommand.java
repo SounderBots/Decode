@@ -58,6 +58,6 @@ public class IntakeRowCommand extends SounderBotCommandBase {
     public void end(boolean interrupted) {
         super.end(interrupted);
         transferChamber.TurnOffChamberRoller();
-        intake.StopIntake();
+//        intake.StopIntake();
     }
 }

@@ -11,12 +11,12 @@ public class BlueShootFromFront extends AutonBase {
 
     // shoot position: x: 8 tooth, y: 11 tooth
     public static double preloadShootingAngle = 142;
-    public static double rowShootingAngle = 135;
+    public static double rowShootingAngle = 140;
     public static Pose startingPosition = new Pose(23.5, 125.75, Math.toRadians(preloadShootingAngle));
     public static Pose preloadShootingPosition = new Pose(64.5, 90, Math.toRadians(preloadShootingAngle));
     public static Pose rowShootingPosition = new Pose(60, 85, Math.toRadians(rowShootingAngle));
 
-    public static double shootVelocityScale = 1.008;
+    public static double shootVelocityScale = 1.006;
 
     @Override
     Pose getPreloadShootingPosition() {

@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.auton;
 
 import com.arcrobotics.ftclib.command.Command;
-import com.arcrobotics.ftclib.command.ParallelDeadlineGroup;
 import com.arcrobotics.ftclib.command.ParallelRaceGroup;
 import com.pedropathing.geometry.Pose;
 
@@ -11,9 +10,9 @@ public abstract class AutonBase extends CommandAutoOpMode {
         Pose rowStartingPosition = getRowStartingPosition(row);
 
         return commandFactory
-                .moveTo(rowStartingPosition)
+                .moveTo(rowStartingPosition, .4)
                 .andThen(intakeRow(row)) // intake row (3 balls)
-                .andThen(commandFactory.moveTo(getRowShootingPosition())) // move to shooting position
+                .andThen(commandFactory.moveTo(getRowShootingPosition(), .8)) // move to shooting position
                 .andThen(getShootRowCommand()) // shoot row
         ;
     }
@@ -52,10 +51,10 @@ public abstract class AutonBase extends CommandAutoOpMode {
     protected Command shootFromBackCommand() {
         return moveAndShootPreloads() // move to shooting position
 //                .andThen(alignWithFirstRow())
-//                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST)) // shoot first row
-                .andThen(intakeRowAndShoot(RowsOnFloor.SECOND)) // shoot second row
-                .andThen(intakeRowAndShoot(RowsOnFloor.THIRD)) // shoot third row
-                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST))
+                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST)) // shoot first row
+//                .andThen(intakeRowAndShoot(RowsOnFloor.SECOND)) // shoot second row
+//                .andThen(intakeRowAndShoot(RowsOnFloor.THIRD)) // shoot third row
+//                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST))
                 ;
     }
 
@@ -90,10 +89,9 @@ public abstract class AutonBase extends CommandAutoOpMode {
     protected Command shootFromFrontCommand() {
         return moveAndShootPreloads()
 //                .andThen(alignWithFirstRow())
-
-                .andThen(intakeRowAndShoot(RowsOnFloor.SECOND))
-                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST))
                 .andThen(intakeRowAndShoot(RowsOnFloor.THIRD))
+//                .andThen(intakeRowAndShoot(RowsOnFloor.SECOND))
+//                .andThen(intakeRowAndShoot(RowsOnFloor.THIRD))
                 ;
     }
 
@@ -129,15 +127,21 @@ public abstract class AutonBase extends CommandAutoOpMode {
     protected abstract Pose getRowShootingPosition();
 
     protected Command moveOutAtLastSecond(Command autonCommand) {
-//        return autonCommand;
-        return new ParallelDeadlineGroup(commandFactory.sleep(29000),
-                autonCommand).andThen(commandFactory.moveTo(getFinishPosition(getSide())));
+        return autonCommand.andThen(commandFactory.moveTo(getFinishPosition(getSide())));
+//        return new ParallelDeadlineGroup(commandFactory.sleep(29000),
+//                autonCommand).andThen(commandFactory.moveTo(getFinishPosition(getSide())));
     }
 
     protected Pose getFinishPosition(Side side) {
-        return switch (side) {
-            case BLUE -> AutonCommonConfigs.blueFinishPosition;
-            case RED -> AutonCommonConfigs.redFinishPosition;
+        return switch (getSide()) {
+            case BLUE -> switch (shootMode()) {
+                case CLOSE -> AutonCommonConfigs.blueFrontFinishPosition;
+                case FAR -> AutonCommonConfigs.blueBackFinishPosition;
+            };
+            case RED -> switch (shootMode()) {
+                case CLOSE -> AutonCommonConfigs.redFrontFinishPosition;
+                case FAR -> AutonCommonConfigs.redBackFinishPosition;
+            };
         };
     }
 

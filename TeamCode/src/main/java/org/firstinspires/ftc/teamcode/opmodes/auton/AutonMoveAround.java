@@ -35,6 +35,6 @@ public class AutonMoveAround extends AutonBase {
 
     @Override
     protected Command createCommand() {
-        return commandFactory.startMove(BlueShootFromFront.startingPosition, AutonCommonConfigs.blueFinishPosition);
+        return commandFactory.startMove(BlueShootFromFront.startingPosition, AutonCommonConfigs.blueFrontFinishPosition);
     }
 }
