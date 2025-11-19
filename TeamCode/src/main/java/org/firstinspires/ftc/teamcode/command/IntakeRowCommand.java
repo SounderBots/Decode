@@ -49,8 +49,8 @@ public class IntakeRowCommand extends SounderBotCommandBase {
     @Override
     protected void firstTimeExecute() {
 //        transferChamber.TurnOnChamberRoller();
-        transferChamber.ResetFeeder();
-        transferChamber.BallReset();
+//        transferChamber.ResetFeeder();
+//        transferChamber.BallReset();
         intake.StartIntake();
     }
 
@@ -58,6 +58,6 @@ public class IntakeRowCommand extends SounderBotCommandBase {
     public void end(boolean interrupted) {
         super.end(interrupted);
         transferChamber.TurnOffChamberRoller();
-//        intake.StopIntake();
+        intake.StopIntake();
     }
 }

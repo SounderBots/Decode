@@ -9,12 +9,15 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.opmodes.auton.AutonCommonConfigs;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.AutonDriveTrain;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
+
+import java.util.concurrent.TimeUnit;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -111,9 +114,17 @@ public class CommandFactory {
         return new IntakeRowCommand(transferChamber, intake, telemetry, DEFAULT_TIME_OUT);
     }
 
-    public Command ballReset() {
-        return new SingleExecuteCommand(transferChamber::BallReset);
+    public Command topRollerOutput() {
+        return new SingleExecuteCommand(transferChamber::TopRollersOuttake);
     }
+
+    public Command stopTopRoller() {
+        return new SingleExecuteCommand(transferChamber::TopRollersStop);
+    }
+
+//    public Command ballReset() {
+//        return new SingleExecuteCommand(transferChamber::BallReset);
+//    }
 
     public Command loadArtifact() {
         return new ParallelDeadlineGroup(
@@ -125,21 +136,21 @@ public class CommandFactory {
         return new SingleExecuteCommand(transferChamber::TurnOffChamberRoller);
     }
 
-    public Command feedArtifact() {
-        return new SingleExecuteCommand(transferChamber::FeedArtifact);
-    }
+//    public Command feedArtifact() {
+//        return new SingleExecuteCommand(transferChamber::FeedArtifact);
+//    }
+//
+//    public Command resetFeeder() {
+//        return new SingleExecuteCommand(transferChamber::ResetFeeder);
+//    }
 
-    public Command resetFeeder() {
-        return new SingleExecuteCommand(transferChamber::ResetFeeder);
-    }
-
-    public Command ballStow() {
-        return new SingleExecuteCommand(transferChamber::BallStow);
-    }
-
-    public Command ballLaunch() {
-        return new SingleExecuteCommand(transferChamber::BallLaunch);
-    }
+//    public Command ballStow() {
+//        return new SingleExecuteCommand(transferChamber::BallStow);
+//    }
+//
+//    public Command ballLaunch() {
+//        return new SingleExecuteCommand(transferChamber::BallLaunch);
+//    }
 
     public Command farShoot() {
         return new SingleExecuteCommand(shooter::FarShoot);
@@ -158,21 +169,29 @@ public class CommandFactory {
     }
 
     public Command loadAndShoot(Command shootCommand) {
-        long transferDelay = 200;
-        return ballReset()
-                .andThen(resetFeeder())
-                .andThen(shootCommand)
-                .andThen(loadArtifact())
-                .andThen(sleep(transferDelay))
-                .andThen(turnOffChamberRoller())
-                .andThen(sleep(transferDelay))
-                .andThen(feedArtifact())
-                .andThen(sleep(transferDelay))
-                .andThen(ballStow())
-                .andThen(resetFeeder())
-                .andThen(waitForShooterReady())
-                .andThen(sleep(transferDelay + 200))
-                .andThen(ballLaunch());
+        return new ParallelDeadlineGroup(
+                sleep(AutonCommonConfigs.shootRowTimeoutInMS),
+                loadArtifact()
+                        .andThen(shootCommand)
+                        .andThen(waitForShooterReady())
+                        .andThen(topRollerOutput())
+
+        );
+//        long transferDelay = 200;
+//        return ballReset()
+////                .andThen(resetFeeder())
+//                .andThen(shootCommand)
+//                .andThen(loadArtifact())
+//                .andThen(sleep(transferDelay))
+//                .andThen(turnOffChamberRoller())
+//                .andThen(sleep(transferDelay))
+////                .andThen(feedArtifact())
+//                .andThen(sleep(transferDelay))
+//                .andThen(ballStow())
+////                .andThen(resetFeeder())
+//                .andThen(waitForShooterReady())
+//                .andThen(sleep(transferDelay + 200))
+//                .andThen(ballLaunch());
     }
 
     public Pose getCurrentFollowerPose() {

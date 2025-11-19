@@ -94,11 +94,11 @@ public abstract class AutonBase extends CommandAutoOpMode {
     }
 
     public Command getShootRowCommand() {
-        return commandFactory.loadAndShoot(getShootCommand())
-                .andThen(commandFactory.sleep(AutonCommonConfigs.betweenShootDelays))
-                .andThen(commandFactory.loadAndShoot(getShootCommand()))
-                .andThen(commandFactory.sleep(AutonCommonConfigs.betweenShootDelays))
-                .andThen(commandFactory.loadAndShoot(getShootCommand()));
+        return commandFactory.loadAndShoot(getShootCommand());
+//                .andThen(commandFactory.sleep(AutonCommonConfigs.betweenShootDelays))
+//                .andThen(commandFactory.loadAndShoot(getShootCommand()))
+//                .andThen(commandFactory.sleep(AutonCommonConfigs.betweenShootDelays))
+//                .andThen(commandFactory.loadAndShoot(getShootCommand()));
     }
 
     protected Pose getRowShootingPosition() {

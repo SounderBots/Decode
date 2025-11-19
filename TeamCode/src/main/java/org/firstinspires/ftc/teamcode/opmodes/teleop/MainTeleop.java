@@ -109,7 +109,7 @@ public class MainTeleop extends OpModeTemplate {
                         new SequentialCommandGroup(
                                 new InstantCommand(transfer::FeedArtifact, transfer),
                                 new WaitCommand(MainTeleopConfig.TransferDelay),
-                                new InstantCommand(transfer::BallStow, transfer),
+//                                new InstantCommand(transfer::BallStow, transfer),
                                 new InstantCommand(transfer::ResetFeeder, transfer)
                         )
                 );

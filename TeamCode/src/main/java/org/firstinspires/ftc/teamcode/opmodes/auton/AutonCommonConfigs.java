@@ -18,6 +18,8 @@ public class AutonCommonConfigs {
     public static double middleMoveSpeed = .7;
     public static double fastMoveSpeed = .8;
 
+    public static long shootRowTimeoutInMS = 5000;
+
 //    public static Pose blueFrontFinishPosition = new Pose(48, 130, 0);
 //    public static Pose redFrontFinishPosition = new Pose(96, 120, 0);
 //
