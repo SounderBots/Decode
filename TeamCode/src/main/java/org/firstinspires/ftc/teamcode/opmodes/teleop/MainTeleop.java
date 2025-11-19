@@ -71,22 +71,32 @@ public class MainTeleop extends OpModeTemplate {
         new Trigger(() -> gamepad2.right_trigger > 0.5)
                 .whenActive(new InstantCommand(shooter::CloseShoot, shooter));
 
-        operatorGamepad.getGamepadButton(GamepadKeys.Button.Y)
-                .whenPressed(new InstantCommand(transfer::BallStow, shooter));
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.A)
                 .whenPressed(
                         new SequentialCommandGroup(
-                                new InstantCommand(transfer::BallLaunch, transfer),
-                                new WaitCommand(200),
-                                new InstantCommand(transfer::BallReset, transfer)
-                        ));
-
-        operatorGamepad.getGamepadButton(GamepadKeys.Button.X)
-                .whenPressed(new InstantCommand(transfer::BallReset, transfer));
+                                new InstantCommand(transfer::TopRollersOuttake, transfer),
+                                new InstantCommand(transfer::TurnOnSlowChamberRoller, transfer)
+                        ))
+                .whenReleased(
+                        new SequentialCommandGroup(
+                                new InstantCommand(transfer::TopRollersStop, transfer),
+                                new InstantCommand(transfer::TurnOffChamberRoller, transfer)
+                        )
+                );
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.B)
-                .whenPressed(new InstantCommand(transfer::ResetFeeder, transfer));
+                .whenPressed(
+                        new SequentialCommandGroup(
+                                new InstantCommand(transfer::TopRollersIntake, transfer),
+                                new InstantCommand(transfer::TurnOnSlowChamberRollerInReverse, transfer)
+                        ))
+                .whenReleased(
+                        new SequentialCommandGroup(
+                                new InstantCommand(transfer::TopRollersStop, transfer),
+                                new InstantCommand(transfer::TurnOffChamberRoller, transfer)
+                        )
+                );
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.DPAD_UP)
                 .whenPressed(new InstantCommand(transfer::FeedArtifact, transfer));
@@ -104,12 +114,6 @@ public class MainTeleop extends OpModeTemplate {
                         )
                 );
 
-        driverGamepad.getGamepadButton(GamepadKeys.Button.DPAD_UP)
-                .whenPressed(new InstantCommand(light::changeGreen, light));
-
-        driverGamepad.getGamepadButton(GamepadKeys.Button.DPAD_DOWN)
-                .whenPressed(new InstantCommand(light::changeGreen, light));
-
         driverGamepad.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
                 .whenPressed(new InstantCommand(drive::ToggleDirection, drive));
 
@@ -117,10 +121,5 @@ public class MainTeleop extends OpModeTemplate {
                 .whenPressed(new InstantCommand(intake::StopIntake, intake));
 
         register(drive, intake, shooter, light, limeLight);
-
-//        schedule(
-//                new AutoLoadShooterCommand(telemetry, transfer),
-//                new AutoIntakeCommand(telemetry, transfer)
-//                );
     }
 }

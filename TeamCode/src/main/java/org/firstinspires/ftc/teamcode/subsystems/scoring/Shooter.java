@@ -29,9 +29,9 @@ public class Shooter extends SubsystemBase {
     @Config
     public static class ShooterConfig {
 
-        public static double ShooterRpmHi = 1550;
+        public static double ShooterRpmHi = 1000;
 
-        public static double ShooterRpmLo = 1375;
+        public static double ShooterRpmLo = 700;
 
         public static double RightLauncherStow = 0.34;
 
