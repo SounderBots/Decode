@@ -208,8 +208,8 @@ public class Shooter extends SubsystemBase {
         this.targetVelocity = ShooterConfig.ShooterRpmLo;
     }
 
-    public void CloseShootWithScale(double scale) {
-        this.liftServo.setPosition(ShooterConfig.TiltServoHi);
+    public void CloseShootWithScale(double scale, double elevationScale) {
+        this.liftServo.setPosition(ShooterConfig.TiltServoHi * elevationScale);
         this.targetVelocity = ShooterConfig.ShooterRpmLo * scale;
     }
 
@@ -218,8 +218,8 @@ public class Shooter extends SubsystemBase {
         this.targetVelocity = ShooterConfig.ShooterRpmHi;
     }
 
-    public void FarShootWithScale(double scale) {
-        this.liftServo.setPosition(ShooterConfig.TiltServoLo);
+    public void FarShootWithScale(double scale, double elevationScale) {
+        this.liftServo.setPosition(ShooterConfig.TiltServoLo * elevationScale);
         this.targetVelocity = ShooterConfig.ShooterRpmHi * scale;
     }
 
