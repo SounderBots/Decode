@@ -29,9 +29,9 @@ public class Shooter extends SubsystemBase {
     @Config
     public static class ShooterConfig {
 
-        public static double ShooterRpmHi = 1000;
+        public static double ShooterRpmHi = 930;
 
-        public static double ShooterRpmLo = 700;
+        public static double ShooterRpmLo = 750;
 
         public static double RightLauncherStow = 0.34;
 
@@ -43,11 +43,11 @@ public class Shooter extends SubsystemBase {
 
         public static double IntakeMaxPower = 1;
 
-        public static double TiltServoHi = .6;
+        public static double TiltServoHi = .4;
 
         public static double TiltServoLo = 0;
 
-        public static double FlywheelAcceptableRpmError = 50;
+        public static double FlywheelAcceptableRpmError = 40;
         }
 
     @Config
@@ -129,7 +129,10 @@ public class Shooter extends SubsystemBase {
         double leftVelocity = leftFlywheel.getVelocity();
         double leftError = targetVelocity - leftVelocity;
 
-        if(Math.abs(rightError) < ShooterConfig.FlywheelAcceptableRpmError && Math.abs(leftError) < ShooterConfig.FlywheelAcceptableRpmError){
+        if(Math.abs(rightError) < ShooterConfig.FlywheelAcceptableRpmError &&
+                Math.abs(leftError) < ShooterConfig.FlywheelAcceptableRpmError &&
+                Math.abs(leftVelocity - rightVelocity) < 30
+        ){
             if(!wasLastColorGreen) {
                 wasLastColorGreen = true;
                 speedIndicator.changeGreen();
