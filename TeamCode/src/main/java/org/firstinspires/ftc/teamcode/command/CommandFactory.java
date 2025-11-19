@@ -136,6 +136,10 @@ public class CommandFactory {
         return new SingleExecuteCommand(transferChamber::TurnOffChamberRoller);
     }
 
+    public Command turnOnSlowChamberRoller() {
+        return new SingleExecuteCommand(transferChamber::TurnOnSlowChamberRoller);
+    }
+
 //    public Command feedArtifact() {
 //        return new SingleExecuteCommand(transferChamber::FeedArtifact);
 //    }
@@ -174,6 +178,7 @@ public class CommandFactory {
                 loadArtifact()
                         .andThen(shootCommand)
                         .andThen(waitForShooterReady())
+                        .andThen(turnOnSlowChamberRoller())
                         .andThen(topRollerOutput())
 
         );
