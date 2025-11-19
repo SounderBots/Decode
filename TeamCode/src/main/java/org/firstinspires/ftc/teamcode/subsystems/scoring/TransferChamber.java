@@ -4,7 +4,9 @@ import android.util.Log;
 
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -25,6 +27,8 @@ public class TransferChamber extends SubsystemBase {
 
     Servo rightLauncher, leftLauncher, feeder;
 
+    CRServo backRoller, frontRoller;
+
     public TransferChamber(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
         this.gamepad = gamepad;
         this.telemetry = telemetry;
@@ -38,17 +42,22 @@ public class TransferChamber extends SubsystemBase {
         this.leftLauncher = hardwareMap.get(Servo.class,"LeftLauncher");
 
         this.feeder = hardwareMap.get(Servo.class,"Feeder");
+
+        this.backRoller = hardwareMap.get(CRServo.class,"BackRoller");
+        this.frontRoller = hardwareMap.get(CRServo.class,"FrontRoller");
+
     }
 
     @Override
     public void periodic() {
         super.periodic();
 
-        if(Math.abs(gamepad.getLeftY()) > .2) {
-            chamberMotor.set(-1 * gamepad.getLeftY() * Shooter.ShooterConfig.IntakeMaxPower);
-        }
-        else {
-            chamberMotor.set(0);
+        if(!(gamepad.isDown(GamepadKeys.Button.A) || gamepad.isDown(GamepadKeys.Button.B))) {
+            if (Math.abs(gamepad.getLeftY()) > .2) {
+                chamberMotor.set(-1 * gamepad.getLeftY() * Shooter.ShooterConfig.IntakeMaxPower);
+            } else {
+                chamberMotor.set(0);
+            }
         }
 
         boolean addTelemetry = false;
@@ -72,6 +81,11 @@ public class TransferChamber extends SubsystemBase {
     public void TurnOnSlowChamberRoller() {
         Log.i("Chamber Roller", "Turning on slow roller");
         chamberMotor.set(MainTeleop.MainTeleopConfig.ChamberIntakeSlowPower);
+    }
+
+    public void TurnOnSlowChamberRollerInReverse() {
+        Log.i("Chamber Roller", "Turning on slow roller");
+        chamberMotor.set(MainTeleop.MainTeleopConfig.ChamberIntakeSlowPower * -1);
     }
 
     public void TurnOffChamberRoller() {
@@ -151,5 +165,20 @@ public class TransferChamber extends SubsystemBase {
 
     public boolean isChamberRollerOn() {
         return chamberMotor.get() != 0;
+    }
+
+    public void TopRollersOuttake() {
+        this.backRoller.setPower(1);
+        this.frontRoller.setPower(-1);
+    }
+
+    public void TopRollersIntake() {
+        this.backRoller.setPower(-1);
+        this.frontRoller.setPower(1);
+    }
+
+    public void TopRollersStop() {
+        this.backRoller.setPower(0);
+        this.frontRoller.setPower(0);
     }
 }

@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.subsystems.scoring;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
+import com.arcrobotics.ftclib.controller.PIDFController;
+import com.arcrobotics.ftclib.controller.wpilibcontroller.SimpleMotorFeedforward;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
@@ -20,9 +22,6 @@ public class Shooter extends SubsystemBase {
     GamepadEx gamepad;
     MotorEx leftFlywheel, rightFlywheel;
 
-    SonicPIDFController rightShooterPid = new SonicPIDFController(ShooterConfig.kP, 0, 0);
-    SonicPIDFController leftShooterPid = new SonicPIDFController(ShooterConfig.kP, 0, 0);
-
     Servo liftServo;
 
     RGBLightIndicator speedIndicator;
@@ -30,9 +29,9 @@ public class Shooter extends SubsystemBase {
     @Config
     public static class ShooterConfig {
 
-        public static double ShooterRpmHi = 1550;
+        public static double ShooterRpmHi = 1000;
 
-        public static double ShooterRpmLo = 1375;
+        public static double ShooterRpmLo = 700;
 
         public static double RightLauncherStow = 0.34;
 
@@ -44,31 +43,40 @@ public class Shooter extends SubsystemBase {
 
         public static double IntakeMaxPower = 1;
 
-        public static double kP = 0.00001;
-
-        public static double kI = 0;
-
-        public static double kD = 0.00005;
-
-
         public static double TiltServoHi = .6;
 
         public static double TiltServoLo = 0;
 
-        public static double FlywheelAcceptableRpmError = 40;
+        public static double FlywheelAcceptableRpmError = 50;
         }
 
     @Config
-    public static class ShooterFeedforwardConfig {
-        public static double FeedforwardBoost = .05;
+    public static class ShooterControlConfig {
 
-        public static double FeedforwardBoostStartMs = 200;
+        // PID
 
-        public static double FeedforwardBoostEndMs = 400;
+        public static double kP = 0.0095;
 
-        public static double FeedForwardDampner = .5;
+        public static double kI = 0.005;
 
+        public static double kD = 0;
+
+        // Feedforward
+
+        public static double ks = 0;
+
+        public static double kv_left = 0.00032;
+
+        public static double kv_right = 0.00038;
+
+        public static double ka = .01;
     }
+
+    SimpleMotorFeedforward leftFeedforward = new SimpleMotorFeedforward(ShooterControlConfig.ks, ShooterControlConfig.kv_left, ShooterControlConfig.ka);
+    SimpleMotorFeedforward rightFeedforward = new SimpleMotorFeedforward(ShooterControlConfig.ks, ShooterControlConfig.kv_right, ShooterControlConfig.ka);
+
+    PIDFController leftPid = new PIDFController(ShooterControlConfig.kP, ShooterControlConfig.kI, ShooterControlConfig.kD, 0.0);
+    PIDFController rightPid = new PIDFController(ShooterControlConfig.kP, ShooterControlConfig.kI, ShooterControlConfig.kD, 0.0);
 
     public Shooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator) {
         this.gamepad = gamepad;
@@ -89,18 +97,27 @@ public class Shooter extends SubsystemBase {
         this.rightFlywheel.setZeroPowerBehavior( Motor.ZeroPowerBehavior.FLOAT);
         this.leftFlywheel.setZeroPowerBehavior( Motor.ZeroPowerBehavior.FLOAT);
 
-        rightFlywheel.setVeloCoefficients(ShooterConfig.kP, ShooterConfig.kI, ShooterConfig.kD);
-        leftFlywheel.setVeloCoefficients(ShooterConfig.kP, ShooterConfig.kI, ShooterConfig.kD);
-
         speedIndicator.changeRed();
+
+        if(MainTeleop.Telemetry.ShooterTelemetry) {
+            telemetry.addData("target", this.targetVelocity);
+            telemetry.addData("right velocity", 0);
+            telemetry.addData("right error", 0);
+            telemetry.addData("right power (pid)", 0);
+            telemetry.addData("right power (ff)", 0);
+            telemetry.addData("current right power", 0);
+
+            telemetry.addData("left velocity", 0);
+            telemetry.addData("left error", 0);
+            telemetry.addData("left power (pid)", 0);
+            telemetry.addData("left power (ff)", 0);
+            telemetry.addData("current left power", 0);
+
+            telemetry.update();
+        }
     }
 
-    double currentLeftPower = 0.63;
-    double currentRightPower = 0.63;
-
     boolean wasLastColorGreen = false;
-
-    double currentBoost = 0;
 
     @Override
     public void periodic() {
@@ -108,11 +125,9 @@ public class Shooter extends SubsystemBase {
 
         double rightVelocity = rightFlywheel.getVelocity();
         double rightError = targetVelocity - rightVelocity;
-        double rightPowerDelta = rightShooterPid.calculatePIDAlgorithm(rightError);
 
         double leftVelocity = leftFlywheel.getVelocity();
         double leftError = targetVelocity - leftVelocity;
-        double leftPowerDelta = leftShooterPid.calculatePIDAlgorithm(leftError);
 
         if(Math.abs(rightError) < ShooterConfig.FlywheelAcceptableRpmError && Math.abs(leftError) < ShooterConfig.FlywheelAcceptableRpmError){
             if(!wasLastColorGreen) {
@@ -126,37 +141,49 @@ public class Shooter extends SubsystemBase {
             }
         }
 
-        currentRightPower += rightPowerDelta;
-        currentLeftPower += leftPowerDelta;
+        // --- Compute feedback + feedforward ---
+        // PIDFController works in "measurement, setpoint" order
+        double leftPidPower = leftPid.calculate(leftVelocity, targetVelocity);
+        double rightPidPower = rightPid.calculate(rightVelocity, targetVelocity);
 
-        double elaspedTime = feedforwardTimer.milliseconds();
-//        if(elaspedTime > ShooterFeedforwardConfig.FeedforwardBoostStartMs && elaspedTime < ShooterFeedforwardConfig.FeedforwardBoostEndMs) {
-//            currentRightPower += currentBoost;
-//            currentLeftPower += currentBoost;
-//            currentBoost *= ShooterFeedforwardConfig.FeedForwardDampner;
-//        }
 
-        rightFlywheel.set(currentRightPower);
-        leftFlywheel.set(currentLeftPower);
+        // For a shooter, we usually assume accel ~ 0 in steady state
+        double leftFeedforwardValue = leftFeedforward.calculate(targetVelocity);
+        double rightFeedforwardValue = rightFeedforward.calculate(targetVelocity);
+
+        // Total output to motors (you tune k's so this ends up in [-1, 1])
+        double leftPower = leftFeedforwardValue + leftPidPower;
+        double rightPower = rightFeedforwardValue + rightPidPower;
+
+        leftPower = clamp(leftPower, -1.0, 1.0);
+        rightPower = clamp(rightPower, -1.0, 1.0);
+
+        rightFlywheel.set(rightPower);
+        leftFlywheel.set(leftPower);
 
         if(MainTeleop.Telemetry.ShooterTelemetry) {
             telemetry.addData("target", this.targetVelocity);
-            telemetry.addData("feedforward timer", elaspedTime);
 
             telemetry.addData("right velocity", rightVelocity);
             telemetry.addData("right error", rightError);
-            telemetry.addData("right power delta", rightPowerDelta);
-            telemetry.addData("right feedforward boost", currentBoost);
-            telemetry.addData("current right power", currentRightPower);
+            telemetry.addData("right power (pid)", rightPidPower);
+            telemetry.addData("right power (ff)", rightFeedforwardValue);
+            telemetry.addData("current right power", rightPower);
 
             telemetry.addData("left velocity", leftVelocity);
             telemetry.addData("left error", leftError);
-            telemetry.addData("left power delta", leftPowerDelta);
-            telemetry.addData("left feedforward boost", currentBoost);
-            telemetry.addData("current left power", currentLeftPower);
+            telemetry.addData("left power (pid)", leftPidPower);
+            telemetry.addData("left power (ff)", leftFeedforwardValue);
+            telemetry.addData("current left power", leftPower);
 
             telemetry.update();
         }
+    }
+
+    private double clamp(double value, double min, double max) {
+        if (value < min) return min;
+        if (value > max) return max;
+        return value;
     }
 
     double targetVelocity = ShooterConfig.ShooterRpmHi;
@@ -176,17 +203,13 @@ public class Shooter extends SubsystemBase {
         this.targetVelocity = targetRpm;
     }
 
-    public void Shoot() {
-
-    }
-
     public void CloseShoot() {
         this.liftServo.setPosition(ShooterConfig.TiltServoHi);
         this.targetVelocity = ShooterConfig.ShooterRpmLo;
     }
 
-    public void CloseShootWithScale(double scale, double elevationScale) {
-        this.liftServo.setPosition(ShooterConfig.TiltServoHi*elevationScale);
+    public void CloseShootWithScale(double scale) {
+        this.liftServo.setPosition(ShooterConfig.TiltServoHi);
         this.targetVelocity = ShooterConfig.ShooterRpmLo * scale;
     }
 
@@ -195,15 +218,8 @@ public class Shooter extends SubsystemBase {
         this.targetVelocity = ShooterConfig.ShooterRpmHi;
     }
 
-    ElapsedTime feedforwardTimer = new ElapsedTime();
-
-    public void BeginFeedForwardBoost() {
-        //feedforwardTimer.reset();
-        //currentBoost = ShooterFeedforwardConfig.FeedforwardBoost;
-    }
-
-    public void FarShootWithScale(double scale,double elevationScale) {
-        this.liftServo.setPosition(ShooterConfig.TiltServoLo*elevationScale);
+    public void FarShootWithScale(double scale) {
+        this.liftServo.setPosition(ShooterConfig.TiltServoLo);
         this.targetVelocity = ShooterConfig.ShooterRpmHi * scale;
     }
 
