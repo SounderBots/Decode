@@ -10,13 +10,13 @@ import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.opmodes.auton.AutonCommonConfigs;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.AutonDriveTrain;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import lombok.Getter;
@@ -73,6 +73,10 @@ public class CommandFactory {
 
     public Command moveTo(Pose end, PathType pathType, double maxPower) {
         return new DriveCommand(follower, end, pathType, false).withTempMaxPower(maxPower);
+    }
+
+    public Command moveToCurve(double maxPower, Pose... poses) {
+        return new DriveCommand(follower, Arrays.asList(poses), PathType.CURVE, DriveCommand.DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, false);
     }
 
     /**
@@ -172,16 +176,22 @@ public class CommandFactory {
         return new SingleExecuteCommand(() -> shooter.CloseShootWithScale(scale, elevationScale));
     }
 
-    public Command loadAndShoot(Command shootCommand) {
+    public Command noop() {
+        return new InstantCommand(() -> {});
+    }
+
+    public Command loadAndShoot(Command shootCommand, boolean loadFirst) {
         return new ParallelDeadlineGroup(
-                sleep(AutonCommonConfigs.shootRowTimeoutInMS),
-                loadArtifact()
+                sleep(loadFirst ? AutonCommonConfigs.shootWithLoadTimeoutInMS : AutonCommonConfigs.shootWithoutLoadTimeoutInMS),
+                startIntake()
+                        .andThen(turnOnSlowChamberRoller())
+//                        .andThen((loadFirst ? turnOnSlowChamberRoller() : noop()))
                         .andThen(shootCommand)
                         .andThen(waitForShooterReady())
                         .andThen(turnOnSlowChamberRoller())
                         .andThen(topRollerOutput())
 
-        );
+        ).andThen(stopIntake()).andThen(stopTopRoller()).andThen(turnOffChamberRoller());
 //        long transferDelay = 200;
 //        return ballReset()
 ////                .andThen(resetFeeder())

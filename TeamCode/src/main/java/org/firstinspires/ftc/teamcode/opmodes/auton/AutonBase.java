@@ -27,11 +27,16 @@ public abstract class AutonBase extends CommandAutoOpMode {
                 };
         };
 
+        boolean isSecondRow = row == RowsOnFloor.SECOND;
+
+        Command driveToShootCommand = isSecondRow
+                ? commandFactory.moveTo(rowStartingPosition, PathType.LINE, driveMaxPower).andThen(commandFactory.moveTo(getRowShootingPosition(), PathType.LINE, driveMaxPower))
+                : commandFactory.moveTo(getRowShootingPosition(), PathType.LINE, driveMaxPower);
         return commandFactory
                 .moveTo(rowStartingPosition, PathType.CURVE, driveMaxPower)
                 .andThen(intakeRow(row)) // intake row (3 balls)
-                .andThen(commandFactory.moveTo(getRowShootingPosition(), PathType.CURVE, driveMaxPower)) // move to shooting position
-                .andThen(getShootRowCommand()) // shoot row
+                .andThen(driveToShootCommand) // move to shooting position
+                .andThen(getShootRowCommand(true)) // shoot row
         ;
     }
 
@@ -55,8 +60,8 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     protected Command moveAndShootPreloads() {
         return commandFactory
-                .startMove(getStartingPosition(), getRowShootingPosition(), PathType.LINE, .7) // move to shooting position
-                .andThen(getShootRowCommand()) // shoot preloads
+                .startMove(getStartingPosition(), getRowShootingPosition(), PathType.LINE, .6) // move to shooting position
+                .andThen(getShootRowCommand(false)) // shoot preloads
         ;
     }
 
@@ -93,8 +98,8 @@ public abstract class AutonBase extends CommandAutoOpMode {
         };
     }
 
-    public Command getShootRowCommand() {
-        return commandFactory.loadAndShoot(getShootCommand());
+    public Command getShootRowCommand(boolean loadFirst) {
+        return commandFactory.loadAndShoot(getShootCommand(), loadFirst);
 //                .andThen(commandFactory.sleep(AutonCommonConfigs.betweenShootDelays))
 //                .andThen(commandFactory.loadAndShoot(getShootCommand()))
 //                .andThen(commandFactory.sleep(AutonCommonConfigs.betweenShootDelays))
