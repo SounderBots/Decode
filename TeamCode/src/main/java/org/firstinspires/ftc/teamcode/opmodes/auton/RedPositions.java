@@ -13,15 +13,15 @@ public class RedPositions implements Positions {
     // each row y increase 24 inches
     //first row is the row close to the trangle
     public static double firstRowStartY = 33;
-    public static double secondRowStartY = 58;
+    public static double secondRowStartY = 63;
     public static double thirdRowStartY = 82.5;
 
     public static double intakeHeadingDegrees = 0;
 
     public static double backShootAngleInDegrees = 70;
     public static Pose backShootPosition = new Pose(88, 11, Math.toRadians(backShootAngleInDegrees));
-    public static double frontShootAngleInDegrees = 38;
-    public static Pose frontShootPosition = new Pose(79.5, 84.75, Math.toRadians(frontShootAngleInDegrees));
+    public static double frontShootAngleInDegrees = 44;
+    public static Pose frontShootPosition = new Pose(87, 93, Math.toRadians(frontShootAngleInDegrees));
 
     public static Pose backStartPosition = new Pose(87.5, 8.3, Math.toRadians(90));
     public static Pose frontStartPosition = new Pose(120.5, 125.75, Math.toRadians(38));

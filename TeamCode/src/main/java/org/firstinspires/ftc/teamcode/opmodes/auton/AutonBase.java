@@ -76,8 +76,8 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     protected List<RowsOnFloor> getRowSequence() {
         return switch (shootRange()) {
-            case LONG -> List.of(RowsOnFloor.FIRST, RowsOnFloor.SECOND, RowsOnFloor.THIRD);
-            case SHORT -> List.of(RowsOnFloor.THIRD, RowsOnFloor.SECOND, RowsOnFloor.FIRST);
+            case LONG -> List.of(RowsOnFloor.FIRST, RowsOnFloor.SECOND/*, RowsOnFloor.THIRD*/);
+            case SHORT -> List.of(RowsOnFloor.THIRD, RowsOnFloor.SECOND/*, RowsOnFloor.FIRST*/);
         };
     }
 
