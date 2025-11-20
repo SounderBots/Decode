@@ -18,7 +18,7 @@ public class RedLongPositions implements Positions {
 
     public static double intakeHeadingDegrees = 0;
 
-    public static double backShootAngleInDegrees = 70;
+    public static double backShootAngleInDegrees = 68;
     public static Pose backShootPosition = new Pose(88, 11, Math.toRadians(backShootAngleInDegrees));
     public static double frontShootAngleInDegrees = 42;
     public static Pose frontShootPosition = new Pose(87, 93, Math.toRadians(frontShootAngleInDegrees));
@@ -31,7 +31,7 @@ public class RedLongPositions implements Positions {
 
     public static double driveTrainIntakePowerScale = 1.5;
 
-    public static double longShootPreloadInDegree = 72;
+    public static double longShootPreloadInDegree = 70;
     public static Pose longShootPreloadPosition = new Pose(88, 11, Math.toRadians(longShootPreloadInDegree));
 
     public RedLongPositions() {
