@@ -5,13 +5,13 @@ import com.bylazar.configurables.annotations.Configurable;
 @Configurable
 public class AutonCommonConfigs {
     public static double DrivetrainIntakePower = .30; //The speed the robot moves when intaking, not intake wheel speed
-    public static double backShootVelocityScale = 1.022;
+    public static double backShootVelocityScale = 1.06;
     public static double frontShootVelocityScale = 1.007;
 
     public static long betweenShootDelays = 400;
 
-    public static double TiltServoHi = 1.15;
-    public static double TiltServoLo = 1;
+    public static double TiltServoHi = 1.25;
+    public static double TiltServoLo = 1.5;
 
     public static double slowMoveSpeed = .65;
     public static double middleMoveSpeed = .7;

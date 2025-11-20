@@ -20,4 +20,12 @@ public interface Positions {
 
     public Pose getLongShootPosition();
     public Pose getShortShootPosition();
+
+    default double getDriveTrainIntakePowerScale() {
+        return 1;
+    }
+
+    default Pose getLongPreloadShootPosition() {
+        return getLongShootPosition();
+    }
 }

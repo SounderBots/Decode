@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import lombok.Getter;
@@ -73,6 +74,10 @@ public class CommandFactory {
 
     public Command moveTo(Pose end, PathType pathType, double maxPower) {
         return new DriveCommand(follower, end, pathType, false).withTempMaxPower(maxPower);
+    }
+
+    public Command moveTo(Pose end, PathType pathType, double maxPower, long timeoutMs) {
+        return new DriveCommand(follower, List.of(follower.getPose(), end), pathType, timeoutMs, TimeUnit.MILLISECONDS, false).withTempMaxPower(maxPower);
     }
 
     public Command moveToCurve(double maxPower, Pose... poses) {

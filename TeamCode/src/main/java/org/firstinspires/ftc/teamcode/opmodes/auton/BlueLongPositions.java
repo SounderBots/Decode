@@ -4,7 +4,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 
 @Configurable
-public class BluePositions implements Positions {
+public class BlueLongPositions implements Positions {
 
     public static double rowStartX = 44;
     public static double rowEndXLongIntake = 6;
@@ -31,7 +31,12 @@ public class BluePositions implements Positions {
     public static Pose backFinishPosition = new Pose(48, 24, 0);
     public static Pose frontFinishPosition = new Pose(48, 120, 0);
 
-    public BluePositions () {
+    public static double driveTrainIntakePowerScale = 1.5;
+
+    public static double longShootPreloadHeadingInDegree = 75;
+    public static Pose longShootPreloadPosition = new Pose(88, 11, Math.toRadians(longShootPreloadHeadingInDegree));
+
+    public BlueLongPositions() {
         backShootPosition = backShootPosition.setHeading(Math.toRadians(backShootAngleInDegrees));
         frontShootPosition = frontShootPosition.setHeading(Math.toRadians(frontShootAngleInDegrees));
     }
@@ -98,6 +103,16 @@ public class BluePositions implements Positions {
     @Override
     public Pose getThirdRowEndPosition() {
         return new Pose(rowEndXShortIntake, thirdRowStartY + rowEndYOffset, Math.toRadians(headingDegrees));
+    }
+
+    @Override
+    public double getDriveTrainIntakePowerScale() {
+        return driveTrainIntakePowerScale;
+    }
+
+    @Override
+    public Pose getLongPreloadShootPosition() {
+        return longShootPreloadPosition;
     }
 //    // each row y increase 24 inches
 //    public static Pose firstRowStartingPosition = new Pose(108, 32.16, Math.toRadians(0));

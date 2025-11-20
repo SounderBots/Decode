@@ -60,7 +60,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     protected Command moveAndShootPreloads() {
         return commandFactory
-                .startMove(getStartingPosition(), getRowShootingPosition(), PathType.LINE, .6) // move to shooting position
+                .startMove(getStartingPosition(), getPreloadShootPosition(), PathType.LINE, .6) // move to shooting position
                 .andThen(getShootRowCommand(false)) // shoot preloads
         ;
     }
@@ -84,7 +84,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
     protected Command intakeRow(RowsOnFloor row) {
         Pose rowEndPose = getRowEndingPosition(row);
         return new ParallelRaceGroup(
-                commandFactory.moveTo(rowEndPose, PathType.LINE, AutonCommonConfigs.DrivetrainIntakePower),
+                commandFactory.moveTo(rowEndPose, PathType.LINE, getIntakeDriveTrainPower()),
                 commandFactory.intakeRow()
         );
     }
@@ -93,8 +93,8 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     public Command getShootCommand() {
         return switch (shootRange()) {
-            case LONG -> commandFactory.farShootWithScale(AutonCommonConfigs.backShootVelocityScale, AutonCommonConfigs.TiltServoHi);
-            case SHORT -> commandFactory.closeShootWithScale(AutonCommonConfigs.frontShootVelocityScale, AutonCommonConfigs.TiltServoLo);
+            case LONG -> commandFactory.farShootWithScale(AutonCommonConfigs.backShootVelocityScale, AutonCommonConfigs.TiltServoLo);
+            case SHORT -> commandFactory.closeShootWithScale(AutonCommonConfigs.frontShootVelocityScale, AutonCommonConfigs.TiltServoHi);
         };
     }
 
@@ -138,8 +138,25 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     public Positions getPositions() {
         return switch (getSide()) {
-            case RED -> new RedPositions();
-            case BLUE -> new BluePositions();
+            case RED -> switch (shootRange()) {
+                case SHORT -> new RedShortPositions();
+                case LONG -> new RedLongPositions();
+            };
+            case BLUE -> switch (shootRange()) {
+                case SHORT -> new BlueShortPositions();
+                case LONG -> new BlueLongPositions();
+            };
         };
+    }
+
+    public double getIntakeDriveTrainPower() {
+        return AutonCommonConfigs.DrivetrainIntakePower * getPositions().getDriveTrainIntakePowerScale();
+    }
+
+    public Pose getPreloadShootPosition() {
+        if (shootRange() == ShootRange.LONG) {
+            return getPositions().getLongPreloadShootPosition();
+        }
+        return getRowShootingPosition();
     }
 }
