@@ -43,7 +43,7 @@ public class Shooter extends SubsystemBase {
 
         public static double IntakeMaxPower = 1;
 
-        public static double TiltServoHi = .4;
+        public static double TiltServoHi = .5;
 
         public static double TiltServoLo = 0;
 
