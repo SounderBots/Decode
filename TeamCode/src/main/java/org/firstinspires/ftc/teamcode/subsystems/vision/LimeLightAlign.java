@@ -29,9 +29,9 @@ public class LimeLightAlign extends SubsystemBase {
 
     @Config
     public static class LimelightConfig {
-        public static double leftLimit = -0.1;
+        public static double leftLimit = Math.toRadians(-2.5-3);
 
-        public static double rightLimit = -0.14;
+        public static double rightLimit = Math.toRadians(-2.5+3);
     }
 
     RGBLightIndicator leftIndicator, rightIndicator;
