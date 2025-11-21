@@ -12,6 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.command.CommonConstants;
 import org.firstinspires.ftc.teamcode.common.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.common.AprilTagPosition;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 
 import static com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
@@ -114,7 +115,7 @@ public class LimeLightAlign extends SubsystemBase {
 
                 aprilTagPosition = new AprilTagPosition(aprilTagEnum, distance, (fr.getTargetXDegrees() * Math.PI)/180.0d, (fr.getTargetYDegrees() * Math.PI)/180.0d);
 
-                boolean addTelemetry = false;
+                boolean addTelemetry = MainTeleop.Telemetry.LimeLight;
                 if(addTelemetry) {
                     telemetry.addData("Tag ID", aprilTagEnum.getValue());
                     telemetry.addData("x", x);

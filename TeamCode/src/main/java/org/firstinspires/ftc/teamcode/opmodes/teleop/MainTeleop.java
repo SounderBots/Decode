@@ -32,7 +32,9 @@ public class MainTeleop extends OpModeTemplate {
 
     @Config
     public static class Telemetry {
-        public static boolean ShooterTelemetry = false;
+        public static boolean Shooter = false;
+
+        public static boolean LimeLight = false;
     }
 
 

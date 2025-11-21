@@ -9,12 +9,10 @@ import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
-import org.firstinspires.ftc.teamcode.util.SonicPIDFController;
 
 public class Shooter extends SubsystemBase {
 
@@ -99,7 +97,7 @@ public class Shooter extends SubsystemBase {
 
         speedIndicator.changeRed();
 
-        if(MainTeleop.Telemetry.ShooterTelemetry) {
+        if(MainTeleop.Telemetry.Shooter) {
             telemetry.addData("target", this.targetVelocity);
             telemetry.addData("right velocity", 0);
             telemetry.addData("right error", 0);
@@ -164,7 +162,7 @@ public class Shooter extends SubsystemBase {
         rightFlywheel.set(rightPower);
         leftFlywheel.set(leftPower);
 
-        if(MainTeleop.Telemetry.ShooterTelemetry) {
+        if(MainTeleop.Telemetry.Shooter) {
             telemetry.addData("target", this.targetVelocity);
 
             telemetry.addData("right velocity", rightVelocity);
