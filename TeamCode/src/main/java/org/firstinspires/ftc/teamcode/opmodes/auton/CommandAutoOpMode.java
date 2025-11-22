@@ -25,12 +25,22 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
 
     private static final boolean emitTelemetry = true;
 
+    Command finalGroup;
+
     @Override
     public void reset() {
         super.reset();
     }
 
     private static final String LOG_TAG = "AUTO_DEBUG";
+
+    @Override
+    public void waitForStart() {
+        super.waitForStart();
+        schedule(finalGroup);
+        logInitStep("Commands scheduled");
+    }
+
     @Override
     public void initialize() {
         logInitStep("Beginning");
@@ -72,14 +82,12 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
         logInitStep("After setting intake");
 
         // sleep 30s after createCommand is a fill gap command to avoid IndexOutOfBoundException
-        Command finalGroup = new ParallelRaceGroup(
+        finalGroup = new ParallelRaceGroup(
                 commandFactory.sleep(3200000),
                 createCommand().andThen(
                         commandFactory.sleep(3000000)
                 ));
         logInitStep("Commands created");
-        schedule(finalGroup);
-        logInitStep("Commands scheduled");
     }
 
     protected abstract Command createCommand();

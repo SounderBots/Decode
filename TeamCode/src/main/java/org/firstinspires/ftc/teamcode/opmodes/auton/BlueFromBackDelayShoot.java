@@ -1,12 +1,17 @@
 package org.firstinspires.ftc.teamcode.opmodes.auton;
 
+import com.arcrobotics.ftclib.command.Command;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name="Blue shoot from back", group="Blue")
+import org.firstinspires.ftc.teamcode.command.PathType;
+
+@Autonomous(name="Blue from back delay shoot", group="Blue")
 @Configurable
-public class BlueShootFromBack extends AutonBase {
+public class BlueFromBackDelayShoot extends AutonBase {
+
+    public static long delayInMS = 20000;
 
 //    public static double preloadShootingAngle = 104;
 //    public static double rowShootingAngle = 104;
@@ -23,5 +28,12 @@ public class BlueShootFromBack extends AutonBase {
     @Override
     protected ShootRange shootRange() {
         return ShootRange.LONG;
+    }
+
+    @Override
+    protected Command createCommand() {
+        Pose startPosition = getStartingPosition();
+        return commandFactory.sleep(delayInMS).andThen(moveAndShootPreloads()).andThen(intakeRowAndShoot(RowsOnFloor.FIRST, false))
+                .andThen(commandFactory.moveTo(startPosition.minus(new Pose(0, -20, getPreloadShootPosition().getHeading())), PathType.LINE));
     }
 }

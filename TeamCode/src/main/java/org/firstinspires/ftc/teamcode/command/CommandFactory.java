@@ -9,12 +9,16 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
+import org.firstinspires.ftc.teamcode.opmodes.auton.AutonCommonConfigs;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.AutonDriveTrain;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -54,25 +58,30 @@ public class CommandFactory {
 //    public Command driveTrainTelemetry() {
 //        return new DriveTrainTelemetryCommand(autonDriveTrain, telemetry);
 //    }
-
-    public Command startMove(Pose end) {
-        return startMove(new Pose(0, 0, 0), end);
-    }
-
     public Command startMove(Pose start, Pose end) {
         return new DriveToTargetPedroPathCommand(follower, start, end, true);
     }
 
-    public Command startMove(Pose start, Pose end, double maxPower) {
-        return new DriveToTargetPedroPathCommand(follower, start, end, true).withTempMaxPower(maxPower);
+    public Command startMove(Pose start, Pose end, PathType pathType, double maxPower) {
+        return new DriveCommand(follower, start, end, pathType, true).withTempMaxPower(maxPower);
+//        return new DriveToTargetPedroPathCommand(follower, start, end, true).withTempMaxPower(maxPower);
     }
 
-    public Command moveTo(Pose end) {
-        return new DriveToTargetPedroPathCommand(follower, end, false);
+    public Command moveTo(Pose end, PathType pathType) {
+        return new DriveCommand(follower, end, pathType, false);
+//        return new DriveToTargetPedroPathCommand(follower, end, false);
     }
 
-    public Command moveTo(Pose end, double maxPower) {
-        return new DriveToTargetPedroPathCommand(follower, end, false).withTempMaxPower(maxPower);
+    public Command moveTo(Pose end, PathType pathType, double maxPower) {
+        return new DriveCommand(follower, end, pathType, false).withTempMaxPower(maxPower);
+    }
+
+    public Command moveTo(Pose end, PathType pathType, double maxPower, long timeoutMs) {
+        return new DriveCommand(follower, List.of(follower.getPose(), end), pathType, timeoutMs, TimeUnit.MILLISECONDS, false).withTempMaxPower(maxPower);
+    }
+
+    public Command moveToCurve(double maxPower, Pose... poses) {
+        return new DriveCommand(follower, Arrays.asList(poses), PathType.CURVE, DriveCommand.DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, false);
     }
 
     /**
@@ -114,9 +123,17 @@ public class CommandFactory {
         return new IntakeRowCommand(transferChamber, intake, telemetry, DEFAULT_TIME_OUT);
     }
 
-    public Command ballReset() {
-        return new SingleExecuteCommand(transferChamber::BallReset);
+    public Command topRollerOutput() {
+        return new SingleExecuteCommand(transferChamber::TopRollersOuttake);
     }
+
+    public Command stopTopRoller() {
+        return new SingleExecuteCommand(transferChamber::TopRollersStop);
+    }
+
+//    public Command ballReset() {
+//        return new SingleExecuteCommand(transferChamber::BallReset);
+//    }
 
     public Command loadArtifact() {
         return new ParallelDeadlineGroup(
@@ -128,21 +145,25 @@ public class CommandFactory {
         return new SingleExecuteCommand(transferChamber::TurnOffChamberRoller);
     }
 
-    public Command feedArtifact() {
-        return new SingleExecuteCommand(transferChamber::FeedArtifact);
+    public Command turnOnSlowChamberRoller() {
+        return new SingleExecuteCommand(transferChamber::TurnOnSlowChamberRoller);
     }
 
-    public Command resetFeeder() {
-        return new SingleExecuteCommand(transferChamber::ResetFeeder);
-    }
+//    public Command feedArtifact() {
+//        return new SingleExecuteCommand(transferChamber::FeedArtifact);
+//    }
+//
+//    public Command resetFeeder() {
+//        return new SingleExecuteCommand(transferChamber::ResetFeeder);
+//    }
 
-    public Command ballStow() {
-        return new SingleExecuteCommand(transferChamber::BallStow);
-    }
-
-    public Command ballLaunch() {
-        return new SingleExecuteCommand(transferChamber::BallLaunch);
-    }
+//    public Command ballStow() {
+//        return new SingleExecuteCommand(transferChamber::BallStow);
+//    }
+//
+//    public Command ballLaunch() {
+//        return new SingleExecuteCommand(transferChamber::BallLaunch);
+//    }
 
     public Command farShoot() {
         return new SingleExecuteCommand(shooter::FarShoot);
@@ -152,30 +173,45 @@ public class CommandFactory {
         return new SingleExecuteCommand(shooter::CloseShoot);
     }
 
-    public Command farShootWithScale(double scale) {
-        return new SingleExecuteCommand(() -> shooter.FarShootWithScale(scale));
+    public Command farShootWithScale(double scale, double elevationScale) {
+        return new SingleExecuteCommand(() -> shooter.FarShootWithScale(scale, elevationScale));
     }
 
-    public Command closeShootWithScale(double scale) {
-        return new SingleExecuteCommand(() -> shooter.CloseShootWithScale(scale));
+    public Command closeShootWithScale(double scale, double elevationScale) {
+        return new SingleExecuteCommand(() -> shooter.CloseShootWithScale(scale, elevationScale));
     }
 
-    public Command loadAndShoot(Command shootCommand) {
-        long transferDelay = 200;
-        return ballReset()
-                .andThen(resetFeeder())
-                .andThen(shootCommand)
-                .andThen(loadArtifact())
-                .andThen(sleep(transferDelay))
-                .andThen(turnOffChamberRoller())
-                .andThen(sleep(transferDelay))
-                .andThen(feedArtifact())
-                .andThen(sleep(transferDelay))
-                .andThen(ballStow())
-                .andThen(resetFeeder())
-                .andThen(waitForShooterReady())
-                .andThen(sleep(transferDelay + 200))
-                .andThen(ballLaunch());
+    public Command noop() {
+        return new InstantCommand(() -> {});
+    }
+
+    public Command loadAndShoot(Command shootCommand, boolean loadFirst) {
+        return new ParallelDeadlineGroup(
+                sleep(loadFirst ? AutonCommonConfigs.shootWithLoadTimeoutInMS : AutonCommonConfigs.shootWithoutLoadTimeoutInMS),
+                startIntake()
+                        .andThen(turnOnSlowChamberRoller())
+//                        .andThen((loadFirst ? turnOnSlowChamberRoller() : noop()))
+                        .andThen(shootCommand)
+                        .andThen(waitForShooterReady())
+                        .andThen(turnOnSlowChamberRoller())
+                        .andThen(topRollerOutput())
+
+        ).andThen(stopIntake()).andThen(stopTopRoller()).andThen(turnOffChamberRoller());
+//        long transferDelay = 200;
+//        return ballReset()
+////                .andThen(resetFeeder())
+//                .andThen(shootCommand)
+//                .andThen(loadArtifact())
+//                .andThen(sleep(transferDelay))
+//                .andThen(turnOffChamberRoller())
+//                .andThen(sleep(transferDelay))
+////                .andThen(feedArtifact())
+//                .andThen(sleep(transferDelay))
+//                .andThen(ballStow())
+////                .andThen(resetFeeder())
+//                .andThen(waitForShooterReady())
+//                .andThen(sleep(transferDelay + 200))
+//                .andThen(ballLaunch());
     }
 
     public Pose getCurrentFollowerPose() {

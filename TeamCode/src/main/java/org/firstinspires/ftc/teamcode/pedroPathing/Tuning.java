@@ -859,7 +859,7 @@ class HeadingTuner extends OpMode {
  * @version 1.0, 3/12/2024
  */
 class DriveTuner extends OpMode {
-    public static double DISTANCE = 35;
+    public static double DISTANCE = 48;
     private boolean forward = true;
 
     private PathChain forwards;
@@ -937,7 +937,7 @@ class DriveTuner extends OpMode {
  * @version 1.0, 3/12/2024
  */
 class ForwardBackward extends OpMode {
-    public static double DISTANCE = 20;
+    public static double DISTANCE = 48;
     private boolean forward = true;
 
     private Path forwards;

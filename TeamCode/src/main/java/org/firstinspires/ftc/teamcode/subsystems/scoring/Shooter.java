@@ -11,8 +11,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.common.AprilTagPosition;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
+import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 
 public class Shooter extends SubsystemBase {
 
@@ -29,7 +31,7 @@ public class Shooter extends SubsystemBase {
 
         public static double ShooterRpmHi = 930;
 
-        public static double ShooterRpmLo = 750;
+        public static double ShooterRpmLo = 770;
 
         public static double RightLauncherStow = 0.34;
 
@@ -41,11 +43,14 @@ public class Shooter extends SubsystemBase {
 
         public static double IntakeMaxPower = 1;
 
-        public static double TiltServoHi = .5;
+        public static double TiltServoHi = .55;
 
-        public static double TiltServoLo = 0;
+        public static double TiltServoLo = 0.1;
 
         public static double FlywheelAcceptableRpmError = 40;
+
+        public static long AutoSpeedCheckSkipCount = 10;
+
         }
 
     @Config
@@ -76,9 +81,16 @@ public class Shooter extends SubsystemBase {
     PIDFController leftPid = new PIDFController(ShooterControlConfig.kP, ShooterControlConfig.kI, ShooterControlConfig.kD, 0.0);
     PIDFController rightPid = new PIDFController(ShooterControlConfig.kP, ShooterControlConfig.kI, ShooterControlConfig.kD, 0.0);
 
+    LimeLightAlign limelight;
+
     public Shooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator) {
+        this(hardwareMap, gamepad, telemetry, speedIndicator, null);
+    }
+
+    public Shooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator, LimeLightAlign limelight) {
         this.gamepad = gamepad;
         this.telemetry = telemetry;
+        this.limelight = limelight;
 
         this.speedIndicator = speedIndicator;
 
@@ -98,7 +110,9 @@ public class Shooter extends SubsystemBase {
         speedIndicator.changeRed();
 
         if(MainTeleop.Telemetry.Shooter) {
-            telemetry.addData("target", this.targetVelocity);
+            telemetry.addData("target velocity", this.targetVelocity);
+            telemetry.addData("target tilt", this.targetVelocity);
+
             telemetry.addData("right velocity", 0);
             telemetry.addData("right error", 0);
             telemetry.addData("right power (pid)", 0);
@@ -116,10 +130,25 @@ public class Shooter extends SubsystemBase {
     }
 
     boolean wasLastColorGreen = false;
+    long counter = 0;
+    double lastTilt = 0;
 
     @Override
     public void periodic() {
         super.periodic();
+
+        // Don't check limelight every time.
+        if(autoSpeed && counter++ == ShooterConfig.AutoSpeedCheckSkipCount) {
+            AutoSpeed expectedSpeed = GetAutoSpeed();
+            targetVelocity = expectedSpeed.Rpm;
+
+            if(expectedSpeed.Tilt != lastTilt) {
+                liftServo.setPosition(expectedSpeed.Tilt);
+                lastTilt = expectedSpeed.Tilt;
+            }
+
+            counter = 0;
+        }
 
         double rightVelocity = rightFlywheel.getVelocity();
         double rightError = targetVelocity - rightVelocity;
@@ -129,8 +158,8 @@ public class Shooter extends SubsystemBase {
 
         if(Math.abs(rightError) < ShooterConfig.FlywheelAcceptableRpmError &&
                 Math.abs(leftError) < ShooterConfig.FlywheelAcceptableRpmError &&
-                Math.abs(leftVelocity - rightVelocity) < 30
-        ){
+                Math.abs(leftVelocity - rightVelocity) < 30)
+        {
             if(!wasLastColorGreen) {
                 wasLastColorGreen = true;
                 speedIndicator.changeGreen();
@@ -163,7 +192,8 @@ public class Shooter extends SubsystemBase {
         leftFlywheel.set(leftPower);
 
         if(MainTeleop.Telemetry.Shooter) {
-            telemetry.addData("target", this.targetVelocity);
+            telemetry.addData("target velocity", this.targetVelocity);
+            telemetry.addData("tilt", this.lastTilt);
 
             telemetry.addData("right velocity", rightVelocity);
             telemetry.addData("right error", rightError);
@@ -179,6 +209,49 @@ public class Shooter extends SubsystemBase {
 
             telemetry.update();
         }
+    }
+
+    public class AutoSpeed {
+
+        public AutoSpeed(double rpm, double tilt) {
+            this.Rpm = rpm;
+            this.Tilt = tilt;
+        }
+
+        public double Rpm;
+
+        public double Tilt;
+    }
+
+    private AutoSpeed GetAutoSpeed() {
+        AprilTagPosition position = this.limelight.getAprilTagPosition();
+
+        if(position != null) {
+            double distance = position.distance();
+            if (distance < 38) {
+                return new AutoSpeed(800, 0.5);
+            } else if (distance < 48) {
+                return new AutoSpeed(740, 0.7);
+            } else if (distance < 57) {
+                return new AutoSpeed(750, 0.6);
+            } else if (distance < 67) {
+                return new AutoSpeed(770, 0.5);
+            } else if (distance < 77) {
+                return new AutoSpeed(800, 0.46);
+            } else if (distance < 87) {
+                return new AutoSpeed(825, 0.4);
+            } else if (distance < 97) {
+                return new AutoSpeed(840, 0.4);
+            } else if (distance < 117) {
+                return new AutoSpeed(960, 0.1);
+            } else if (distance < 127) {
+                return new AutoSpeed(985, 0.1);
+            } else if (distance < 137) {
+                return new AutoSpeed(1005, 0.1);
+            }
+        }
+
+        return new AutoSpeed(800, .5);
     }
 
     private double clamp(double value, double min, double max) {
@@ -207,24 +280,41 @@ public class Shooter extends SubsystemBase {
     public void CloseShoot() {
         this.liftServo.setPosition(ShooterConfig.TiltServoHi);
         this.targetVelocity = ShooterConfig.ShooterRpmLo;
+        this.lastTilt = ShooterConfig.TiltServoHi;
     }
 
-    public void CloseShootWithScale(double scale) {
-        this.liftServo.setPosition(ShooterConfig.TiltServoHi);
+    public void CloseShootWithScale(double scale, double elevationScale) {
+        this.liftServo.setPosition(ShooterConfig.TiltServoHi * elevationScale);
         this.targetVelocity = ShooterConfig.ShooterRpmLo * scale;
+        this.lastTilt = ShooterConfig.TiltServoHi;
     }
 
     public void FarShoot() {
         this.liftServo.setPosition(ShooterConfig.TiltServoLo);
         this.targetVelocity = ShooterConfig.ShooterRpmHi;
+        this.lastTilt = ShooterConfig.TiltServoLo;
+
     }
 
-    public void FarShootWithScale(double scale) {
-        this.liftServo.setPosition(ShooterConfig.TiltServoLo);
+    public void FarShootWithScale(double scale, double elevationScale) {
+        this.liftServo.setPosition(ShooterConfig.TiltServoLo * elevationScale);
         this.targetVelocity = ShooterConfig.ShooterRpmHi * scale;
+        this.lastTilt = ShooterConfig.TiltServoLo;
     }
 
     public boolean isReadyToShoot() {
         return wasLastColorGreen;
+    }
+
+    boolean autoSpeed = false;
+
+    public void AutoSpeedAndTilt() {
+        if(this.limelight != null) {
+            this.autoSpeed = true;
+        }
+    }
+
+    public void DefaultSpeedAndTilt() {
+        this.autoSpeed = false;
     }
 }

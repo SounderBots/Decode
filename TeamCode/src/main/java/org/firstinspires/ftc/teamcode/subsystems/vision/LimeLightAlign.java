@@ -29,9 +29,14 @@ public class LimeLightAlign extends SubsystemBase {
 
     @Config
     public static class LimelightConfig {
-        public static double leftLimit = Math.toRadians(-2.5-3);
+        public static double leftSafeLimit = 2.5 + 2.0;
 
-        public static double rightLimit = Math.toRadians(-2.5+3);
+        public static double rightSafeLimit = 2.5 - 2.0;
+
+        public static double leftOuterLimit = 2.5 + 3.5;
+
+        public static double rightOuterLimit = 2.5 - 3.5;
+
     }
 
     RGBLightIndicator leftIndicator, rightIndicator;
@@ -51,15 +56,24 @@ public class LimeLightAlign extends SubsystemBase {
         else {
             this.horizontalAngle = aprilTagPosition.horizontalAngle();
 
-            if(horizontalAngle > LimelightConfig.leftLimit) {
+            if(horizontalAngle < LimelightConfig.leftSafeLimit && horizontalAngle > LimelightConfig.rightSafeLimit) {
+                leftIndicator.changeGreen();
+                rightIndicator.changeGreen();
+            } else if (horizontalAngle > LimelightConfig.leftSafeLimit && horizontalAngle < LimelightConfig.leftOuterLimit) {
+                leftIndicator.changeYellow();
+                rightIndicator.changeGreen();
+            } else if (horizontalAngle < LimelightConfig.rightSafeLimit && horizontalAngle > LimelightConfig.rightOuterLimit) {
+                rightIndicator.changeYellow();
+                leftIndicator.changeGreen();
+            } else if (horizontalAngle > LimelightConfig.leftOuterLimit) {
                 leftIndicator.changeRed();
                 rightIndicator.changeGreen();
-            } else if(horizontalAngle < LimelightConfig.rightLimit) {
+            } else if(horizontalAngle < LimelightConfig.rightOuterLimit) {
+                leftIndicator.changeGreen();
                 rightIndicator.changeRed();
-                leftIndicator.changeGreen();
             } else {
-                leftIndicator.changeGreen();
-                rightIndicator.changeGreen();
+                leftIndicator.changeOff();
+                rightIndicator.changeOff();
             }
         }
     }
@@ -103,29 +117,31 @@ public class LimeLightAlign extends SubsystemBase {
                 AprilTagEnum aprilTagEnum = null;
                 aprilTagEnum = AprilTagEnum.fromValue(fr.getFiducialId());
 
-                double distance = 0d;
-                Pose3D pose3D = fr.getTargetPoseCameraSpace();
-                Position p = pose3D.getPosition().toUnit(CommonConstants.DISTANCE_UNIT);
+                if(aprilTagEnum == AprilTagEnum.BLUE_GOAL || aprilTagEnum == AprilTagEnum.RED_GOAL) {
 
-                double x = p.x;
-                double y = p.y;
-                double z = p.z;
+                    double distance = 0d;
+                    Pose3D pose3D = fr.getTargetPoseCameraSpace();
+                    Position p = pose3D.getPosition().toUnit(CommonConstants.DISTANCE_UNIT);
 
-                distance = Math.sqrt(x * x + y * y + z * z);
+                    double x = p.x;
+                    double y = p.y;
+                    double z = p.z;
 
-                aprilTagPosition = new AprilTagPosition(aprilTagEnum, distance, (fr.getTargetXDegrees() * Math.PI)/180.0d, (fr.getTargetYDegrees() * Math.PI)/180.0d);
+                    distance = Math.sqrt(x * x + y * y + z * z);
 
-                boolean addTelemetry = MainTeleop.Telemetry.LimeLight;
-                if(addTelemetry) {
-                    telemetry.addData("Tag ID", aprilTagEnum.getValue());
-                    telemetry.addData("x", x);
-                    telemetry.addData("y", y);
-                    telemetry.addData("z", z);
-                    telemetry.addData("Estimated Distance", aprilTagPosition.distance());
-                    telemetry.addData("Estimated Horizontal shift", aprilTagPosition.horizontalAngle());
-                    telemetry.addData("Estimated Vertical Shift", aprilTagPosition.verticalAngle());
+                    aprilTagPosition = new AprilTagPosition(aprilTagEnum, distance, fr.getTargetXDegrees(), fr.getTargetYDegrees());
+
+                    boolean addTelemetry = MainTeleop.Telemetry.LimeLight;
+                    if (addTelemetry) {
+                        telemetry.addData("Tag ID", aprilTagEnum.getValue());
+                        telemetry.addData("x", x);
+                        telemetry.addData("y", y);
+                        telemetry.addData("z", z);
+                        telemetry.addData("Estimated Distance", aprilTagPosition.distance());
+                        telemetry.addData("Estimated Horizontal shift", aprilTagPosition.horizontalAngle());
+                        telemetry.addData("Estimated Vertical Shift", aprilTagPosition.verticalAngle());
+                    }
                 }
-
             } catch (Exception e) {
                 telemetry.addData("Limelight", "No Valid AprilTags detected");
             }

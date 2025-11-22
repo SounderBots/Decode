@@ -10,15 +10,17 @@ import com.pedropathing.paths.PathChain;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.DrawingToPanel;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
+public class DriveCommand extends SounderBotCommandBase {
 
-    private static final String LOG_TAG = DriveToTargetPedroPathCommand.class.getSimpleName();
+    private static final String LOG_TAG = DriveCommand.class.getSimpleName();
     final Follower follower;
     PathChain pathChain;
     boolean following = false;
@@ -29,23 +31,31 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
 
     private double tempMaxPower = -1;
 
-    public DriveToTargetPedroPathCommand(Follower follower, @NonNull Pose end, boolean isFirstMove) {
-        this(follower, new Pose(0, 0, 0), end, 4, TimeUnit.SECONDS, isFirstMove);
+    private List<Pose> points;
+
+    public static long DEFAULT_TIMEOUT_IN_SECONDS = 8;
+    private final PathType pathType;
+
+    public DriveCommand(Follower follower, @NonNull Pose end, PathType pathType, boolean isFirstMove) {
+        this(follower, List.of(new Pose(0, 0, 0), end), pathType, DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, isFirstMove);
     }
 
-    public DriveToTargetPedroPathCommand(Follower follower, @NonNull Pose start, @NonNull Pose end, boolean isFirstMove) {
-        this(follower, start, end, 4, TimeUnit.SECONDS, isFirstMove);
+    public DriveCommand(Follower follower, @NonNull Pose start, @NonNull Pose end, PathType pathType, boolean isFirstMove) {
+        this(follower, List.of(start, end), pathType, DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, isFirstMove);
     }
-    public DriveToTargetPedroPathCommand(Follower follower, @NonNull Pose start, @NonNull Pose end, long timeOut,  TimeUnit timeUnit, boolean isFirstMove) {
+    public DriveCommand(Follower follower, List<Pose> points, PathType pathType, long timeOut, TimeUnit timeUnit, boolean isFirstMove) {
         super(TimeUnit.MILLISECONDS.convert(timeOut, timeUnit));
-        Log.i(LOG_TAG,"start="+start+" end="+end);
+
+        Log.i(LOG_TAG, "Points = " + points);
         this.follower = follower;
         this.isFirstMove = isFirstMove;
-        this.start = start;
-        this.end = end;
+        this.start = points.get(0);
+        this.end = points.get(points.size() - 1);
+        this.points = points;
+        this.pathType = pathType;
     }
 
-    public DriveToTargetPedroPathCommand withTempMaxPower(double tempMaxPower) {
+    public DriveCommand withTempMaxPower(double tempMaxPower) {
         this.tempMaxPower = tempMaxPower;
         return this;
     }
@@ -70,7 +80,7 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
             }
 
             pathChain = follower.pathBuilder()
-                    .addPath(new BezierLine(startPos, end))
+                    .addPath(getCurve(startPos))
                     .setLinearHeadingInterpolation(startPos.getHeading(), end.getHeading())
                     .build();
             if (tempMaxPower > 0) {
@@ -82,8 +92,22 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
             follower.update();
             DrawingToPanel.drawDebug(follower);
         }
-
     }
+
+    protected BezierCurve getCurve(Pose startPos) {
+        return switch (pathType) {
+            case LINE -> new BezierLine(startPos, end);
+            case CURVE -> {
+                List<Pose> controlPoints = new ArrayList<>(points.size());
+                controlPoints.add(startPos);
+                controlPoints.addAll(points.subList(1, points.size()));
+                Log.i(LOG_TAG, "Curve control points: " + controlPoints);
+                yield new BezierCurve(controlPoints);
+            }
+        };
+    }
+
+
 
     @Override
     protected boolean isTargetReached() {
