@@ -92,12 +92,11 @@ public class DriverFeedback extends SubsystemBase {
     }
 
     public void OperatorRumbleBlip() {
-
-        OperatorRumbleBlip(1);
+        OperatorRumbleBlip(3);
     }
 
     public void OperatorRumbleBlip(int blipCount) {
-//        this.operatorGamepad.gamepad.rumbleBlips(blipCount);
+        this.operatorGamepad.gamepad.rumbleBlips(blipCount);
     }
 
     public void DriverControllerGreen() {

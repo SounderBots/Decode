@@ -9,6 +9,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
+import org.firstinspires.ftc.teamcode.subsystems.feedback.DriverFeedback;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
@@ -29,6 +30,8 @@ public class MainTeleop extends OpModeTemplate {
     TransferChamber transfer;
 
     RGBLightIndicator light;
+
+    DriverFeedback feedback;
 
     @Config
     public static class Telemetry {
@@ -57,6 +60,7 @@ public class MainTeleop extends OpModeTemplate {
         this.limeLight = new LimeLightAlign(hardwareMap, telemetry);
         this.shooter = new Shooter(hardwareMap, operatorGamepad, telemetry, light, limeLight);
         this.transfer = new TransferChamber(hardwareMap, operatorGamepad, telemetry);
+        this.feedback = new DriverFeedback(hardwareMap, driverGamepad, operatorGamepad, telemetry);
 
         new Trigger(() -> gamepad2.right_stick_y < -0.5)
                 .whenActive(new InstantCommand(intake::StartIntake, intake));
@@ -103,7 +107,10 @@ public class MainTeleop extends OpModeTemplate {
         // Turn on auto shooter rpm and tilt
         operatorGamepad.getGamepadButton(GamepadKeys.Button.X)
                 .whenPressed(
-                        new InstantCommand(shooter::AutoSpeedAndTilt, shooter)
+                        new SequentialCommandGroup(
+                                new InstantCommand(shooter::AutoSpeedAndTilt, shooter),
+                                new InstantCommand(feedback::OperatorRumbleBlip, feedback)
+                        )
                 );
 
         // Turn on auto shooter rpm and tilt
