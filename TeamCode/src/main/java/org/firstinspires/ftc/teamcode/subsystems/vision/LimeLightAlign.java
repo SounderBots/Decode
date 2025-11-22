@@ -29,9 +29,14 @@ public class LimeLightAlign extends SubsystemBase {
 
     @Config
     public static class LimelightConfig {
-        public static double leftLimit = -0.1;
+        public static double leftSafeLimit = 2.5 + 2.0;
 
-        public static double rightLimit = -0.14;
+        public static double rightSafeLimit = 2.5 - 2.0;
+
+        public static double leftOuterLimit = 2.5 + 3.5;
+
+        public static double rightOuterLimit = 2.5 - 3.5;
+
     }
 
     RGBLightIndicator leftIndicator, rightIndicator;
@@ -51,15 +56,24 @@ public class LimeLightAlign extends SubsystemBase {
         else {
             this.horizontalAngle = aprilTagPosition.horizontalAngle();
 
-            if(horizontalAngle > LimelightConfig.leftLimit) {
+            if(horizontalAngle < LimelightConfig.leftSafeLimit && horizontalAngle > LimelightConfig.rightSafeLimit) {
+                leftIndicator.changeGreen();
+                rightIndicator.changeGreen();
+            } else if (horizontalAngle > LimelightConfig.leftSafeLimit && horizontalAngle < LimelightConfig.leftOuterLimit) {
+                leftIndicator.changeYellow();
+                rightIndicator.changeGreen();
+            } else if (horizontalAngle < LimelightConfig.rightSafeLimit && horizontalAngle > LimelightConfig.rightOuterLimit) {
+                rightIndicator.changeYellow();
+                leftIndicator.changeGreen();
+            } else if (horizontalAngle > LimelightConfig.leftOuterLimit) {
                 leftIndicator.changeRed();
                 rightIndicator.changeGreen();
-            } else if(horizontalAngle < LimelightConfig.rightLimit) {
+            } else if(horizontalAngle < LimelightConfig.rightOuterLimit) {
+                leftIndicator.changeGreen();
                 rightIndicator.changeRed();
-                leftIndicator.changeGreen();
             } else {
-                leftIndicator.changeGreen();
-                rightIndicator.changeGreen();
+                leftIndicator.changeOff();
+                rightIndicator.changeOff();
             }
         }
     }
@@ -113,7 +127,7 @@ public class LimeLightAlign extends SubsystemBase {
 
                 distance = Math.sqrt(x * x + y * y + z * z);
 
-                aprilTagPosition = new AprilTagPosition(aprilTagEnum, distance, (fr.getTargetXDegrees() * Math.PI)/180.0d, (fr.getTargetYDegrees() * Math.PI)/180.0d);
+                aprilTagPosition = new AprilTagPosition(aprilTagEnum, distance, fr.getTargetXDegrees(), fr.getTargetYDegrees());
 
                 boolean addTelemetry = MainTeleop.Telemetry.LimeLight;
                 if(addTelemetry) {
