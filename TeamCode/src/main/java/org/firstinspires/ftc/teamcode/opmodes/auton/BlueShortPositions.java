@@ -7,13 +7,13 @@ import com.pedropathing.geometry.Pose;
 public class BlueShortPositions implements Positions {
 
     public static double rowStartX = 44;
-    public static double rowEndXLongIntake = 6;
-    public static double rowEndXShortIntake = 12;
+    public static double rowEndXLongIntake = 10;
+    public static double rowEndXShortIntake = 16;
 
     // each row y increase 24 inches
     //first row is the row close to the trangle
     public static double firstRowStartY = 35;
-    public static double secondRowStartY = 63;
+    public static double secondRowStartY = 60.5;
     public static double thirdRowStartY = 83;
 
     public static double rowEndYOffset = 0;
