@@ -11,11 +11,11 @@ public class AutonCommonConfigs {
     public static long betweenShootDelays = 400;
 
     public static double TiltServoHi = 1.14;
-    public static double TiltServoLo = 1.5;
+    public static double TiltServoLo = 1;
 
-    public static double slowMoveSpeed = .65;
-    public static double middleMoveSpeed = .7;
-    public static double fastMoveSpeed = .8;
+    public static double slowMoveSpeed = .6;
+    public static double middleMoveSpeed = .6;
+    public static double fastMoveSpeed = .6;
 
     public static long shootWithLoadTimeoutInMS = 5000;
     public static long shootWithoutLoadTimeoutInMS = 4000;
