@@ -28,4 +28,8 @@ public interface Positions {
     default Pose getLongPreloadShootPosition() {
         return getLongShootPosition();
     }
+
+    default Pose getShortPreloadShootPosition() {
+        return getShortShootPosition();
+    }
 }

@@ -76,7 +76,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     protected List<RowsOnFloor> getRowSequence() {
         return switch (shootRange()) {
-            case LONG -> List.of(RowsOnFloor.FIRST, RowsOnFloor.SECOND/*, RowsOnFloor.THIRD*/);
+            case LONG -> List.of(RowsOnFloor.FIRST/*, RowsOnFloor.SECOND, RowsOnFloor.THIRD*/);
             case SHORT -> List.of(RowsOnFloor.THIRD, RowsOnFloor.SECOND/*, RowsOnFloor.FIRST*/);
         };
     }
@@ -154,9 +154,13 @@ public abstract class AutonBase extends CommandAutoOpMode {
     }
 
     public Pose getPreloadShootPosition() {
-        if (shootRange() == ShootRange.LONG) {
-            return getPositions().getLongPreloadShootPosition();
-        }
-        return getRowShootingPosition();
+        return switch (shootRange()) {
+            case LONG -> getPositions().getLongPreloadShootPosition();
+            case SHORT -> getPositions().getShortPreloadShootPosition();
+        };
+//        if (shootRange() == ShootRange.LONG) {
+//            return getPositions().getLongPreloadShootPosition();
+//        }
+//        return getRowShootingPosition();
     }
 }

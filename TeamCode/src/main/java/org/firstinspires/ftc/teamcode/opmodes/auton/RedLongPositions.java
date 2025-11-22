@@ -6,7 +6,7 @@ import com.pedropathing.geometry.Pose;
 @Configurable
 public class RedLongPositions implements Positions {
 
-    public static double rowStartX = 100;
+    public static double rowStartX = 95;
     public static double rowEndXLongIntake = 150;
     public static double rowEndXShortIntake = 132;
 
@@ -31,13 +31,13 @@ public class RedLongPositions implements Positions {
 
     public static double driveTrainIntakePowerScale = 1.5;
 
-    public static double longShootPreloadInDegree = 70;
-    public static Pose longShootPreloadPosition = new Pose(88, 11, Math.toRadians(longShootPreloadInDegree));
+    public static double longShootPreloadHeadingInDegree = 70;
+    public static Pose longShootPreloadPosition = new Pose(88, 11, Math.toRadians(longShootPreloadHeadingInDegree));
 
     public RedLongPositions() {
         backShootPosition = backShootPosition.setHeading(Math.toRadians(backShootAngleInDegrees));
         frontShootPosition = frontShootPosition.setHeading(Math.toRadians(frontShootAngleInDegrees));
-        longShootPreloadPosition = longShootPreloadPosition.setHeading(Math.toRadians(longShootPreloadInDegree));
+        longShootPreloadPosition = longShootPreloadPosition.setHeading(Math.toRadians(longShootPreloadHeadingInDegree));
     }
 
     @Override

@@ -6,7 +6,7 @@ import com.pedropathing.geometry.Pose;
 @Configurable
 public class RedShortPositions implements Positions {
 
-    public static double rowStartX = 100;
+    public static double rowStartX = 90;
     public static double rowEndXLongIntake = 146;
     public static double rowEndXShortIntake = 132;
 
@@ -20,7 +20,13 @@ public class RedShortPositions implements Positions {
 
     public static double backShootAngleInDegrees = 70;
     public static Pose backShootPosition = new Pose(88, 11, Math.toRadians(backShootAngleInDegrees));
-    public static double frontShootAngleInDegrees = 42;
+
+    @Override
+    public Pose getShortPreloadShootPosition() {
+        return getShortShootPosition().withHeading(Math.toRadians(preloadShootAngleInDegree));
+    }
+
+    public static double frontShootAngleInDegrees = 38;
     public static Pose frontShootPosition = new Pose(87, 93, Math.toRadians(frontShootAngleInDegrees));
 
     public static Pose backStartPosition = new Pose(87.5, 8.3, Math.toRadians(90));
@@ -28,6 +34,8 @@ public class RedShortPositions implements Positions {
 
     public static Pose backFinishPosition = new Pose(96, 24, 0);
     public static Pose frontFinishPosition = new Pose(96, 120, 0);
+
+    public static double preloadShootAngleInDegree = 42;
 
     public RedShortPositions() {
         backShootPosition = backShootPosition.setHeading(Math.toRadians(backShootAngleInDegrees));
