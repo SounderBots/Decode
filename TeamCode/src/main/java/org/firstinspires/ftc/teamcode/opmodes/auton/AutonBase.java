@@ -11,7 +11,7 @@ import java.util.List;
 
 public abstract class AutonBase extends CommandAutoOpMode {
 
-    protected Command intakeRowAndShoot(RowsOnFloor row) {
+    protected Command intakeRowAndShoot(RowsOnFloor row, boolean shoot) {
         Pose rowStartingPosition = getRowStartingPosition(row);
         double driveMaxPower = switch (row) {
             case FIRST ->
@@ -36,7 +36,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
                 .moveTo(rowStartingPosition, PathType.CURVE, driveMaxPower)
                 .andThen(intakeRow(row)) // intake row (3 balls)
                 .andThen(driveToShootCommand) // move to shooting position
-                .andThen(getShootRowCommand(true)) // shoot row
+                .andThen(shoot ? getShootRowCommand(true) : commandFactory.noop()) // shoot row
         ;
     }
 
@@ -130,7 +130,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
         Command command = moveAndShootPreloads();
         List<RowsOnFloor> rowSequence = getRowSequence();
         for (RowsOnFloor row : rowSequence) {
-            command = command.andThen(intakeRowAndShoot(row));
+            command = command.andThen(intakeRowAndShoot(row, true));
         }
 
         return moveOutAtLastSecond(command);
