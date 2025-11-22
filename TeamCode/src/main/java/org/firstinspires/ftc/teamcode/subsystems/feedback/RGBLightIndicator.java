@@ -20,6 +20,8 @@ public class RGBLightIndicator extends SubsystemBase {
         public static double GreenColor = 0.5;
 
         public static double RedColor = .3;
+
+        public static double YellowColor = .3;
     }
 
     public RGBLightIndicator(HardwareMap hardwareMap, Telemetry telemetry, String configString) {
@@ -37,6 +39,10 @@ public class RGBLightIndicator extends SubsystemBase {
 
     public void changeRed(){
         setColor(LightConfig.RedColor);
+    }
+
+    public void changeYellow(){
+        setColor(LightConfig.YellowColor);
     }
 
     public void changeOff(){
