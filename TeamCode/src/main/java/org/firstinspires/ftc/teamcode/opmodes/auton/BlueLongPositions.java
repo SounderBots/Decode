@@ -33,12 +33,13 @@ public class BlueLongPositions implements Positions {
 
     public static double driveTrainIntakePowerScale = 1.5;
 
-    public static double longShootPreloadHeadingInDegree = 75;
-    public static Pose longShootPreloadPosition = new Pose(88, 11, Math.toRadians(longShootPreloadHeadingInDegree));
+    public static double longShootPreloadHeadingInDegree = 110;
+    public static Pose longShootPreloadPosition = new Pose(56, 11, Math.toRadians(longShootPreloadHeadingInDegree));
 
     public BlueLongPositions() {
         backShootPosition = backShootPosition.setHeading(Math.toRadians(backShootAngleInDegrees));
         frontShootPosition = frontShootPosition.setHeading(Math.toRadians(frontShootAngleInDegrees));
+        longShootPreloadPosition = longShootPreloadPosition.setHeading(Math.toRadians(longShootPreloadHeadingInDegree));
     }
 
     @Override

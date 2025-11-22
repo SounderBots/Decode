@@ -45,7 +45,7 @@ public class Shooter extends SubsystemBase {
 
         public static double TiltServoHi = .55;
 
-        public static double TiltServoLo = 0;
+        public static double TiltServoLo = 0.1;
 
         public static double FlywheelAcceptableRpmError = 40;
 
