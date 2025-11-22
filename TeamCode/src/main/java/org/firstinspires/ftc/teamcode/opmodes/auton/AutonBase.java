@@ -92,10 +92,11 @@ public abstract class AutonBase extends CommandAutoOpMode {
     protected abstract ShootRange shootRange();
 
     public Command getShootCommand() {
-        return switch (shootRange()) {
-            case LONG -> commandFactory.farShootWithScale(AutonCommonConfigs.backShootVelocityScale, AutonCommonConfigs.TiltServoLo);
-            case SHORT -> commandFactory.closeShootWithScale(AutonCommonConfigs.frontShootVelocityScale, AutonCommonConfigs.TiltServoHi);
-        };
+//        return switch (shootRange()) {
+//            case LONG -> commandFactory.farShootWithScale(AutonCommonConfigs.backShootVelocityScale, AutonCommonConfigs.TiltServoLo);
+//            case SHORT -> commandFactory.closeShootWithScale(AutonCommonConfigs.frontShootVelocityScale, AutonCommonConfigs.TiltServoHi);
+//        };
+        return commandFactory.noop();
     }
 
     public Command getShootRowCommand(boolean loadFirst) {
@@ -127,13 +128,13 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     @Override
     protected Command createCommand() {
-        Command command = moveAndShootPreloads();
+        Command command = commandFactory.turnOnShooterAutoSpeedAndTilt().andThen(moveAndShootPreloads());
         List<RowsOnFloor> rowSequence = getRowSequence();
         for (RowsOnFloor row : rowSequence) {
             command = command.andThen(intakeRowAndShoot(row));
         }
 
-        return moveOutAtLastSecond(command);
+        return moveOutAtLastSecond(command).andThen(commandFactory.turnOffShooterAutoSpeedAndTilt());
     }
 
     public Positions getPositions() {

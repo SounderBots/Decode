@@ -222,4 +222,12 @@ public class CommandFactory {
         return new WaitShooterReadyCommand(DEFAULT_TIME_OUT, shooter);
     }
 
+    public Command turnOnShooterAutoSpeedAndTilt() {
+        return new InstantCommand(shooter::AutoSpeedAndTilt);
+    }
+
+    public Command turnOffShooterAutoSpeedAndTilt() {
+        return new InstantCommand(shooter::DefaultSpeedAndTilt);
+    }
+
 }

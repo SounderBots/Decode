@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
+import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 import org.firstinspires.ftc.teamcode.util.DelegateOrVoidTelemetry;
 
 public abstract class CommandAutoOpMode extends CommandOpMode {
@@ -54,9 +55,10 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
                 // do nothing
             }
         };
+        LimeLightAlign limeLight = new LimeLightAlign(hardwareMap, telemetry);
         Intake intake = new Intake(hardwareMap, operatorGamePad, telemetry);
         RGBLightIndicator rgbLightIndicator = new RGBLightIndicator(hardwareMap, telemetry, "RGBIndicator");
-        Shooter shooter = new Shooter(hardwareMap, operatorGamePad, telemetry, rgbLightIndicator);
+        Shooter shooter = new Shooter(hardwareMap, operatorGamePad, telemetry, rgbLightIndicator, limeLight);
 
 //
 
