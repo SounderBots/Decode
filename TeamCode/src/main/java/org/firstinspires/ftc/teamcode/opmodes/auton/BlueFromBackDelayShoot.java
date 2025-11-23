@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.command.PathType;
 @Configurable
 public class BlueFromBackDelayShoot extends AutonBase {
 
-    public static long delayInMS = 20000;
+    public static long delayInMS = 18000;
 
 //    public static double preloadShootingAngle = 104;
 //    public static double rowShootingAngle = 104;
@@ -33,7 +33,9 @@ public class BlueFromBackDelayShoot extends AutonBase {
     @Override
     protected Command createCommand() {
         Pose startPosition = getStartingPosition();
-        return commandFactory.sleep(delayInMS).andThen(moveAndShootPreloads()).andThen(intakeRowAndShoot(RowsOnFloor.FIRST, false))
-                .andThen(commandFactory.moveTo(startPosition.minus(new Pose(0, -20, getPreloadShootPosition().getHeading())), PathType.LINE));
+        return commandFactory.sleep(delayInMS)
+                .andThen(moveAndShootPreloads())
+                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST, false))
+                .andThen(commandFactory.moveTo((new Pose(37, 35, 0)), PathType.LINE, 0.7));
     }
 }

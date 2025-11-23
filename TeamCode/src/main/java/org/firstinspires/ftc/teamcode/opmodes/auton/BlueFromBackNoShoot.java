@@ -29,7 +29,8 @@ public class BlueFromBackNoShoot extends AutonBase {
     @Override
     protected Command createCommand() {
         Pose startPosition = getStartingPosition();
-        Pose endPosition = startPosition.minus(new Pose(0, -20, 0));
-        return commandFactory.startMove(startPosition, endPosition);
+        Pose endPosition = new Pose(45, 35, 0);
+        return commandFactory.sleep(27000)
+                .andThen(commandFactory.startMove(startPosition, endPosition));
     }
 }

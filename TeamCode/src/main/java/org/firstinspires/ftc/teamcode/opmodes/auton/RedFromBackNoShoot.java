@@ -5,6 +5,8 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.teamcode.command.PathType;
+
 @Autonomous(name="Red from back no shoot", group="Red")
 @Configurable
 // center to side (8.5 inches)
@@ -33,7 +35,8 @@ public class RedFromBackNoShoot extends AutonBase {
     @Override
     protected Command createCommand() {
         Pose startPosition = getStartingPosition();
-        Pose endPosition = startPosition.minus(new Pose(0, -20, 0));
-        return commandFactory.startMove(startPosition, endPosition);
+        Pose endPosition = new Pose(85, 35, 0);
+        return commandFactory.sleep(27000)
+                .andThen(commandFactory.startMove(startPosition, endPosition));
     }
 }

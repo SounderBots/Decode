@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.command.PathType;
 // center to front (8.5 inches)
 public class RedFromBackDelayShoot extends AutonBase {
 
-    public static long delayInMS = 20000;
+    public static long delayInMS = 18000;
 
     @Override
     Side getSide() {
@@ -29,7 +29,9 @@ public class RedFromBackDelayShoot extends AutonBase {
     @Override
     protected Command createCommand() {
         Pose startPosition = getStartingPosition();
-        return commandFactory.sleep(delayInMS).andThen(moveAndShootPreloads()).andThen(intakeRowAndShoot(RowsOnFloor.FIRST, false))
-                .andThen(commandFactory.moveTo(startPosition.minus(new Pose(0, -20, getPreloadShootPosition().getHeading())), PathType.LINE));
+        return commandFactory.sleep(delayInMS)
+                .andThen(moveAndShootPreloads())
+                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST, false))
+                .andThen(commandFactory.moveTo(new Pose(107, 35, 0), PathType.LINE, 0.7));
     }
 }
