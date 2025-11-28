@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.common.AprilTagPosition;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
+import org.firstinspires.ftc.teamcode.util.DataLogger;
 
 public class Shooter extends SubsystemBase {
 
@@ -25,6 +26,7 @@ public class Shooter extends SubsystemBase {
     Servo liftServo;
 
     RGBLightIndicator speedIndicator;
+    DataLogger logger;
 
     @Config
     public static class ShooterConfig {
@@ -84,10 +86,14 @@ public class Shooter extends SubsystemBase {
     LimeLightAlign limelight;
 
     public Shooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator) {
-        this(hardwareMap, gamepad, telemetry, speedIndicator, null);
+        this(hardwareMap, gamepad, telemetry, speedIndicator, null, "Shooter");
     }
 
     public Shooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator, LimeLightAlign limelight) {
+        this(hardwareMap, gamepad, telemetry, speedIndicator, limelight, "Shooter");
+    }
+
+    public Shooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator, LimeLightAlign limelight, String opModeName) {
         this.gamepad = gamepad;
         this.telemetry = telemetry;
         this.limelight = limelight;
@@ -108,6 +114,9 @@ public class Shooter extends SubsystemBase {
         this.leftFlywheel.setZeroPowerBehavior( Motor.ZeroPowerBehavior.FLOAT);
 
         speedIndicator.changeRed();
+
+        logger = new DataLogger(DataLogger.getLogFileName(opModeName, "ShooterLog"));
+        logger.startLogging("TargetRPM", "Tilt", "RightRPM", "RightError", "RightPowerPID", "RightPowerFF", "RightPower", "LeftRPM", "LeftError", "LeftPowerPID", "LeftPowerFF", "LeftPower");
 
         if(MainTeleop.Telemetry.Shooter) {
             telemetry.addData("target velocity", this.targetVelocity);
@@ -163,6 +172,7 @@ public class Shooter extends SubsystemBase {
             if(!wasLastColorGreen) {
                 wasLastColorGreen = true;
                 speedIndicator.changeGreen();
+                logger.logComment("Shooter Ready");
             }
         } else {
             if(wasLastColorGreen) {
@@ -190,6 +200,8 @@ public class Shooter extends SubsystemBase {
 
         rightFlywheel.set(rightPower);
         leftFlywheel.set(leftPower);
+
+        logger.log(targetVelocity, lastTilt, rightVelocity, rightError, rightPidPower, rightFeedforwardValue, rightPower, leftVelocity, leftError, leftPidPower, leftFeedforwardValue, leftPower);
 
         if(MainTeleop.Telemetry.Shooter) {
             telemetry.addData("target velocity", this.targetVelocity);
@@ -316,5 +328,11 @@ public class Shooter extends SubsystemBase {
 
     public void DefaultSpeedAndTilt() {
         this.autoSpeed = false;
+    }
+
+    public void stopLogging() {
+        if (logger != null) {
+            logger.close();
+        }
     }
 }

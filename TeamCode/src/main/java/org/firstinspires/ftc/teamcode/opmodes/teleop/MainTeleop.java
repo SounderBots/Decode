@@ -58,7 +58,7 @@ public class MainTeleop extends OpModeTemplate {
         this.light = new RGBLightIndicator(hardwareMap, telemetry, "RGBIndicator");
         this.intake = new Intake(hardwareMap, operatorGamepad, telemetry);
         this.limeLight = new LimeLightAlign(hardwareMap, telemetry);
-        this.shooter = new Shooter(hardwareMap, operatorGamepad, telemetry, light, limeLight);
+        this.shooter = new Shooter(hardwareMap, operatorGamepad, telemetry, light, limeLight, "MainTeleop");
         this.transfer = new TransferChamber(hardwareMap, operatorGamepad, telemetry);
         this.feedback = new DriverFeedback(hardwareMap, driverGamepad, operatorGamepad, telemetry);
 
@@ -126,5 +126,16 @@ public class MainTeleop extends OpModeTemplate {
                 .whenPressed(new InstantCommand(intake::StopIntake, intake));
 
         register(drive, intake, shooter, light, limeLight);
+    }
+
+    @Override
+    public void runOpMode() {
+        try {
+            super.runOpMode();
+        } finally {
+            if (shooter != null) {
+                shooter.stopLogging();
+            }
+        }
     }
 }

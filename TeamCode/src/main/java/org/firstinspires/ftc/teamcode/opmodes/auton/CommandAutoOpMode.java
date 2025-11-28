@@ -56,7 +56,7 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
         };
         Intake intake = new Intake(hardwareMap, operatorGamePad, telemetry);
         RGBLightIndicator rgbLightIndicator = new RGBLightIndicator(hardwareMap, telemetry, "RGBIndicator");
-        Shooter shooter = new Shooter(hardwareMap, operatorGamePad, telemetry, rgbLightIndicator);
+        Shooter shooter = new Shooter(hardwareMap, operatorGamePad, telemetry, rgbLightIndicator, null, this.getClass().getSimpleName());
 
 //
 
@@ -94,5 +94,16 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
 
     private void logInitStep(String step) {
 //        Log.i(LOG_TAG, "Init: " + step);
+    }
+
+    @Override
+    public void runOpMode() {
+        try {
+            super.runOpMode();
+        } finally {
+            if (commandFactory != null && commandFactory.getShooter() != null) {
+                commandFactory.getShooter().stopLogging();
+            }
+        }
     }
 }
