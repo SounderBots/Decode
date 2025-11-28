@@ -6,18 +6,21 @@ import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.DriverFeedback;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.scoring.Stopper;
 import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
 
 @TeleOp
+@Configurable
 public class MainTeleop extends OpModeTemplate {
 
     TeleopDrivetrain drive;
@@ -28,6 +31,8 @@ public class MainTeleop extends OpModeTemplate {
     LimeLightAlign limeLight;
 
     TransferChamber transfer;
+
+    Stopper stopper;
 
     RGBLightIndicator light;
 
@@ -40,14 +45,14 @@ public class MainTeleop extends OpModeTemplate {
         public static boolean LimeLight = false;
     }
 
-
+    @Configurable
     @Config
     public static class MainTeleopConfig {
         public static long TransferDelay = 200;
 
         public static double ChamberIntakePower = -0.9;
 
-        public static double ChamberIntakeSlowPower = -0.3;
+        public static double ChamberIntakeSlowPower = -0.7;
     }
 
     @Override
@@ -77,32 +82,44 @@ public class MainTeleop extends OpModeTemplate {
         new Trigger(() -> gamepad2.right_trigger > 0.5)
                 .whenActive(new InstantCommand(shooter::CloseShoot, shooter));
 
-
         operatorGamepad.getGamepadButton(GamepadKeys.Button.A)
                 .whenPressed(
+
                         new SequentialCommandGroup(
-                                new InstantCommand(transfer::TopRollersOuttake, transfer),
-                                new InstantCommand(transfer::TurnOnSlowChamberRoller, transfer)
+                                new InstantCommand(transfer::TurnOnChamberRoller, transfer),
+                                new InstantCommand(stopper::Go, stopper)
                         ))
                 .whenReleased(
                         new SequentialCommandGroup(
-                                new InstantCommand(transfer::TopRollersStop, transfer),
-                                new InstantCommand(transfer::TurnOffChamberRoller, transfer)
+                                new InstantCommand(transfer::TurnOffChamberRoller, transfer),
+                                new InstantCommand(stopper::Stop, stopper)
                         )
                 );
 
         operatorGamepad.getGamepadButton(GamepadKeys.Button.B)
                 .whenPressed(
-                        new SequentialCommandGroup(
-                                new InstantCommand(transfer::TopRollersIntake, transfer),
-                                new InstantCommand(transfer::TurnOnSlowChamberRollerInReverse, transfer)
-                        ))
+
+                new SequentialCommandGroup(
+                        new InstantCommand(transfer::TurnOnSlowChamberRoller, transfer)
+                ))
                 .whenReleased(
                         new SequentialCommandGroup(
-                                new InstantCommand(transfer::TopRollersStop, transfer),
                                 new InstantCommand(transfer::TurnOffChamberRoller, transfer)
                         )
                 );
+
+//        operatorGamepad.getGamepadButton(GamepadKeys.Button.B)
+//                .whenPressed(
+//                        new SequentialCommandGroup(
+//                                new InstantCommand(transfer::TopRollersIntake, transfer),
+//                                new InstantCommand(transfer::TurnOnSlowChamberRollerInReverse, transfer)
+//                        ))
+//                .whenReleased(
+//                        new SequentialCommandGroup(
+//                                new InstantCommand(transfer::TopRollersStop, transfer),
+//                                new InstantCommand(transfer::TurnOffChamberRoller, transfer)
+//                        )
+//                );
 
         // Turn on auto shooter rpm and tilt
         operatorGamepad.getGamepadButton(GamepadKeys.Button.X)
@@ -132,6 +149,8 @@ public class MainTeleop extends OpModeTemplate {
     public void runOpMode() {
         try {
             super.runOpMode();
+        } catch (InterruptedException e) {
+            //do nothing
         } finally {
             if (shooter != null) {
                 shooter.stopLogging();

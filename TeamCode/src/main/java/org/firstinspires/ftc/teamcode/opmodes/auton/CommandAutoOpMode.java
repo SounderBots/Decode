@@ -100,6 +100,8 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
     public void runOpMode() {
         try {
             super.runOpMode();
+        } catch (InterruptedException e) {
+            //do nothing
         } finally {
             if (commandFactory != null && commandFactory.getShooter() != null) {
                 commandFactory.getShooter().stopLogging();
