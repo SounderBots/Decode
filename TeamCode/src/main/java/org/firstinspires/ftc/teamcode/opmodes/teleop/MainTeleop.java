@@ -66,6 +66,7 @@ public class MainTeleop extends OpModeTemplate {
         this.shooter = new Shooter(hardwareMap, operatorGamepad, telemetry, light, limeLight, "MainTeleop");
         this.transfer = new TransferChamber(hardwareMap, operatorGamepad, telemetry);
         this.feedback = new DriverFeedback(hardwareMap, driverGamepad, operatorGamepad, telemetry);
+        this.stopper = new Stopper(hardwareMap, operatorGamepad, telemetry);
 
         new Trigger(() -> gamepad2.right_stick_y < -0.5)
                 .whenActive(new InstantCommand(intake::StartIntake, intake));
@@ -100,26 +101,28 @@ public class MainTeleop extends OpModeTemplate {
                 .whenPressed(
 
                 new SequentialCommandGroup(
-                        new InstantCommand(transfer::TurnOnSlowChamberRoller, transfer)
+                        new InstantCommand(transfer::TurnOnSlowChamberRoller, transfer),
+                        new InstantCommand(stopper::Go, stopper)
+
                 ))
                 .whenReleased(
                         new SequentialCommandGroup(
-                                new InstantCommand(transfer::TurnOffChamberRoller, transfer)
+                                new InstantCommand(transfer::TurnOffChamberRoller, transfer),
+                                new InstantCommand(stopper::Stop, stopper)
                         )
                 );
 
-//        operatorGamepad.getGamepadButton(GamepadKeys.Button.B)
-//                .whenPressed(
-//                        new SequentialCommandGroup(
-//                                new InstantCommand(transfer::TopRollersIntake, transfer),
-//                                new InstantCommand(transfer::TurnOnSlowChamberRollerInReverse, transfer)
-//                        ))
-//                .whenReleased(
-//                        new SequentialCommandGroup(
-//                                new InstantCommand(transfer::TopRollersStop, transfer),
-//                                new InstantCommand(transfer::TurnOffChamberRoller, transfer)
-//                        )
-//                );
+        operatorGamepad.getGamepadButton(GamepadKeys.Button.DPAD_UP)
+                .whenPressed(
+
+                                new InstantCommand(shooter::HigherTilt, shooter)
+                );
+
+        operatorGamepad.getGamepadButton(GamepadKeys.Button.DPAD_DOWN)
+                .whenPressed(
+
+                        new InstantCommand(shooter::LowerTilt, shooter)
+                );
 
         // Turn on auto shooter rpm and tilt
         operatorGamepad.getGamepadButton(GamepadKeys.Button.X)
@@ -142,7 +145,7 @@ public class MainTeleop extends OpModeTemplate {
         driverGamepad.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
                 .whenPressed(new InstantCommand(intake::StopIntake, intake));
 
-        register(drive, intake, shooter, light, limeLight);
+        register(drive, intake, shooter, light, limeLight, stopper);
     }
 
     @Override

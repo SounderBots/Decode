@@ -152,7 +152,7 @@ public class Shooter extends SubsystemBase {
             targetVelocity = expectedSpeed.Rpm;
 
             if(expectedSpeed.Tilt != lastTilt) {
-                liftServo.setPosition(expectedSpeed.Tilt);
+                liftServo.setPosition(expectedSpeed.Tilt + this.tiltDelta);
                 lastTilt = expectedSpeed.Tilt;
             }
 
@@ -334,5 +334,15 @@ public class Shooter extends SubsystemBase {
         if (logger != null) {
             logger.close();
         }
+    }
+
+    double tiltDelta = 0;
+
+    public void HigherTilt() {
+        this.tiltDelta += 0.05;
+    }
+
+    public void LowerTilt() {
+        this.tiltDelta -= 0.05;
     }
 }
