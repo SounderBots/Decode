@@ -97,7 +97,7 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
     }
 
     @Override
-    public void runOpMode() {
+    public void runOpMode() throws InterruptedException {
         try {
             super.runOpMode();
         } catch (InterruptedException e) {

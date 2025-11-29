@@ -31,9 +31,9 @@ public class Shooter extends SubsystemBase {
     @Config
     public static class ShooterConfig {
 
-        public static double ShooterRpmHi = 930;
+        public static double ShooterTpsHi = 930;
 
-        public static double ShooterRpmLo = 770;
+        public static double ShooterTpsLo = 770;
 
         public static double RightLauncherStow = 0.34;
 
@@ -49,7 +49,7 @@ public class Shooter extends SubsystemBase {
 
         public static double TiltServoLo = 0.1;
 
-        public static double FlywheelAcceptableRpmError = 40;
+        public static double FlywheelAcceptableTpsError = 40;
 
         public static long AutoSpeedCheckSkipCount = 10;
 
@@ -116,7 +116,11 @@ public class Shooter extends SubsystemBase {
         speedIndicator.changeRed();
 
         logger = new DataLogger(DataLogger.getLogFileName(opModeName, "ShooterLog"));
-        logger.startLogging("TargetRPM", "Tilt", "RightRPM", "RightError", "RightPowerPID", "RightPowerFF", "RightPower", "LeftRPM", "LeftError", "LeftPowerPID", "LeftPowerFF", "LeftPower");
+        logger.startLogging("TargetTPS", "Tilt", "RightTPS", "RightError", "RightPowerPID", "RightPowerFF", "RightPower", "LeftTPS", "LeftError", "LeftPowerPID", "LeftPowerFF", "LeftPower");
+
+        // Log the PIDF constants at the start of the file
+        logger.logComment("PIDF Config: kP=" + ShooterControlConfig.kP + " kI=" + ShooterControlConfig.kI + " kD=" + ShooterControlConfig.kD);
+        logger.logComment("Feedforward Config: kS=" + ShooterControlConfig.ks + " kV_Left=" + ShooterControlConfig.kv_left + " kV_Right=" + ShooterControlConfig.kv_right + " kA=" + ShooterControlConfig.ka);
 
         if(MainTeleop.Telemetry.Shooter) {
             telemetry.addData("target velocity", this.targetVelocity);
@@ -149,7 +153,7 @@ public class Shooter extends SubsystemBase {
         // Don't check limelight every time.
         if(autoSpeed && counter++ == ShooterConfig.AutoSpeedCheckSkipCount) {
             AutoSpeed expectedSpeed = GetAutoSpeed();
-            targetVelocity = expectedSpeed.Rpm;
+            targetVelocity = expectedSpeed.Tps;
 
             if(expectedSpeed.Tilt != lastTilt) {
                 liftServo.setPosition(expectedSpeed.Tilt + this.tiltDelta);
@@ -165,8 +169,8 @@ public class Shooter extends SubsystemBase {
         double leftVelocity = leftFlywheel.getVelocity();
         double leftError = targetVelocity - leftVelocity;
 
-        if(Math.abs(rightError) < ShooterConfig.FlywheelAcceptableRpmError &&
-                Math.abs(leftError) < ShooterConfig.FlywheelAcceptableRpmError &&
+        if(Math.abs(rightError) < ShooterConfig.FlywheelAcceptableTpsError &&
+                Math.abs(leftError) < ShooterConfig.FlywheelAcceptableTpsError &&
                 Math.abs(leftVelocity - rightVelocity) < 30)
         {
             if(!wasLastColorGreen) {
@@ -225,12 +229,12 @@ public class Shooter extends SubsystemBase {
 
     public class AutoSpeed {
 
-        public AutoSpeed(double rpm, double tilt) {
-            this.Rpm = rpm;
+        public AutoSpeed(double tps, double tilt) {
+            this.Tps = tps;
             this.Tilt = tilt;
         }
 
-        public double Rpm;
+        public double Tps;
 
         public double Tilt;
     }
@@ -272,45 +276,45 @@ public class Shooter extends SubsystemBase {
         return value;
     }
 
-    double targetVelocity = ShooterConfig.ShooterRpmHi;
+    double targetVelocity = ShooterConfig.ShooterTpsHi;
 
     boolean toggleShooter = false;
     public void ToggleShooter() {
         if(toggleShooter) {
-            this.targetVelocity = ShooterConfig.ShooterRpmLo;
+            this.targetVelocity = ShooterConfig.ShooterTpsLo;
         } else {
-            this.targetVelocity = ShooterConfig.ShooterRpmHi;
+            this.targetVelocity = ShooterConfig.ShooterTpsHi;
         }
 
         toggleShooter = !toggleShooter;
     }
 
-    public void SetTargetRpm(double targetRpm) {
-        this.targetVelocity = targetRpm;
+    public void SetTargetTps(double targetTps) {
+        this.targetVelocity = targetTps;
     }
 
     public void CloseShoot() {
         this.liftServo.setPosition(ShooterConfig.TiltServoHi);
-        this.targetVelocity = ShooterConfig.ShooterRpmLo;
+        this.targetVelocity = ShooterConfig.ShooterTpsLo;
         this.lastTilt = ShooterConfig.TiltServoHi;
     }
 
     public void CloseShootWithScale(double scale, double elevationScale) {
         this.liftServo.setPosition(ShooterConfig.TiltServoHi * elevationScale);
-        this.targetVelocity = ShooterConfig.ShooterRpmLo * scale;
+        this.targetVelocity = ShooterConfig.ShooterTpsLo * scale;
         this.lastTilt = ShooterConfig.TiltServoHi;
     }
 
     public void FarShoot() {
         this.liftServo.setPosition(ShooterConfig.TiltServoLo);
-        this.targetVelocity = ShooterConfig.ShooterRpmHi;
+        this.targetVelocity = ShooterConfig.ShooterTpsHi;
         this.lastTilt = ShooterConfig.TiltServoLo;
 
     }
 
     public void FarShootWithScale(double scale, double elevationScale) {
         this.liftServo.setPosition(ShooterConfig.TiltServoLo * elevationScale);
-        this.targetVelocity = ShooterConfig.ShooterRpmHi * scale;
+        this.targetVelocity = ShooterConfig.ShooterTpsHi * scale;
         this.lastTilt = ShooterConfig.TiltServoLo;
     }
 

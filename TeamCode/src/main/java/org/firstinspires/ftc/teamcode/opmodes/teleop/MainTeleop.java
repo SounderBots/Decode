@@ -149,7 +149,7 @@ public class MainTeleop extends OpModeTemplate {
     }
 
     @Override
-    public void runOpMode() {
+    public void runOpMode() throws InterruptedException {
         try {
             super.runOpMode();
         } catch (InterruptedException e) {
