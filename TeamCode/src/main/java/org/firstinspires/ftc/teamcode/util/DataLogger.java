@@ -66,7 +66,7 @@ public class DataLogger {
             
             if (!baseDir.exists()) {
                 if (!baseDir.mkdirs()) {
-                    System.err.println("DataLogger: Failed to create directory " + baseDir.getAbsolutePath());
+                    System.out.println("DataLogger ERROR: Failed to create directory " + baseDir.getAbsolutePath());
                 }
             }
             File directory = baseDir;
@@ -83,6 +83,7 @@ public class DataLogger {
             }
 
             File file = new File(directory, fileName + ".csv");
+            System.out.println("DataLogger: Creating file " + file.getAbsolutePath());
             
             /*
              * Performance Note:
@@ -97,6 +98,7 @@ public class DataLogger {
              * This ensures the main thread is never blocked by slow SD card I/O.
              */
             writer = new PrintWriter(new BufferedWriter(new FileWriter(file), BUFFER_SIZE));
+            System.out.println("DataLogger: File created successfully");
             
             startTime = System.nanoTime();
             
@@ -108,6 +110,7 @@ public class DataLogger {
             writer.println(headerLine.toString());
             
         } catch (Exception e) {
+            System.out.println("DataLogger ERROR: " + e.getMessage());
             e.printStackTrace();
             writer = null;
         }

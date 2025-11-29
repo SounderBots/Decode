@@ -12,6 +12,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.util.DataLogger;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Config
 @Autonomous(name = "DataLogger Test", group = "Test")
 public class DataLoggerTest extends LinearOpMode {
@@ -22,6 +25,7 @@ public class DataLoggerTest extends LinearOpMode {
 
     public static double TargetVelocity = 0;
     public static boolean InvertMotor = true;
+    public static String MotorName = "RightFlywheel"; // Default to shooter motor
 
     // PID coefficients from Shooter.java
     public static double kP = 0.0095;
@@ -36,23 +40,61 @@ public class DataLoggerTest extends LinearOpMode {
     @Override
     public void runOpMode() {
         // 1. Initialize Hardware
-        // Find ANY motor configured in the hardware map
-        String motorName = null;
+        
+        // Display all available motors to help user choose
+        telemetry.addData("Instructions", "Check the list below and set 'MotorName' in Dashboard");
+        telemetry.addData("Instructions", "Then press START.");
+        telemetry.addLine("--- Available Motors ---");
+        
+        List<String> allMotorNames = new ArrayList<>();
+        for (DcMotorEx motor : hardwareMap.getAll(DcMotorEx.class)) {
+            String name = hardwareMap.getNamesOf(motor).iterator().next();
+            allMotorNames.add(name);
+            
+            // Force FLOAT mode so user can spin it by hand to check
+            motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+            
+            telemetry.addData("Motor", name + " (Port: " + motor.getPortNumber() + ")");
+        }
+        telemetry.update();
+
+        // Wait for user to set config and press start
+        while (!isStarted() && !isStopRequested()) {
+            telemetry.addData("Target Motor", MotorName);
+            telemetry.addData("Status", "Waiting for Start...");
+            telemetry.addLine("--- Available Motors ---");
+            for (String name : allMotorNames) {
+                telemetry.addData("Found", name);
+            }
+            telemetry.update();
+            sleep(100);
+        }
+
+        if (isStopRequested()) return;
+
+        String motorNameToUse = MotorName;
+        
         try {
-            // Get all configured devices
-            for (DcMotorEx motor : hardwareMap.getAll(DcMotorEx.class)) {
-                // Just take the first one we find
-                motorName = hardwareMap.getNamesOf(motor).iterator().next();
-                telemetry.addData("Motor Found", "Using motor: " + motorName);
-                break;
+            // Try to find the specific motor first
+            try {
+                hardwareMap.get(DcMotorEx.class, motorNameToUse);
+            } catch (Exception e) {
+                // If not found, default to the first one in the list
+                if (!allMotorNames.isEmpty()) {
+                    motorNameToUse = allMotorNames.get(0);
+                    telemetry.addData("Warning", "Motor '" + MotorName + "' not found. Defaulting to: " + motorNameToUse);
+                }
             }
             
-            if (motorName == null) {
+            if (motorNameToUse == null) {
                 throw new RuntimeException("No motors found in configuration!");
             }
 
+            telemetry.addData("Motor Found", "Using motor: " + motorNameToUse);
+            telemetry.update();
+
             // Initialize MotorEx with the found name and GoBILDA BARE type
-            testMotor = new MotorEx(hardwareMap, motorName, Motor.GoBILDA.BARE);
+            testMotor = new MotorEx(hardwareMap, motorNameToUse, Motor.GoBILDA.BARE);
             testMotor.setRunMode(Motor.RunMode.RawPower);
             testMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
             testMotor.setInverted(InvertMotor); // Configurable inversion
@@ -72,33 +114,36 @@ public class DataLoggerTest extends LinearOpMode {
         PIDFController pidController = new PIDFController(kP, kI, kD, 0.0);
         SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(ks, kv, ka);
 
-        telemetry.addData("Status", "Initialized");
+        telemetry.addData("Status", "Running");
         telemetry.addData("Log File", logFileName);
         telemetry.addData("Storage Path", DataLogger.StoragePath);
         telemetry.addData("Log To SD", DataLogger.LogToSdCard);
         telemetry.update();
 
-        waitForStart();
-
         try {
             if (opModeIsActive()) {
-                // Start logging with headers
-                logger.startLogging("TargetVelocity", "ActualVelocity", "Error", "PidPower", "FfPower", "TotalPower");
+                // Start logging with headers (Matched to Shooter.java naming)
+                logger.startLogging("TargetTPS", "ActualTPS", "Error", "PidPower", "FfPower", "TotalPower");
+                
+                // Log the PIDF constants at the start of the file (Matched to Shooter.java metadata)
+                logger.logComment("PIDF Config: kP=" + kP + " kI=" + kI + " kD=" + kD);
+                logger.logComment("Feedforward Config: kS=" + ks + " kV=" + kv + " kA=" + ka);
                 
                 timer = new ElapsedTime();
                 
-                while (opModeIsActive() && timer.seconds() < 15) {
+                // Run indefinitely until stop is pressed
+                while (opModeIsActive()) {
                     double currentTime = timer.seconds();
 
-                    // Set target velocity based on time pattern
-                    if (currentTime < 4.0) {
-                        TargetVelocity = 300; // Ramp up immediately
-                    } else if (currentTime < 8.0) {
+                    // Set target velocity based on time pattern (looping every 12 seconds)
+                    double loopTime = currentTime % 12.0;
+                    
+                    if (loopTime < 4.0) {
+                        TargetVelocity = 300; // Ramp up
+                    } else if (loopTime < 8.0) {
                         TargetVelocity = 150; // Drop
-                    } else if (currentTime < 12.0) {
-                        TargetVelocity = 400; // Increase again
                     } else {
-                        TargetVelocity = 0;
+                        TargetVelocity = 400; // Increase again
                     }
 
                     // Update PID coefficients from Dashboard (if changed)
@@ -110,6 +155,8 @@ public class DataLoggerTest extends LinearOpMode {
                     double error = TargetVelocity - currentVelocity;
 
                     double pidPower = pidController.calculate(currentVelocity, TargetVelocity);
+                    // Note: calculate(velocity) ignores ka. To use ka, we need calculate(vel, accel).
+                    // Shooter.java currently uses calculate(velocity), so we match that here.
                     double ffPower = feedforward.calculate(TargetVelocity);
                     
                     double totalPower = pidPower + ffPower;
@@ -130,8 +177,9 @@ public class DataLoggerTest extends LinearOpMode {
                     );
 
                     telemetry.addData("Time", "%.2f", currentTime);
-                    telemetry.addData("Target Vel", TargetVelocity);
-                    telemetry.addData("Actual Vel", currentVelocity);
+                    telemetry.addData("Target TPS", TargetVelocity);
+                    telemetry.addData("Actual TPS", currentVelocity);
+                    telemetry.addData("Encoder Pos", testMotor.getCurrentPosition()); // Debug for 0 velocity issue
                     telemetry.addData("Power", "%.2f", totalPower);
                     telemetry.update();
                 }
