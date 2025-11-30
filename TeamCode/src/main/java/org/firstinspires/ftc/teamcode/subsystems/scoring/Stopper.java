@@ -36,7 +36,7 @@ public class Stopper extends SubsystemBase {
 
     }
     public void Stop() {
-        stopper.setPosition(1);
+        stopper.setPosition(0.875);
     }
 
     public void Go() {

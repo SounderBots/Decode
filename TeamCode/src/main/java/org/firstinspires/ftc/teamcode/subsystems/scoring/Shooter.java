@@ -45,9 +45,9 @@ public class Shooter extends SubsystemBase {
 
         public static double IntakeMaxPower = 1;
 
-        public static double TiltServoHi = .55;
+        public static double TiltServoHi = 0.55;
 
-        public static double TiltServoLo = 0.1;
+        public static double TiltServoLo = 0.10;
 
         public static double FlywheelAcceptableTpsError = 40;
 
@@ -244,14 +244,12 @@ public class Shooter extends SubsystemBase {
 
         if(position != null) {
             double distance = position.distance();
-            if (distance < 38) {
-                return new AutoSpeed(800, 0.5);
-            } else if (distance < 48) {
-                return new AutoSpeed(740, 0.7);
-            } else if (distance < 57) {
-                return new AutoSpeed(750, 0.6);
-            } else if (distance < 67) {
-                return new AutoSpeed(770, 0.5);
+            if (distance <= 52.6) {
+                return new AutoSpeed(930, 0.85);
+            } else if (distance < 62.8) {
+                return new AutoSpeed(965, 0.85);
+            } else if (distance < 72.1) {
+                return new AutoSpeed(980, 0.85);
             } else if (distance < 77) {
                 return new AutoSpeed(800, 0.46);
             } else if (distance < 87) {
@@ -322,7 +320,7 @@ public class Shooter extends SubsystemBase {
         return wasLastColorGreen;
     }
 
-    boolean autoSpeed = false;
+    boolean autoSpeed = true;
 
     public void AutoSpeedAndTilt() {
         if(this.limelight != null) {
