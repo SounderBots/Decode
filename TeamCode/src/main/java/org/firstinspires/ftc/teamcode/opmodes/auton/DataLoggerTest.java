@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.util.DataLogger;
+import org.firstinspires.ftc.teamcode.datalogger.DataLogger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,7 +123,7 @@ public class DataLoggerTest extends LinearOpMode {
         try {
             if (opModeIsActive()) {
                 // Start logging with headers (Matched to Shooter.java naming)
-                logger.startLogging("TargetTPS", "ActualTPS", "Error", "PidPower", "FfPower", "TotalPower");
+                logger.startLogging("TargetTPS", "ActualTPS", "Error", "PidPower", "FfPower", "TotalPower", "EncoderPos");
                 
                 // Log the PIDF constants at the start of the file (Matched to Shooter.java metadata)
                 logger.logComment("PIDF Config: kP=" + kP + " kI=" + kI + " kD=" + kD);
@@ -173,7 +173,8 @@ public class DataLoggerTest extends LinearOpMode {
                         error,
                         pidPower,
                         ffPower,
-                        totalPower
+                        totalPower,
+                        testMotor.getCurrentPosition()
                     );
 
                     telemetry.addData("Time", "%.2f", currentTime);
