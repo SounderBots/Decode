@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drivetrain.AutonDriveTrain;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
+import org.firstinspires.ftc.teamcode.subsystems.scoring.Stopper;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
 
 import java.util.Arrays;
@@ -40,6 +41,9 @@ public class CommandFactory {
 
     @Getter
     final TransferChamber transferChamber;
+
+    @Getter
+    final Stopper stopper;
 //    final Shooter shooter;
 
 
@@ -188,7 +192,7 @@ public class CommandFactory {
     public Command loadAndShoot(Command shootCommand, boolean loadFirst) {
         return new ParallelDeadlineGroup(
                 sleep(loadFirst ? AutonCommonConfigs.shootWithLoadTimeoutInMS : AutonCommonConfigs.shootWithoutLoadTimeoutInMS),
-                startIntake()
+                stopperGo().andThen(startIntake())
                         .andThen(turnOnSlowChamberRoller())
 //                        .andThen((loadFirst ? turnOnSlowChamberRoller() : noop()))
                         .andThen(shootCommand)
@@ -220,6 +224,14 @@ public class CommandFactory {
 
     public Command waitForShooterReady() {
         return new WaitShooterReadyCommand(DEFAULT_TIME_OUT, shooter);
+    }
+
+    public Command stopperGo() {
+        return new InstantCommand(stopper::Go);
+    }
+
+    public Command stopperStop() {
+        return new InstantCommand(stopper::Stop);
     }
 
 }
