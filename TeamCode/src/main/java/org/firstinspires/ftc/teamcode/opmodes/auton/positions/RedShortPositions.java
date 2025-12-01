@@ -37,9 +37,13 @@ public class RedShortPositions implements Positions {
 
     public static double preloadShootAngleInDegree = 42;
 
+    public static double obeliskObserveHeadingInDegrees = 90;
+    public static Pose obeliskObservePosition = frontStartPosition.withHeading(obeliskObserveHeadingInDegrees);
+
     public RedShortPositions() {
         backShootPosition = backShootPosition.setHeading(Math.toRadians(backShootAngleInDegrees));
         frontShootPosition = frontShootPosition.setHeading(Math.toRadians(frontShootAngleInDegrees));
+        obeliskObservePosition = obeliskObservePosition.setHeading(Math.toRadians(obeliskObserveHeadingInDegrees));
     }
 
     @Override
@@ -53,7 +57,7 @@ public class RedShortPositions implements Positions {
 
     @Override
     public Pose getObeliskObservePosition() {
-        return null;
+        return obeliskObservePosition;
     }
 
     @Override

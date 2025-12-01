@@ -20,20 +20,46 @@ import java.util.List;
 
 public abstract class AutonBase extends CommandAutoOpMode {
 
+    @Override
+    protected Command createCommand() {
+        Command command = moveAndShootPreloads();
+        List<RowsOnFloor> rowSequence = getRowSequence();
+        for (RowsOnFloor row : rowSequence) {
+            command = command.andThen(intakeRowAndShoot(row, true));
+        }
+
+        return moveOutAtLastSecond(command);
+    }
+
+    protected Command moveAndShootPreloads() {
+        return commandFactory
+                .startMove(getStartingPosition(), getPreloadShootPosition(), PathType.LINE, .6) // move to shooting position
+                .andThen(getShootRowCommand(false)) // shoot preloads
+                ;
+    }
+
+    protected List<RowsOnFloor> getRowSequence() {
+        return switch (shootRange()) {
+            case LONG -> List.of(RowsOnFloor.GPP/*, RowsOnFloor.SECOND, RowsOnFloor.THIRD*/);
+            case SHORT -> List.of(RowsOnFloor.PPG, RowsOnFloor.PGP/*, RowsOnFloor.FIRST*/);
+        };
+    }
+
     protected Command intakeRowAndShoot(RowsOnFloor row, boolean shoot) {
         Pose rowStartingPosition = getRowStartingPosition(row);
         double driveMaxPower = switch (row) {
             case GPP ->
-                switch (shootRange()) {
-                    case LONG -> AutonCommonConfigs.slowMoveSpeed;
-                    case SHORT -> AutonCommonConfigs.fastMoveSpeed;
-                };
+                    switch (shootRange()) {
+                        case LONG -> AutonCommonConfigs.slowMoveSpeed;
+                        case SHORT -> AutonCommonConfigs.fastMoveSpeed;
+                    };
             case PGP -> AutonCommonConfigs.middleMoveSpeed;
             case PPG ->
-                switch (shootRange()) {
-                    case LONG -> AutonCommonConfigs.fastMoveSpeed;
-                    case SHORT -> AutonCommonConfigs.slowMoveSpeed;
-                };
+                    switch (shootRange()) {
+                        case LONG -> AutonCommonConfigs.fastMoveSpeed;
+                        case SHORT -> AutonCommonConfigs.slowMoveSpeed;
+                    };
+            default -> AutonCommonConfigs.middleMoveSpeed;
         };
 
         boolean isSecondRow = row == RowsOnFloor.PGP;
@@ -46,7 +72,20 @@ public abstract class AutonBase extends CommandAutoOpMode {
                 .andThen(intakeRow(row)) // intake row (3 balls)
                 .andThen(driveToShootCommand) // move to shooting position
                 .andThen(shoot ? getShootRowCommand(true) : commandFactory.noop()) // shoot row
-        ;
+                ;
+    }
+
+    protected Command intakeRow(RowsOnFloor row) {
+        Pose rowEndPose = getRowEndingPosition(row);
+        return new ParallelRaceGroup(
+                commandFactory.moveTo(rowEndPose, PathType.LINE, getIntakeDriveTrainPower()),
+                commandFactory.intakeRow()
+        );
+    }
+
+    protected Command moveOutAtLastSecond(Command autonCommand) {
+        return new ParallelDeadlineGroup(commandFactory.sleep(29000),
+                autonCommand).andThen(commandFactory.moveTo(getFinishPosition(), PathType.LINE));
     }
 
     Pose getRowStartingPosition(RowsOnFloor row) {
@@ -55,6 +94,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
             case GPP -> positions.getGPPStartPosition();
             case PGP -> positions.getPGPStartPosition();
             case PPG -> positions.getPPGStartPosition();
+            default -> getFinishPosition();
         };
     }
 
@@ -64,15 +104,11 @@ public abstract class AutonBase extends CommandAutoOpMode {
             case GPP -> positions.getGPPEndPosition();
             case PGP -> positions.getPGPEndPosition();
             case PPG -> positions.getPPGEndPosition();
+            default -> getFinishPosition();
         };
     }
 
-    protected Command moveAndShootPreloads() {
-        return commandFactory
-                .startMove(getStartingPosition(), getPreloadShootPosition(), PathType.LINE, .6) // move to shooting position
-                .andThen(getShootRowCommand(false)) // shoot preloads
-        ;
-    }
+
 
     Pose getStartingPosition() {
         return switch (shootRange()) {
@@ -83,20 +119,6 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     abstract Side getSide();
 
-    protected List<RowsOnFloor> getRowSequence() {
-        return switch (shootRange()) {
-            case LONG -> List.of(RowsOnFloor.GPP/*, RowsOnFloor.SECOND, RowsOnFloor.THIRD*/);
-            case SHORT -> List.of(RowsOnFloor.PPG, RowsOnFloor.PGP/*, RowsOnFloor.FIRST*/);
-        };
-    }
-
-    protected Command intakeRow(RowsOnFloor row) {
-        Pose rowEndPose = getRowEndingPosition(row);
-        return new ParallelRaceGroup(
-                commandFactory.moveTo(rowEndPose, PathType.LINE, getIntakeDriveTrainPower()),
-                commandFactory.intakeRow()
-        );
-    }
 
     protected abstract ShootRange shootRange();
 
@@ -122,11 +144,6 @@ public abstract class AutonBase extends CommandAutoOpMode {
         };
     }
 
-    protected Command moveOutAtLastSecond(Command autonCommand) {
-        return new ParallelDeadlineGroup(commandFactory.sleep(29000),
-                autonCommand).andThen(commandFactory.moveTo(getFinishPosition(), PathType.LINE));
-    }
-
     protected Pose getFinishPosition() {
         return switch (shootRange()) {
             case LONG -> getPositions().getLongFinishPosition();
@@ -134,16 +151,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
         };
     }
 
-    @Override
-    protected Command createCommand() {
-        Command command = moveAndShootPreloads();
-        List<RowsOnFloor> rowSequence = getRowSequence();
-        for (RowsOnFloor row : rowSequence) {
-            command = command.andThen(intakeRowAndShoot(row, true));
-        }
 
-        return moveOutAtLastSecond(command);
-    }
 
     public Positions getPositions() {
         return switch (getSide()) {
@@ -172,4 +180,9 @@ public abstract class AutonBase extends CommandAutoOpMode {
 //        }
 //        return getRowShootingPosition();
     }
+
+    public Command observeObelisk() {
+        return commandFactory.moveTo(getPositions().getObeliskObservePosition(), PathType.LINE, .6);
+    }
+
 }

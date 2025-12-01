@@ -192,7 +192,8 @@ public class CommandFactory {
     public Command loadAndShoot(Command shootCommand, boolean loadFirst) {
         return new ParallelDeadlineGroup(
                 sleep(loadFirst ? AutonCommonConfigs.shootWithLoadTimeoutInMS : AutonCommonConfigs.shootWithoutLoadTimeoutInMS),
-                stopperGo().andThen(startIntake())
+                stopperGo()
+                        .andThen(startIntake())
                         .andThen(turnOnSlowChamberRoller())
 //                        .andThen((loadFirst ? turnOnSlowChamberRoller() : noop()))
                         .andThen(shootCommand)
@@ -232,6 +233,10 @@ public class CommandFactory {
 
     public Command stopperStop() {
         return new InstantCommand(stopper::Stop);
+    }
+
+    public Command scheduleAfterFinish(SounderBotCommandBase previousCommand, Command followingCommand) {
+        return new WrapperCommand(previousCommand).endWith(followingCommand);
     }
 
 }

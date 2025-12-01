@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.command;
 
 import android.util.Log;
 
+import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandBase;
 
 public abstract class SounderBotCommandBase extends CommandBase {
@@ -11,6 +12,7 @@ public abstract class SounderBotCommandBase extends CommandBase {
 
     protected long startTime = -1;
 
+    private Command endWithCommand;
 
     public SounderBotCommandBase(long timeOut) {
         TIME_OUT_MS = timeOut;
@@ -38,6 +40,15 @@ public abstract class SounderBotCommandBase extends CommandBase {
         }
     }
 
+    @Override
+    public void end(boolean interrupted) {
+        super.end(interrupted);
+        if (endWithCommand != null) {
+            endWithCommand.schedule();
+            endWithCommand = null; // avoid schedule again
+        }
+    }
+
     protected void firstTimeExecute() {
 
     }
@@ -48,6 +59,10 @@ public abstract class SounderBotCommandBase extends CommandBase {
             return timeUsed > TIME_OUT_MS;
         }
         return false;
+    }
+
+    public long getTimeoutMs() {
+        return TIME_OUT_MS;
     }
 
     protected abstract void doExecute();
@@ -77,5 +92,10 @@ public abstract class SounderBotCommandBase extends CommandBase {
         } else {
             return 0;
         }
+    }
+
+    public SounderBotCommandBase endWith(Command endWithCommand) {
+        this.endWithCommand = endWithCommand;
+        return this;
     }
 }
