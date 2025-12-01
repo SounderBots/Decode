@@ -31,9 +31,9 @@ public class Shooter extends SubsystemBase {
     @Config
     public static class ShooterConfig {
 
-        public static double ShooterTpsHi = 930;
+        public static double ShooterTpsHi = 750;
 
-        public static double ShooterTpsLo = 770;
+        public static double ShooterTpsLo = 825;
 
         public static double RightLauncherStow = 0.34;
 
@@ -45,9 +45,9 @@ public class Shooter extends SubsystemBase {
 
         public static double IntakeMaxPower = 1;
 
-        public static double TiltServoHi = .55;
+        public static double TiltServoHi = 0.95;
 
-        public static double TiltServoLo = 0.1;
+        public static double TiltServoLo = 0.95;
 
         public static double FlywheelAcceptableTpsError = 40;
 
@@ -243,27 +243,36 @@ public class Shooter extends SubsystemBase {
         AprilTagPosition position = this.limelight.getAprilTagPosition();
 
         if(position != null) {
+            /*
+            134 - 825, 0.95
+            124 - 825, 0.95
+            114 - 825, 0.95
+            94 - 775, 0.95
+            84 - 775, 0.95
+            74 - 750, 0.95
+            64 - 750, 0.95
+            54 - 750, 0.95
+            44 - 750, 0.95
+            */
             double distance = position.distance();
-            if (distance < 38) {
-                return new AutoSpeed(800, 0.5);
-            } else if (distance < 48) {
-                return new AutoSpeed(740, 0.7);
-            } else if (distance < 57) {
-                return new AutoSpeed(750, 0.6);
-            } else if (distance < 67) {
-                return new AutoSpeed(770, 0.5);
-            } else if (distance < 77) {
-                return new AutoSpeed(800, 0.46);
-            } else if (distance < 87) {
-                return new AutoSpeed(825, 0.4);
-            } else if (distance < 97) {
-                return new AutoSpeed(840, 0.4);
-            } else if (distance < 117) {
-                return new AutoSpeed(960, 0.1);
-            } else if (distance < 127) {
-                return new AutoSpeed(985, 0.1);
-            } else if (distance < 137) {
-                return new AutoSpeed(1005, 0.1);
+            if (distance < 44) {
+                return new AutoSpeed(750, 0.95);
+            } else if (distance < 54) {
+                return new AutoSpeed(750, 0.95);
+            } else if (distance < 64) {
+                return new AutoSpeed(750, 0.95);
+            } else if (distance < 74) {
+                return new AutoSpeed(750, 0.95);
+            } else if (distance < 84) {
+                return new AutoSpeed(775, 0.95);
+            } else if (distance < 94) {
+                return new AutoSpeed(775, 0.95);
+            } else if (distance < 114) {
+                return new AutoSpeed(825, 0.95);
+            } else if (distance < 124) {
+                return new AutoSpeed(825, 0.95);
+            } else if (distance < 134) {
+                return new AutoSpeed(825, 0.95);
             }
         }
 

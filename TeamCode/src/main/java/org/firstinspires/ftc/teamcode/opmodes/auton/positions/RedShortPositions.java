@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes.auton;
+package org.firstinspires.ftc.teamcode.opmodes.auton.positions;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
@@ -52,6 +52,11 @@ public class RedShortPositions implements Positions {
     }
 
     @Override
+    public Pose getObeliskObservePosition() {
+        return null;
+    }
+
+    @Override
     public Pose getShortStartPosition() {
         return frontStartPosition;
     }
@@ -74,32 +79,32 @@ public class RedShortPositions implements Positions {
     //
 
     @Override
-    public Pose getFirstRowStartPosition() {
+    public Pose getGPPStartPosition() {
         return new Pose(rowStartX, firstRowStartY, Math.toRadians(intakeHeadingDegrees));
     }
 
     @Override
-    public Pose getFirstRowEndPosition() {
+    public Pose getGPPEndPosition() {
         return new Pose(rowEndXLongIntake, firstRowStartY, Math.toRadians(intakeHeadingDegrees));
     }
 
     @Override
-    public Pose getSecondRowStartPosition() {
+    public Pose getPGPStartPosition() {
         return new Pose(rowStartX, secondRowStartY, Math.toRadians(intakeHeadingDegrees));
     }
 
     @Override
-    public Pose getSecondRowEndPosition() {
+    public Pose getPGPEndPosition() {
         return new Pose(rowEndXLongIntake, secondRowStartY, Math.toRadians(intakeHeadingDegrees));
     }
 
     @Override
-    public Pose getThirdRowStartPosition() {
+    public Pose getPPGStartPosition() {
         return new Pose(rowStartX, thirdRowStartY, Math.toRadians(intakeHeadingDegrees));
     }
 
     @Override
-    public Pose getThirdRowEndPosition() {
+    public Pose getPPGEndPosition() {
         return new Pose(rowEndXShortIntake, thirdRowStartY, Math.toRadians(intakeHeadingDegrees));
     }
 }

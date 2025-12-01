@@ -1,10 +1,13 @@
-package org.firstinspires.ftc.teamcode.opmodes.auton;
+package org.firstinspires.ftc.teamcode.opmodes.auton.test;
 
 import com.arcrobotics.ftclib.command.Command;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.AutonCommonConfigs;
+import org.firstinspires.ftc.teamcode.opmodes.auton.CommandAutoOpMode;
 
 @Autonomous(name="Shoot Preload test", group="Test")
 @Configurable

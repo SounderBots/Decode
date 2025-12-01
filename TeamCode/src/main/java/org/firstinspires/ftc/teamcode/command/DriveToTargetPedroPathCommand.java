@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.command;
 
 import android.util.Log;
 
+import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
@@ -56,6 +57,7 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
         following = false;
         follower.activateAllPIDFs();
         DrawingToPanel.init();
+
     }
 
     @Override

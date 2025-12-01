@@ -5,6 +5,9 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.ShootRange;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.Side;
+
 @Autonomous(name="Blue from back no shoot", group="Blue")
 @Configurable
 public class BlueFromBackNoShoot extends AutonBase {

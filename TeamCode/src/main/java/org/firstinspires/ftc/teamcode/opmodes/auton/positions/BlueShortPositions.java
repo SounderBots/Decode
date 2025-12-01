@@ -1,19 +1,19 @@
-package org.firstinspires.ftc.teamcode.opmodes.auton;
+package org.firstinspires.ftc.teamcode.opmodes.auton.positions;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 
 @Configurable
-public class BlueLongPositions implements Positions {
+public class BlueShortPositions implements Positions {
 
     public static double rowStartX = 44;
-    public static double rowEndXLongIntake = 6;
-    public static double rowEndXShortIntake = 12;
+    public static double rowEndXLongIntake = 10;
+    public static double rowEndXShortIntake = 16;
 
     // each row y increase 24 inches
     //first row is the row close to the trangle
     public static double firstRowStartY = 35;
-    public static double secondRowStartY = 63;
+    public static double secondRowStartY = 60.5;
     public static double thirdRowStartY = 83;
 
     public static double rowEndYOffset = 0;
@@ -31,20 +31,19 @@ public class BlueLongPositions implements Positions {
     public static Pose backFinishPosition = new Pose(48, 24, 0);
     public static Pose frontFinishPosition = new Pose(48, 120, 0);
 
-    public static double driveTrainIntakePowerScale = 1.5;
-
-    public static double longShootPreloadHeadingInDegree = 110;
-    public static Pose longShootPreloadPosition = new Pose(56, 11, Math.toRadians(longShootPreloadHeadingInDegree));
-
-    public BlueLongPositions() {
+    public BlueShortPositions() {
         backShootPosition = backShootPosition.setHeading(Math.toRadians(backShootAngleInDegrees));
         frontShootPosition = frontShootPosition.setHeading(Math.toRadians(frontShootAngleInDegrees));
-        longShootPreloadPosition = longShootPreloadPosition.setHeading(Math.toRadians(longShootPreloadHeadingInDegree));
     }
 
     @Override
     public Pose getShortShootPosition() {
         return frontShootPosition;
+    }
+
+    @Override
+    public Pose getObeliskObservePosition() {
+        return null;
     }
 
     @Override
@@ -77,43 +76,33 @@ public class BlueLongPositions implements Positions {
     //
 
     @Override
-    public Pose getFirstRowStartPosition() {
+    public Pose getGPPStartPosition() {
         return new Pose(rowStartX, firstRowStartY, Math.toRadians(headingDegrees));
     }
 
     @Override
-    public Pose getFirstRowEndPosition() {
+    public Pose getGPPEndPosition() {
         return new Pose(rowEndXLongIntake, firstRowStartY + rowEndYOffset, Math.toRadians(headingDegrees));
     }
 
     @Override
-    public Pose getSecondRowStartPosition() {
+    public Pose getPGPStartPosition() {
         return new Pose(rowStartX, secondRowStartY, Math.toRadians(headingDegrees));
     }
 
     @Override
-    public Pose getSecondRowEndPosition() {
+    public Pose getPGPEndPosition() {
         return new Pose(rowEndXLongIntake, secondRowStartY + rowEndYOffset, Math.toRadians(headingDegrees));
     }
 
     @Override
-    public Pose getThirdRowStartPosition() {
+    public Pose getPPGStartPosition() {
         return new Pose(rowStartX, thirdRowStartY, Math.toRadians(headingDegrees));
     }
 
     @Override
-    public Pose getThirdRowEndPosition() {
+    public Pose getPPGEndPosition() {
         return new Pose(rowEndXShortIntake, thirdRowStartY + rowEndYOffset, Math.toRadians(headingDegrees));
-    }
-
-    @Override
-    public double getDriveTrainIntakePowerScale() {
-        return driveTrainIntakePowerScale;
-    }
-
-    @Override
-    public Pose getLongPreloadShootPosition() {
-        return longShootPreloadPosition;
     }
 //    // each row y increase 24 inches
 //    public static Pose firstRowStartingPosition = new Pose(108, 32.16, Math.toRadians(0));

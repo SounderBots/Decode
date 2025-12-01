@@ -6,6 +6,9 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.command.PathType;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.RowsOnFloor;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.ShootRange;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.Side;
 
 @Autonomous(name="Blue from back delay shoot", group="Blue")
 @Configurable
@@ -35,7 +38,7 @@ public class BlueFromBackDelayShoot extends AutonBase {
         Pose startPosition = getStartingPosition();
         return commandFactory.sleep(delayInMS)
                 .andThen(moveAndShootPreloads())
-                .andThen(intakeRowAndShoot(RowsOnFloor.FIRST, false))
+                .andThen(intakeRowAndShoot(RowsOnFloor.GPP, false))
                 .andThen(commandFactory.moveTo((new Pose(37, 35, 0)), PathType.LINE, 0.7));
     }
 }
