@@ -77,32 +77,32 @@ public class BlueLongPositions implements Positions {
     //
 
     @Override
-    public Pose getFirstRowStartPosition() {
+    public Pose getGPPStartPosition() {
         return new Pose(rowStartX, firstRowStartY, Math.toRadians(headingDegrees));
     }
 
     @Override
-    public Pose getFirstRowEndPosition() {
+    public Pose getGPPEndPosition() {
         return new Pose(rowEndXLongIntake, firstRowStartY + rowEndYOffset, Math.toRadians(headingDegrees));
     }
 
     @Override
-    public Pose getSecondRowStartPosition() {
+    public Pose getPGPStartPosition() {
         return new Pose(rowStartX, secondRowStartY, Math.toRadians(headingDegrees));
     }
 
     @Override
-    public Pose getSecondRowEndPosition() {
+    public Pose getPGPEndPosition() {
         return new Pose(rowEndXLongIntake, secondRowStartY + rowEndYOffset, Math.toRadians(headingDegrees));
     }
 
     @Override
-    public Pose getThirdRowStartPosition() {
+    public Pose getPPGStartPosition() {
         return new Pose(rowStartX, thirdRowStartY, Math.toRadians(headingDegrees));
     }
 
     @Override
-    public Pose getThirdRowEndPosition() {
+    public Pose getPPGEndPosition() {
         return new Pose(rowEndXShortIntake, thirdRowStartY + rowEndYOffset, Math.toRadians(headingDegrees));
     }
 

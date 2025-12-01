@@ -14,20 +14,20 @@ public abstract class AutonBase extends CommandAutoOpMode {
     protected Command intakeRowAndShoot(RowsOnFloor row, boolean shoot) {
         Pose rowStartingPosition = getRowStartingPosition(row);
         double driveMaxPower = switch (row) {
-            case FIRST ->
+            case GPP ->
                 switch (shootRange()) {
                     case LONG -> AutonCommonConfigs.slowMoveSpeed;
                     case SHORT -> AutonCommonConfigs.fastMoveSpeed;
                 };
-            case SECOND -> AutonCommonConfigs.middleMoveSpeed;
-            case THIRD ->
+            case PGP -> AutonCommonConfigs.middleMoveSpeed;
+            case PPG ->
                 switch (shootRange()) {
                     case LONG -> AutonCommonConfigs.fastMoveSpeed;
                     case SHORT -> AutonCommonConfigs.slowMoveSpeed;
                 };
         };
 
-        boolean isSecondRow = row == RowsOnFloor.SECOND;
+        boolean isSecondRow = row == RowsOnFloor.PGP;
 
         Command driveToShootCommand = isSecondRow
                 ? commandFactory.moveTo(rowStartingPosition, PathType.LINE, driveMaxPower).andThen(commandFactory.moveTo(getRowShootingPosition(), PathType.LINE, driveMaxPower))
@@ -43,18 +43,18 @@ public abstract class AutonBase extends CommandAutoOpMode {
     Pose getRowStartingPosition(RowsOnFloor row) {
         Positions positions = getPositions();
         return switch (row) {
-            case FIRST -> positions.getFirstRowStartPosition();
-            case SECOND -> positions.getSecondRowStartPosition();
-            case THIRD -> positions.getThirdRowStartPosition();
+            case GPP -> positions.getGPPStartPosition();
+            case PGP -> positions.getPGPStartPosition();
+            case PPG -> positions.getPPGStartPosition();
         };
     }
 
     Pose getRowEndingPosition(RowsOnFloor row) {
         Positions positions = getPositions();
         return switch (row) {
-            case FIRST -> positions.getFirstRowEndPosition();
-            case SECOND -> positions.getSecondRowEndPosition();
-            case THIRD -> positions.getThirdRowEndPosition();
+            case GPP -> positions.getGPPEndPosition();
+            case PGP -> positions.getPGPEndPosition();
+            case PPG -> positions.getPPGEndPosition();
         };
     }
 
@@ -76,8 +76,8 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     protected List<RowsOnFloor> getRowSequence() {
         return switch (shootRange()) {
-            case LONG -> List.of(RowsOnFloor.FIRST/*, RowsOnFloor.SECOND, RowsOnFloor.THIRD*/);
-            case SHORT -> List.of(RowsOnFloor.THIRD, RowsOnFloor.SECOND/*, RowsOnFloor.FIRST*/);
+            case LONG -> List.of(RowsOnFloor.GPP/*, RowsOnFloor.SECOND, RowsOnFloor.THIRD*/);
+            case SHORT -> List.of(RowsOnFloor.PPG, RowsOnFloor.PGP/*, RowsOnFloor.FIRST*/);
         };
     }
 

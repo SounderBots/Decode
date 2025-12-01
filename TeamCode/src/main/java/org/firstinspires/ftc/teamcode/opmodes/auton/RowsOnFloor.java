@@ -1,7 +1,15 @@
 package org.firstinspires.ftc.teamcode.opmodes.auton;
 
+import lombok.Getter;
+
 public enum RowsOnFloor {
-    FIRST, // the row close to final parking position
-    SECOND,
-    THIRD
+    GPP(21), // the row close to final parking position
+    PGP(22),
+    PPG(23);
+
+    @Getter
+    final int aprilTagId;
+    RowsOnFloor(int aprilTagId) {
+        this.aprilTagId = aprilTagId;
+    }
 }
