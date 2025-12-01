@@ -85,7 +85,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
         Pose rowEndPose = getRowEndingPosition(row);
         return new ParallelRaceGroup(
                 commandFactory.moveTo(rowEndPose, PathType.LINE, getIntakeDriveTrainPower()),
-                commandFactory.stopperStop().andThen(commandFactory.intakeRow())
+                commandFactory.intakeRow()
         );
     }
 

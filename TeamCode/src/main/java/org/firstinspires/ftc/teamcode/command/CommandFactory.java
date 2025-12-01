@@ -124,7 +124,7 @@ public class CommandFactory {
     }
 
     public Command intakeRow() {
-        return new IntakeRowCommand(transferChamber, intake, telemetry, DEFAULT_TIME_OUT);
+        return stopperStop().andThen(new IntakeRowCommand(transferChamber, intake, telemetry, DEFAULT_TIME_OUT));
     }
 
     public Command topRollerOutput() {
