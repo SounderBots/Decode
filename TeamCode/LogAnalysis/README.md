@@ -36,7 +36,19 @@ Downloads CSV log files from the Control Hub to your local computer.
 *   Connect your computer to the Control Hub via Wi-Fi or USB.
 *   Logs will be saved to the current directory (or `logs/` folder if configured).
 
-### B. `analyze_pid.py`
+### B. `clean_logs.ps1`
+Deletes all log files from the Control Hub (Internal Storage & SD Card) to free up space.
+
+**Usage:**
+```powershell
+.\clean_logs.ps1
+```
+*   **Device Selection:** If multiple devices are connected (e.g., Control Hub via USB and Wi-Fi), the script will list them and ask you to select one.
+*   Scans for log directories.
+*   Prompts for confirmation before deleting files.
+*   Use `.\clean_logs.ps1 -Force` to skip confirmation.
+
+### C. `analyze_pid.py`
 **Purpose:** Visualizes PID performance to help you tune `kP`, `kI`, and `kD`. It calculates metrics like Overshoot and Settling Time.
 **Best for:** Step Response tests (e.g., instantly setting target velocity from 0 to 1000).
 
@@ -61,7 +73,7 @@ python analyze_pid.py --save
 *   **Steady-State Error:** The error remaining after the system settles.
     *   *Non-zero*: **Increase kI** or adjust `kV`/`kS`.
 
-### C. `derive_coefficients.py`
+### D. `derive_coefficients.py`
 **Purpose:** Performs System Identification (Linear Regression) to mathematically derive the physical Feedforward coefficients (`kS`, `kV`, `kA`) for your motors.
 **Best for:** Ramp Tests (slowly accelerating from 0 to max speed) or Quasistatic tests.
 

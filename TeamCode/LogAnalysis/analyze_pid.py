@@ -4,7 +4,6 @@ import argparse
 import os
 import sys
 import io
-import numpy as np
 
 def parse_log_file(file_path):
     """
@@ -33,6 +32,10 @@ def parse_log_file(file_path):
         
         # Robust rename: handle "# Timestamp", "#Timestamp", "Timestamp"
         df.rename(columns=lambda x: x.replace('#', '').strip(), inplace=True)
+        
+        # Ensure sorted by Timestamp for binary search in hover tool
+        df.sort_values('Timestamp', inplace=True)
+        
         return df
     except pd.errors.EmptyDataError:
         print(f"Error: File {file_path} is empty.")
@@ -157,9 +160,6 @@ def analyze_pid(file_path, save_plot=False):
 
     print(f"Found motor columns: {tps_cols}")
 
-    # --- Plotting Setup ---
-    plt.figure(figsize=(12, 10))
-    
     # Check if ANY motor has power columns to decide on 3rd subplot
     # We do a quick check for likely power columns
     has_power = False
@@ -171,16 +171,100 @@ def analyze_pid(file_path, save_plot=False):
             
     num_plots = 3 if has_power else 2
 
-    # 1. Velocity (Target) - Plot once
-    plt.subplot(num_plots, 1, 1)
-    plt.plot(df['Timestamp'], df['TargetTPS'], label='Target TPS', color='black', linestyle='--', linewidth=2)
+    # --- Plotting Setup ---
+    # Use subplots with sharex=True to synchronize zooming/panning
+    fig, axes = plt.subplots(num_plots, 1, figsize=(12, 10), sharex=True)
+    if num_plots == 1: axes = [axes] # Handle single plot case if it ever happens
 
-    colors = ['blue', 'orange', 'green', 'red', 'purple']
+    # Define Color Map (User Preference: Green=Target, Blue=Left, Yellow=Right)
+    color_map = {}
+    # Default palette: Blue, Yellow, Purple, Red, Cyan
+    palette = ['#1f77b4', '#e3c800', '#9467bd', '#d62728', '#17becf']
+    
+    # Heuristic for Left/Right
+    left_col = next((c for c in tps_cols if 'Left' in c), None)
+    right_col = next((c for c in tps_cols if 'Right' in c), None)
+    
+    if left_col and right_col and len(tps_cols) == 2:
+        color_map[left_col] = '#1f77b4' # Blue
+        color_map[right_col] = '#e3c800' # Yellow
+    else:
+        for i, col in enumerate(tps_cols):
+            color_map[col] = palette[i % len(palette)]
+
+    # 1. Velocity (Target) - Plot once
+    plt.sca(axes[0])
+    plt.plot(df['Timestamp'], df['TargetTPS'], label='Target TPS', color='#2ca02c', linestyle='--', linewidth=2, alpha=0.9) # Green Target
+
+    # --- Readiness Analysis ---
+    # Define Tolerance (User can adjust this in code or via args later, default 5%)
+    TOLERANCE_PCT = 0.05
+    
+    # Calculate "Ready" state: Both motors within tolerance
+    # We need to check if we have 2 motors for this specific logic, otherwise just check individual
+    ready_mask = pd.Series(True, index=df.index)
+    
+    for tps_col in tps_cols:
+        prefix = tps_col[:-3]
+        error_col = f"{prefix}Error"
+        if error_col not in df.columns:
+             df[error_col] = df['TargetTPS'] - df[tps_col]
+        
+        # Check if error is within tolerance relative to Target
+        # Avoid division by zero for small targets
+        target_abs = df['TargetTPS'].abs()
+        tolerance_abs = target_abs * TOLERANCE_PCT
+        # Use a minimum threshold for low speeds (e.g. 50 TPS) to avoid noise
+        tolerance_abs = tolerance_abs.clip(lower=50) 
+        
+        in_range = df[error_col].abs() <= tolerance_abs
+        ready_mask = ready_mask & in_range
+
+    # Highlight "Ready to Shoot" Zones
+    # We only care when Target is active (> 100 TPS)
+    active_ready_mask = ready_mask & (df['TargetTPS'].abs() > 100)
+    
+    # Fill green for Ready
+    plt.fill_between(df['Timestamp'], df['TargetTPS'].min(), df['TargetTPS'].max(), 
+                     where=active_ready_mask, 
+                     color='green', alpha=0.1, label='Ready to Shoot (In Range)')
+
+    # --- Premature/Oscillation Detection ---
+    # If "Ready" but Velocity is changing rapidly (Acceleration is high), it's unstable/premature
+    # Calculate Acceleration (Derivative of Velocity)
+    dt = df['Timestamp'].diff().fillna(0.01) # Avoid div by zero
+    
+    unstable_mask = pd.Series(False, index=df.index)
+    
+    for tps_col in tps_cols:
+        velocity = df[tps_col]
+        acceleration = velocity.diff() / dt
+        
+        # Define Stability Threshold (e.g., changing by more than 10% of Target per second?)
+        # Or a fixed value. Let's try 500 TPS/s as a heuristic for "swinging"
+        # Better: Relative to target. If Accel > Target * 2, it's moving fast.
+        accel_threshold = df['TargetTPS'].abs() * 2.0 
+        accel_threshold = accel_threshold.clip(lower=500)
+        
+        is_unstable = acceleration.abs() > accel_threshold
+        unstable_mask = unstable_mask | is_unstable
+
+    # "Risky Shot" = Ready AND Unstable
+    risky_mask = active_ready_mask & unstable_mask
+    
+    if risky_mask.any():
+        plt.fill_between(df['Timestamp'], df['TargetTPS'].min(), df['TargetTPS'].max(), 
+                         where=risky_mask, 
+                         color='orange', alpha=0.3, label='Unstable/Premature (High Accel)')
+        print("\nWARNING: Detected potential premature shooting zones (Orange).")
+        print("The motors are passing through the target range but moving too fast to be stable.")
+
+    motor_plot_data = [] # Store data for discrepancy fill
 
     for i, tps_col in enumerate(tps_cols):
         # Determine prefix (e.g., "Right" from "RightTPS", or "" from "ActualTPS")
         prefix = tps_col[:-3] 
-        color = colors[i % len(colors)]
+        color = color_map.get(tps_col, palette[i % len(palette)])
         
         print(f"\n--- Analyzing Motor: {tps_col} ---")
         
@@ -226,46 +310,202 @@ def analyze_pid(file_path, save_plot=False):
         # --- Add to Plots ---
         
         # 1. Velocity
-        plt.subplot(num_plots, 1, 1)
-        plt.plot(df['Timestamp'], df[tps_col], label=f'{tps_col}', color=color, alpha=0.8)
+        plt.sca(axes[0])
+        plt.plot(df['Timestamp'], df[tps_col], label=f'{tps_col}', color=color, linewidth=1.5, alpha=0.9)
+        motor_plot_data.append((tps_col, df[tps_col]))
         
         # 2. Error
-        plt.subplot(num_plots, 1, 2)
+        plt.sca(axes[1])
         plt.plot(df['Timestamp'], df[error_col], label=f'{prefix}Error', color=color, alpha=0.8)
         
         # 3. Power
         if has_power:
-            plt.subplot(num_plots, 1, 3)
+            plt.sca(axes[2])
             # Check if specific power col exists, else try TotalPower if it's the only one
             if power_col in df.columns:
                 plt.plot(df['Timestamp'], df[power_col], label=f'{prefix}Power', color=color, alpha=0.8)
+                # Highlight Saturation for this motor
+                plt.fill_between(df['Timestamp'], -1, 1, 
+                                 where=(df[power_col].abs() > 0.95), 
+                                 color='red', alpha=0.05, label='_nolegend_') # Light red background for saturation
             elif "TotalPower" in df.columns and len(tps_cols) == 1:
                  plt.plot(df['Timestamp'], df["TotalPower"], label='TotalPower', color=color, alpha=0.8)
+                 plt.fill_between(df['Timestamp'], -1, 1, 
+                                 where=(df["TotalPower"].abs() > 0.95), 
+                                 color='red', alpha=0.05, label='_nolegend_')
 
     # --- Finalize Plots ---
-    plt.subplot(num_plots, 1, 1)
-    plt.title(f'PID Response: {os.path.basename(file_path)}')
-    plt.ylabel('Velocity (TPS)')
-    plt.legend()
-    plt.grid(True)
+    
+    # Highlight Discrepancy if exactly 2 motors
+    if len(motor_plot_data) == 2:
+        # Calculate Discrepancy Metrics
+        col1_name, col1_data = motor_plot_data[0]
+        col2_name, col2_data = motor_plot_data[1]
+        
+        discrepancy = (col1_data - col2_data).abs()
+        max_diff = discrepancy.max()
+        mean_diff = discrepancy.mean()
+        
+        # Filter for when target is non-zero to avoid idle noise
+        active_mask = df['TargetTPS'].abs() > 10
+        if active_mask.any():
+            active_diff = discrepancy[active_mask]
+            max_active_diff = active_diff.max()
+            mean_active_diff = active_diff.mean()
+            
+            # Calculate % difference relative to target
+            # Avoid division by zero
+            target_active = df.loc[active_mask, 'TargetTPS'].abs()
+            pct_diff = (active_diff / target_active) * 100
+            max_pct_diff = pct_diff.max()
+            mean_pct_diff = pct_diff.mean()
+            
+            print(f"\n--- Synchronization Analysis ({col1_name} vs {col2_name}) ---")
+            print(f"Max Discrepancy (Active): {max_active_diff:.2f} TPS")
+            print(f"Mean Discrepancy (Active): {mean_active_diff:.2f} TPS")
+            print(f"Max % Difference: {max_pct_diff:.1f}%")
+            print(f"Mean % Difference: {mean_pct_diff:.1f}%")
+            
+            if max_pct_diff > 5.0:
+                print("WARNING: Significant discrepancy detected (>5%). This may cause curved shots.")
+            elif max_pct_diff > 2.0:
+                print("Note: Moderate discrepancy detected (2-5%).")
+            else:
+                print("Good synchronization (<2% difference).")
 
-    plt.subplot(num_plots, 1, 2)
-    plt.axhline(y=0, color='black', linestyle='-', alpha=0.3)
+        plt.sca(axes[0])
+        plt.fill_between(df['Timestamp'], col1_data, col2_data, 
+                         color='red', alpha=0.1, label='Discrepancy')
+
+    plt.sca(axes[0])
+    plt.title(f'Velocity Tracking: {os.path.basename(file_path)}\nGreen Zone = Ready to Shoot | Orange Zone = Unstable/Premature')
+    plt.ylabel('Velocity (TPS)')
+    plt.legend(loc='best')
+    plt.grid(True, which='both', linestyle='--', alpha=0.7)
+
+    # Finalize Error Plot (Actionable Insights)
+    plt.sca(axes[1])
+    plt.axhline(y=0, color='black', linestyle='-', alpha=0.5)
+    
+    # Add Tolerance Bands (Actionable: Is error within 5%?)
+    # Re-calculate tolerance for visualization
+    tolerance_5pct = df['TargetTPS'].abs() * 0.05
+    tolerance_5pct = tolerance_5pct.clip(lower=50)
+    
+    plt.fill_between(df['Timestamp'], tolerance_5pct, -tolerance_5pct, 
+                     color='green', alpha=0.1, label='Acceptable Range (5%)')
+    
     plt.ylabel('Error (TPS)')
-    plt.legend()
-    plt.grid(True)
+    plt.title('Error & Recovery (Goal: Stay in Green Band)')
+    plt.legend(loc='best')
+    plt.grid(True, which='both', linestyle='--', alpha=0.7)
 
     if has_power:
-        plt.subplot(num_plots, 1, 3)
+        plt.sca(axes[2])
         plt.ylabel('Power (-1 to 1)')
+        plt.title('Motor Effort (Goal: Smooth Control, Avoid Saturation)')
         plt.xlabel('Time (s)')
-        plt.legend()
-        plt.grid(True)
+        plt.axhline(y=1, color='red', linestyle=':', alpha=0.5)
+        plt.axhline(y=-1, color='red', linestyle=':', alpha=0.5)
+        plt.axhline(y=0, color='black', linestyle='-', alpha=0.3)
+        
+        # Add a dummy fill for the legend to explain the red background
+        plt.fill_between([], [], [], color='red', alpha=0.1, label='Saturation (>95%)')
+        
+        plt.legend(loc='best')
+        plt.grid(True, which='both', linestyle='--', alpha=0.7)
     else:
-        plt.subplot(num_plots, 1, 2)
+        plt.sca(axes[1])
         plt.xlabel('Time (s)')
             
     plt.tight_layout()
+
+    # --- Interactive Cursor (Optimized) ---
+    # Use a vertical line that snaps to data points to avoid constant redraws
+    
+    # Create vertical lines for each subplot (initially invisible)
+    vlines = [ax.axvline(x=df['Timestamp'].iloc[0], color='gray', linestyle='--', alpha=0.8, visible=False) for ax in axes]
+    
+    # Annotation box on the first subplot
+    annot = axes[0].annotate("", xy=(0,0), xytext=(10,10), textcoords="offset points",
+                            bbox=dict(boxstyle="round", fc="w", alpha=0.9),
+                            arrowprops=dict(arrowstyle="->"), zorder=10)
+    annot.set_visible(False)
+    
+    # Store last index to prevent unnecessary redraws
+    last_idx = [None]
+
+    def update_annot(idx):
+        x = df['Timestamp'].iloc[idx]
+        
+        # Build text with info from all motors
+        text_lines = [f"Time: {x:.3f}s", f"Target: {df['TargetTPS'].iloc[idx]:.0f}"]
+        
+        for tps_col in tps_cols:
+            val = df[tps_col].iloc[idx]
+            text_lines.append(f"{tps_col}: {val:.0f}")
+            
+            # Add Error info
+            prefix = tps_col[:-3]
+            err_col = f"{prefix}Error"
+            if err_col in df.columns:
+                text_lines.append(f"{prefix}Err: {df[err_col].iloc[idx]:.0f}")
+                
+        annot.xy = (x, df['TargetTPS'].iloc[idx])
+        annot.set_text("\n".join(text_lines))
+
+    def hover(event):
+        # Performance: Only show if Left Ctrl is pressed AND mouse is inside axes
+        should_show = (event.key == 'control') and (event.inaxes in axes)
+
+        if not should_show:
+            if annot.get_visible():
+                annot.set_visible(False)
+                for vl in vlines: vl.set_visible(False)
+                fig.canvas.draw_idle()
+            return
+
+        # Find nearest timestamp index
+        # Binary search for performance O(log N)
+        target_x = event.xdata
+        timestamps = df['Timestamp'].values
+        idx = timestamps.searchsorted(target_x)
+        
+        # Clamp index and find closest
+        if idx >= len(timestamps): idx = len(timestamps) - 1
+        if idx > 0:
+            # Check which is closer: idx or idx-1
+            if abs(timestamps[idx] - target_x) > abs(timestamps[idx-1] - target_x):
+                idx = idx - 1
+        
+        # Only redraw if index changed (Major Performance Optimization)
+        if idx != last_idx[0]:
+            last_idx[0] = idx
+            
+            # Update position
+            x_pos = timestamps[idx]
+            for vl in vlines:
+                vl.set_xdata([x_pos, x_pos])
+                vl.set_visible(True)
+            
+            update_annot(idx)
+            
+            # Smart positioning to avoid overlap with title/top
+            # Check if we are in the top 20% of the visible y-axis
+            ylim = axes[0].get_ylim()
+            y_range = ylim[1] - ylim[0]
+            y_val = df['TargetTPS'].iloc[idx]
+            
+            # If y_val is high up, move tooltip down-right instead of up-right
+            if (y_val - ylim[0]) / y_range > 0.8:
+                 annot.xytext = (10, -100) # Move down
+            else:
+                 annot.xytext = (10, 10) # Default up-right
+
+            annot.set_visible(True)
+            fig.canvas.draw_idle()
+
+    fig.canvas.mpl_connect("motion_notify_event", hover)
     
     if save_plot:
         img_path = file_path.replace('.csv', '.png')
