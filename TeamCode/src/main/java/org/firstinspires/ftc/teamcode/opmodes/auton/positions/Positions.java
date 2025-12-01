@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes.auton;
+package org.firstinspires.ftc.teamcode.opmodes.auton.positions;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
@@ -20,6 +20,8 @@ public interface Positions {
 
     public Pose getLongShootPosition();
     public Pose getShortShootPosition();
+
+    public Pose getObeliskObservePosition();
 
     default double getDriveTrainIntakePowerScale() {
         return 1;

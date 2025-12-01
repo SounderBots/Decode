@@ -3,6 +3,9 @@ package org.firstinspires.ftc.teamcode.opmodes.auton;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.ShootRange;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.Side;
+
 @Autonomous(name="Blue shoot from front", group="Blue")
 @Configurable
 public class BlueShootFromFront extends AutonBase {

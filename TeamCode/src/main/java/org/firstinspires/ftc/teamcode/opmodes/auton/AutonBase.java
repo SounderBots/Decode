@@ -6,6 +6,15 @@ import com.arcrobotics.ftclib.command.ParallelRaceGroup;
 import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.teamcode.command.PathType;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.AutonCommonConfigs;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.RowsOnFloor;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.ShootRange;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.Side;
+import org.firstinspires.ftc.teamcode.opmodes.auton.positions.BlueLongPositions;
+import org.firstinspires.ftc.teamcode.opmodes.auton.positions.BlueShortPositions;
+import org.firstinspires.ftc.teamcode.opmodes.auton.positions.Positions;
+import org.firstinspires.ftc.teamcode.opmodes.auton.positions.RedLongPositions;
+import org.firstinspires.ftc.teamcode.opmodes.auton.positions.RedShortPositions;
 
 import java.util.List;
 

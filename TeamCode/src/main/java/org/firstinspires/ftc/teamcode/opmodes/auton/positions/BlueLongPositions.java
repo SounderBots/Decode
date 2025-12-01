@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes.auton;
+package org.firstinspires.ftc.teamcode.opmodes.auton.positions;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
@@ -45,6 +45,11 @@ public class BlueLongPositions implements Positions {
     @Override
     public Pose getShortShootPosition() {
         return frontShootPosition;
+    }
+
+    @Override
+    public Pose getObeliskObservePosition() {
+        return getLongStartPosition();
     }
 
     @Override

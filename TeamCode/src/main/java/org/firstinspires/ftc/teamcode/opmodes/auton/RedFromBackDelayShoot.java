@@ -6,6 +6,9 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.command.PathType;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.RowsOnFloor;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.ShootRange;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.Side;
 
 @Autonomous(name="Red from back delay shoot", group="Red")
 @Configurable
