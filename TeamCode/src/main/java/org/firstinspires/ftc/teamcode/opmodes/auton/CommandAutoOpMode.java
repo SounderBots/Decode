@@ -3,10 +3,13 @@ package org.firstinspires.ftc.teamcode.opmodes.auton;
 //import com.acmerobotics.dashboard.FtcDashboard;
 //import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.ParallelRaceGroup;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.bylazar.telemetry.PanelsTelemetry;
 
 import org.firstinspires.ftc.teamcode.command.CommandFactory;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -46,7 +49,7 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
     @Override
     public void initialize() {
         logInitStep("Beginning");
-        telemetry = new DelegateOrVoidTelemetry(telemetry, emitTelemetry);
+        telemetry = new DelegateOrVoidTelemetry(new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry(), PanelsTelemetry.INSTANCE.getFtcTelemetry()), emitTelemetry);
         GamepadEx driverGamePad = new GamepadEx(gamepad1);
         GamepadEx operatorGamePad = new GamepadEx(gamepad2);
         AutonDriveTrain driveTrain = new AutonDriveTrain(hardwareMap, telemetry);

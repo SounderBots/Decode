@@ -2,8 +2,9 @@ package org.firstinspires.ftc.teamcode.command;
 
 import android.util.Log;
 
-import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandBase;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public abstract class SounderBotCommandBase extends CommandBase {
     private static final String LOG_TAG = SounderBotCommandBase.class.getSimpleName();
@@ -11,6 +12,8 @@ public abstract class SounderBotCommandBase extends CommandBase {
     long TIME_OUT_MS = 1800; // 4 seconds
 
     protected long startTime = -1;
+
+    Telemetry telemetry;
 
     public SounderBotCommandBase(long timeOut) {
         TIME_OUT_MS = timeOut;
@@ -80,5 +83,10 @@ public abstract class SounderBotCommandBase extends CommandBase {
         } else {
             return 0;
         }
+    }
+
+    public SounderBotCommandBase withTelemetry(Telemetry telemetry) {
+        this.telemetry = telemetry;
+        return this;
     }
 }
