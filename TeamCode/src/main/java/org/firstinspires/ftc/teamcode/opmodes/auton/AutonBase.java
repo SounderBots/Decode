@@ -22,11 +22,13 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     @Override
     protected Command createCommand() {
-        Command command = moveAndShootPreloads();
-        List<RowsOnFloor> rowSequence = getRowSequence();
-        for (RowsOnFloor row : rowSequence) {
-            command = command.andThen(intakeRowAndShoot(row, true));
-        }
+        Command command = moveAndShootPreloads()
+                .andThen(moveAndObserveObelisk())
+                .andThen(commandFactory.shootRows(shootRange(), getPositions()));
+//        List<RowsOnFloor> rowSequence = getRowSequence();
+//        for (RowsOnFloor row : rowSequence) {
+//            command = command.andThen(intakeRowAndShoot(row, true));
+//        }
 
         return moveOutAtLastSecond(command);
     }
@@ -181,8 +183,8 @@ public abstract class AutonBase extends CommandAutoOpMode {
 //        return getRowShootingPosition();
     }
 
-    public Command observeObelisk() {
-        return commandFactory.moveTo(getPositions().getObeliskObservePosition(), PathType.LINE, .6);
+    public Command moveAndObserveObelisk() {
+        return commandFactory.moveTo(getPositions().getObeliskObservePosition(), PathType.LINE, .6).andThen(commandFactory.observeObelisk());
     }
 
 }

@@ -71,7 +71,6 @@ public abstract class SounderBotCommandBase extends CommandBase {
         Log.w(LOG_TAG, String.format("Command (name=%s) reached timeout (timeout=%d seconds or %d ms)", getClass().getSimpleName(), TIME_OUT_MS / 1000, TIME_OUT_MS));
         Log.w(CommonConstants.DEBUG_TAG, String.format("Command (name=%s) reached timeout (timeout=%d seconds or %d ms)", getClass().getSimpleName(), TIME_OUT_MS / 1000, TIME_OUT_MS));
         finished = true;
-        end(true);
     }
 
     protected abstract boolean isTargetReached();

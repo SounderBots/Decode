@@ -14,23 +14,19 @@ public class CommandRuntimeSharedProperties {
     @Getter
     public static volatile List<RowsOnFloor> rowSequence = List.of();
 
-    public static List<RowsOnFloor> computeRowSequence(ShootRange range) {
+    public static List<RowsOnFloor> computeRowSequence(ShootRange range, boolean ignoreGPP) {
         rowSequence = switch (observedObeliskShowedRow) {
-            case NONE, NOT_TRIED -> switch (range) {
-                case SHORT -> List.of(RowsOnFloor.PPG, RowsOnFloor.PGP);
-                case LONG -> List.of(RowsOnFloor.GPP);
-            };
             case GPP -> switch (range) {
-                case SHORT -> List.of(RowsOnFloor.GPP, RowsOnFloor.PGP);
+                case SHORT -> ignoreGPP ? List.of(RowsOnFloor.PPG, RowsOnFloor.PGP) : List.of(RowsOnFloor.GPP, RowsOnFloor.PGP);
                 case LONG -> List.of(RowsOnFloor.GPP);
             };
             case PGP -> switch (range) {
                 case SHORT -> List.of(RowsOnFloor.PGP, RowsOnFloor.PPG);
-                case LONG -> List.of(RowsOnFloor.PGP);
+                case LONG -> List.of(RowsOnFloor.GPP);
             };
-            case PPG -> switch (range) {
+            default -> switch (range) {
                 case SHORT -> List.of(RowsOnFloor.PPG, RowsOnFloor.PGP);
-                case LONG -> List.of(RowsOnFloor.PPG);
+                case LONG -> List.of(RowsOnFloor.GPP);
             };
         };
         return rowSequence;

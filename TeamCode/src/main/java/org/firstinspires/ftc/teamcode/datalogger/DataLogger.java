@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.datalogger;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.bylazar.configurables.annotations.Configurable;
+
 import android.os.Environment;
 import android.content.Context;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
@@ -16,6 +18,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 @Config
+@Configurable
 public class DataLogger {
     private PrintWriter writer;
     private final String fileName;

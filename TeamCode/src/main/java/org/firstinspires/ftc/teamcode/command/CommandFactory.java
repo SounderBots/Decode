@@ -10,12 +10,15 @@ import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.opmodes.auton.constants.AutonCommonConfigs;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.ShootRange;
+import org.firstinspires.ftc.teamcode.opmodes.auton.positions.Positions;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.AutonDriveTrain;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Stopper;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
+import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,6 +47,8 @@ public class CommandFactory {
 
     @Getter
     final Stopper stopper;
+
+    final LimeLightAlign limeLightAlign;
 //    final Shooter shooter;
 
 
@@ -149,6 +154,10 @@ public class CommandFactory {
         return new SingleExecuteCommand(transferChamber::TurnOffChamberRoller);
     }
 
+    public Command turnOnChamberRoller() {
+        return new SingleExecuteCommand(transferChamber::TurnOnChamberRoller);
+    }
+
     public Command turnOnSlowChamberRoller() {
         return new SingleExecuteCommand(transferChamber::TurnOnSlowChamberRoller);
     }
@@ -194,11 +203,10 @@ public class CommandFactory {
                 sleep(loadFirst ? AutonCommonConfigs.shootWithLoadTimeoutInMS : AutonCommonConfigs.shootWithoutLoadTimeoutInMS),
                 stopperGo()
                         .andThen(startIntake())
-                        .andThen(turnOnSlowChamberRoller())
+                        .andThen(turnOnChamberRoller())
 //                        .andThen((loadFirst ? turnOnSlowChamberRoller() : noop()))
                         .andThen(shootCommand)
                         .andThen(waitForShooterReady())
-                        .andThen(turnOnSlowChamberRoller())
                         .andThen(topRollerOutput())
 
         ).andThen(stopIntake()).andThen(stopTopRoller()).andThen(turnOffChamberRoller());
@@ -235,8 +243,12 @@ public class CommandFactory {
         return new InstantCommand(stopper::Stop);
     }
 
-    public Command scheduleAfterFinish(SounderBotCommandBase previousCommand, Command followingCommand) {
-        return new WrapperCommand(previousCommand).endWith(followingCommand);
+    public Command observeObelisk() {
+        return new ObserveObeliskCommand(limeLightAlign);
+    }
+
+    public Command shootRows(ShootRange shootRange, Positions positions) {
+        return new IntakeObeliskObservedRowsCommand(shootRange, positions, this);
     }
 
 }

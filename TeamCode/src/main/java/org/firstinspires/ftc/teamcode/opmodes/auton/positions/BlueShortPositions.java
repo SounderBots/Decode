@@ -31,7 +31,7 @@ public class BlueShortPositions implements Positions {
     public static Pose backFinishPosition = new Pose(48, 24, 0);
     public static Pose frontFinishPosition = new Pose(48, 120, 0);
     public static double obeliskObserveHeadingInDegrees = 90;
-    public static Pose obeliskObservePosition = frontStartPosition.withHeading(obeliskObserveHeadingInDegrees);
+    public static Pose obeliskObservePosition = frontShootPosition.withHeading(Math.toRadians(obeliskObserveHeadingInDegrees));
 
     public BlueShortPositions() {
         backShootPosition = backShootPosition.setHeading(Math.toRadians(backShootAngleInDegrees));

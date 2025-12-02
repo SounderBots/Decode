@@ -10,7 +10,7 @@ public class AutonCommonConfigs {
 
     public static long betweenShootDelays = 400;
 
-    public static double TiltServoHi = 1.14;
+    public static double TiltServoHi = .7;
     public static double TiltServoLo = 1;
 
     public static double slowMoveSpeed = .6;
