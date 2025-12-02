@@ -9,6 +9,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.DrawingToPanel;
+import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,8 @@ public class DriveCommand extends SounderBotCommandBase {
 
     public static long DEFAULT_TIMEOUT_IN_SECONDS = 8;
     private final PathType pathType;
+
+    private LimeLightAlign limeLightAlign;
 
     public DriveCommand(Follower follower, @NonNull Pose end, PathType pathType, boolean isFirstMove) {
         this(follower, List.of(new Pose(0, 0, 0), end), pathType, DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, isFirstMove);
@@ -122,5 +125,17 @@ public class DriveCommand extends SounderBotCommandBase {
         follower.setMaxPower(1);
         tempMaxPower = -1;
         follower.deactivateAllPIDFs();
+        Log.i(LOG_TAG, "Follower reported end position: " + follower.getPose());
+        if (limeLightAlign != null) {
+            Pose limeLightRobotPos = limeLightAlign.getRobotPositionBasedOnSpringTag();
+            if (limeLightRobotPos != null) {
+                Log.i(LOG_TAG, "Limelight report robot position: " + limeLightRobotPos);
+            }
+        }
+    }
+
+    public DriveCommand withLimeLight(LimeLightAlign limeLight) {
+        this.limeLightAlign = limeLight;
+        return this;
     }
 }

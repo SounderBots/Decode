@@ -2,21 +2,28 @@ package org.firstinspires.ftc.teamcode.subsystems.vision;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.command.CommonConstants;
 import org.firstinspires.ftc.teamcode.common.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.common.AprilTagPosition;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.CameraOffsets;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.SpringTagPositions;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 
 import static com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
 
+import java.util.List;
 import java.util.Optional;
 
 public class LimeLightAlign extends SubsystemBase {
@@ -162,6 +169,74 @@ public class LimeLightAlign extends SubsystemBase {
 
     public void scanObjects(){
 
+    }
+
+    public Pose getRobotPositionBasedOnSpringTag() {
+        limelight.pipelineSwitch(PIPELINE_ID);
+        LLResult result = limelight.getLatestResult();
+
+        if (result != null && result.isValid()) {
+            List<FiducialResult> fiducials = result.getFiducialResults();
+            for (FiducialResult fr : fiducials) {
+                int id = fr.getFiducialId();
+                Pose tagMapPose = null;
+                if (id == 20) {
+                    tagMapPose = SpringTagPositions.RED;
+                } else if (id == 24) {
+                    tagMapPose = SpringTagPositions.BLUE;
+                }
+
+                if (tagMapPose != null) {
+                    Pose3D targetPose = fr.getTargetPoseCameraSpace();
+                    Position pos = targetPose.getPosition().toUnit(DistanceUnit.INCH);
+                    YawPitchRollAngles rot = targetPose.getOrientation();
+
+                    // Camera Coordinate System: Z forward, X right, Y down.
+                    // Robot Coordinate System (Pedro): X forward, Y left.
+                    // Assuming Camera is mounted forward on the robot.
+
+                    // Transform Camera to Robot Frame
+                    // Robot X = Camera Z
+                    // Robot Y = -Camera X
+                    double r_x = pos.z;
+                    double r_y = -pos.x;
+
+                    // Extract Tag Yaw (Rotation around Y-axis in Camera Frame)
+                    // YawPitchRollAngles (Z-X-Y) -> Roll is Y-axis
+                    double tagYaw = rot.getRoll(AngleUnit.DEGREES);
+
+                    // Calculate Robot Heading
+                    // H_r = H_t - Yaw_{tr}
+                    // Since Camera aligns with Robot, Yaw_{tr} = tagYaw.
+                    double robotHeading = tagMapPose.getHeading() - tagYaw;
+
+                    // Calculate Global Position
+                    double radHeading = Math.toRadians(robotHeading);
+                    double cosH = Math.cos(radHeading);
+                    double sinH = Math.sin(radHeading);
+
+                    // P_robot = P_tag - Rotate(H_r) * v_rt
+                    // v_rt = (r_x, r_y)
+                    // Rotate(H_r) * v_rt = (r_x cosH - r_y sinH, r_x sinH + r_y cosH)
+                    double global_dx = r_x * cosH - r_y * sinH;
+                    double global_dy = r_x * sinH + r_y * cosH;
+
+                    double cam_x = tagMapPose.getX() - global_dx;
+                    double cam_y = tagMapPose.getY() - global_dy;
+
+                    // Adjust for Camera Offset to get Robot Center
+                    double offX = CameraOffsets.FRONT_OFFSET_INCHES;
+                    double offY = -CameraOffsets.RIGHT_OFFSET_INCHES; // Right is -Y in Robot Frame
+
+                    // Robot Center = Camera Pos - Rotate(H) * Offset
+                    double robot_x = cam_x - (offX * cosH - offY * sinH);
+                    double robot_y = cam_y - (offX * sinH + offY * cosH);
+
+                    return new Pose(robot_x, robot_y, robotHeading);
+                }
+            }
+        }
+        return null;
     }
 
     private FiducialResult scanAprilTag() {

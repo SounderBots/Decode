@@ -2,14 +2,13 @@ package org.firstinspires.ftc.teamcode.command;
 
 import android.util.Log;
 
-import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.DrawingToPanel;
+import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 
 import java.util.concurrent.TimeUnit;
 
@@ -29,6 +28,8 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
     private final boolean isFirstMove;
 
     private double tempMaxPower = -1;
+
+    private LimeLightAlign limeLightAlign;
 
     public DriveToTargetPedroPathCommand(Follower follower, @NonNull Pose end, boolean isFirstMove) {
         this(follower, new Pose(0, 0, 0), end, 4, TimeUnit.SECONDS, isFirstMove);
@@ -100,5 +101,17 @@ public class DriveToTargetPedroPathCommand extends SounderBotCommandBase {
         follower.setMaxPower(1);
         tempMaxPower = -1;
         follower.deactivateAllPIDFs();
+        Log.i(LOG_TAG, "Follower reported end position: " + follower.getPose());
+        if (limeLightAlign != null) {
+            Pose limeLightRobotPos = limeLightAlign.getRobotPositionBasedOnSpringTag();
+            if (limeLightRobotPos != null) {
+                Log.i(LOG_TAG, "Limelight report robot position: " + limeLightRobotPos);
+            }
+        }
+    }
+
+    public DriveToTargetPedroPathCommand withLimeLight(LimeLightAlign limeLight) {
+        this.limeLightAlign = limeLight;
+        return this;
     }
 }

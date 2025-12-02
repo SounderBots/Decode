@@ -51,7 +51,6 @@ public class CommandFactory {
     final Stopper stopper;
 
     final LimeLightAlign limeLightAlign;
-//    final Shooter shooter;
 
 
 //    public Command driveToTarget(DriveToTargetCommand.DriveParameters driveParameters) {
@@ -66,33 +65,24 @@ public class CommandFactory {
         return new WaitCommand(durationMs);
     }
 
-//    public Command driveTrainTelemetry() {
-//        return new DriveTrainTelemetryCommand(autonDriveTrain, telemetry);
-//    }
-    public Command startMove(Pose start, Pose end) {
-        return new DriveToTargetPedroPathCommand(follower, start, end, true);
-    }
-
     public Command startMove(Pose start, Pose end, PathType pathType, double maxPower) {
-        return new DriveCommand(follower, start, end, pathType, true).withTempMaxPower(maxPower);
-//        return new DriveToTargetPedroPathCommand(follower, start, end, true).withTempMaxPower(maxPower);
+        return new DriveCommand(follower, start, end, pathType, true).withTempMaxPower(maxPower).withLimeLight(limeLightAlign);
     }
 
     public Command moveTo(Pose end, PathType pathType) {
-        return new DriveCommand(follower, end, pathType, false);
-//        return new DriveToTargetPedroPathCommand(follower, end, false);
+        return new DriveCommand(follower, end, pathType, false).withLimeLight(limeLightAlign);
     }
 
     public Command moveTo(Pose end, PathType pathType, double maxPower) {
-        return new DriveCommand(follower, end, pathType, false).withTempMaxPower(maxPower);
+        return new DriveCommand(follower, end, pathType, false).withTempMaxPower(maxPower).withLimeLight(limeLightAlign);
     }
 
     public Command moveTo(Pose end, PathType pathType, double maxPower, long timeoutMs) {
-        return new DriveCommand(follower, List.of(follower.getPose(), end), pathType, timeoutMs, TimeUnit.MILLISECONDS, false).withTempMaxPower(maxPower);
+        return new DriveCommand(follower, List.of(follower.getPose(), end), pathType, timeoutMs, TimeUnit.MILLISECONDS, false).withTempMaxPower(maxPower).withLimeLight(limeLightAlign);
     }
 
     public Command moveToCurve(double maxPower, Pose... poses) {
-        return new DriveCommand(follower, Arrays.asList(poses), PathType.CURVE, DriveCommand.DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, false);
+        return new DriveCommand(follower, Arrays.asList(poses), PathType.CURVE, DriveCommand.DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, false).withLimeLight(limeLightAlign);
     }
 
     /**
