@@ -25,10 +25,6 @@ public abstract class AutonBase extends CommandAutoOpMode {
         Command command = moveAndShootPreloads()
                 .andThen(moveAndObserveObelisk())
                 .andThen(commandFactory.shootRows(shootRange(), getPositions()));
-//        List<RowsOnFloor> rowSequence = getRowSequence();
-//        for (RowsOnFloor row : rowSequence) {
-//            command = command.andThen(intakeRowAndShoot(row, true));
-//        }
 
         return moveOutAtLastSecond(command);
     }
@@ -36,15 +32,8 @@ public abstract class AutonBase extends CommandAutoOpMode {
     protected Command moveAndShootPreloads() {
         return commandFactory
                 .startMove(getStartingPosition(), getPreloadShootPosition(), PathType.LINE, .6) // move to shooting position
-                .andThen(getShootRowCommand(false)) // shoot preloads
+                .andThen(commandFactory.loadAndShoot(getShootCommand(), false)) // shoot preloads
                 ;
-    }
-
-    protected List<RowsOnFloor> getRowSequence() {
-        return switch (shootRange()) {
-            case LONG -> List.of(RowsOnFloor.GPP/*, RowsOnFloor.SECOND, RowsOnFloor.THIRD*/);
-            case SHORT -> List.of(RowsOnFloor.PPG, RowsOnFloor.PGP/*, RowsOnFloor.FIRST*/);
-        };
     }
 
     protected Command intakeRowAndShoot(RowsOnFloor row, boolean shoot) {
@@ -133,10 +122,6 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     public Command getShootRowCommand(boolean loadFirst) {
         return commandFactory.loadAndShoot(getShootCommand(), loadFirst);
-//                .andThen(commandFactory.sleep(AutonCommonConfigs.betweenShootDelays))
-//                .andThen(commandFactory.loadAndShoot(getShootCommand()))
-//                .andThen(commandFactory.sleep(AutonCommonConfigs.betweenShootDelays))
-//                .andThen(commandFactory.loadAndShoot(getShootCommand()));
     }
 
     protected Pose getRowShootingPosition() {
@@ -177,10 +162,6 @@ public abstract class AutonBase extends CommandAutoOpMode {
             case LONG -> getPositions().getLongPreloadShootPosition();
             case SHORT -> getPositions().getShortPreloadShootPosition();
         };
-//        if (shootRange() == ShootRange.LONG) {
-//            return getPositions().getLongPreloadShootPosition();
-//        }
-//        return getRowShootingPosition();
     }
 
     public Command moveAndObserveObelisk() {

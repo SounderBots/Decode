@@ -4,6 +4,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * This is the copy of ftclib ParallelRaceGroup, it have race condition bug, throws IndexOutOfBoundException
+ * this version fixed it.
+ */
 public class SounderBotParallelRaceGroup extends CommandGroupBase {
     private final Set<Command> m_commands = new HashSet<>();
     private boolean m_runWhenDisabled = true;

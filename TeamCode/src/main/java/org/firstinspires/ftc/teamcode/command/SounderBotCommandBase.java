@@ -12,8 +12,6 @@ public abstract class SounderBotCommandBase extends CommandBase {
 
     protected long startTime = -1;
 
-    private Command endWithCommand;
-
     public SounderBotCommandBase(long timeOut) {
         TIME_OUT_MS = timeOut;
     }
@@ -37,15 +35,6 @@ public abstract class SounderBotCommandBase extends CommandBase {
             } else {
                 doExecute();
             }
-        }
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-        super.end(interrupted);
-        if (endWithCommand != null) {
-            endWithCommand.schedule();
-            endWithCommand = null; // avoid schedule again
         }
     }
 
@@ -91,10 +80,5 @@ public abstract class SounderBotCommandBase extends CommandBase {
         } else {
             return 0;
         }
-    }
-
-    public SounderBotCommandBase endWith(Command endWithCommand) {
-        this.endWithCommand = endWithCommand;
-        return this;
     }
 }
