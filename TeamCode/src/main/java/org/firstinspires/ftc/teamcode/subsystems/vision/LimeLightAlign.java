@@ -21,6 +21,8 @@ import org.firstinspires.ftc.teamcode.opmodes.auton.constants.SpringTagPositions
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 
+import com.pedropathing.geometry.PedroCoordinates;
+
 import static com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
 
 import java.util.List;
@@ -232,7 +234,7 @@ public class LimeLightAlign extends SubsystemBase {
                     double robot_x = cam_x - (offX * cosH - offY * sinH);
                     double robot_y = cam_y - (offX * sinH + offY * cosH);
 
-                    return new Pose(robot_x, robot_y, robotHeading);
+                    return new Pose(robot_x, robot_y, robotHeading).getAsCoordinateSystem(PedroCoordinates.INSTANCE);
                 }
             }
         }
