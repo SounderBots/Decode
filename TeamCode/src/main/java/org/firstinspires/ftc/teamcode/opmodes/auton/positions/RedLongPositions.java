@@ -33,11 +33,14 @@ public class RedLongPositions implements Positions {
 
     public static double longShootPreloadHeadingInDegree = 70;
     public static Pose longShootPreloadPosition = new Pose(88, 11, Math.toRadians(longShootPreloadHeadingInDegree));
+    public static double obeliskObserveHeadingInDegrees = 90;
+    public static Pose obeliskObservePosition = backShootPosition.withHeading(Math.toRadians(obeliskObserveHeadingInDegrees));
 
     public RedLongPositions() {
         backShootPosition = backShootPosition.setHeading(Math.toRadians(backShootAngleInDegrees));
         frontShootPosition = frontShootPosition.setHeading(Math.toRadians(frontShootAngleInDegrees));
         longShootPreloadPosition = longShootPreloadPosition.setHeading(Math.toRadians(longShootPreloadHeadingInDegree));
+        obeliskObservePosition = obeliskObservePosition.withHeading(Math.toRadians(obeliskObserveHeadingInDegrees));
     }
 
     @Override
@@ -51,7 +54,7 @@ public class RedLongPositions implements Positions {
 
     @Override
     public Pose getObeliskObservePosition() {
-        return getLongStartPosition();
+        return obeliskObservePosition;
     }
 
     @Override

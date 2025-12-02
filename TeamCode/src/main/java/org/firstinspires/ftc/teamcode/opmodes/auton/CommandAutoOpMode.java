@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Stopper;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
+import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 import org.firstinspires.ftc.teamcode.util.DelegateOrVoidTelemetry;
 
 public abstract class CommandAutoOpMode extends CommandOpMode {
@@ -59,6 +60,7 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
         RGBLightIndicator rgbLightIndicator = new RGBLightIndicator(hardwareMap, telemetry, "RGBIndicator");
         Shooter shooter = new Shooter(hardwareMap, operatorGamePad, telemetry, rgbLightIndicator, null, this.getClass().getSimpleName());
         Stopper stopper = new Stopper(hardwareMap, operatorGamePad, telemetry);
+        LimeLightAlign limeLightAlign = new LimeLightAlign(hardwareMap, telemetry);
 
 //
 
@@ -76,7 +78,7 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
 //        SampleSweeper sampleSweeper = new SampleSweeper(hardwareMap, operatorGamePad, telemetry, feedback);
 //        Bumper bumper = new Bumper(hardwareMap);
         logInitStep("all subsystems created");
-        commandFactory = new CommandFactory(telemetry, driveTrain, Constants.createFollower(hardwareMap), null, intake, shooter, transferChamber, stopper);
+        commandFactory = new CommandFactory(telemetry, driveTrain, Constants.createFollower(hardwareMap), null, intake, shooter, transferChamber, stopper, limeLightAlign);
 
         logInitStep("command factory created");
         logInitStep("before setting intake");

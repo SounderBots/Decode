@@ -17,6 +17,8 @@ import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 
 import static com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
 
+import java.util.Optional;
+
 public class LimeLightAlign extends SubsystemBase {
 
     private Limelight3A limelight;
@@ -87,26 +89,34 @@ public class LimeLightAlign extends SubsystemBase {
         start();
     }
 
-    public AprilTagEnum getObeliskAprilTag() {
-        FiducialResult fr = scanAprilTag();
-        AprilTagEnum aprilTagEnum = null;
-        if (fr != null) {
-            try {
-                aprilTagEnum = AprilTagEnum.fromValue(fr.getFiducialId());
-                if (AprilTagEnum.OBELISK_ALL.contains(aprilTagEnum)){
-                    telemetry.addData("Scanned Obelisk Tag ID: ", aprilTagEnum.getValue());
-                    aprilTagEnum = null;
-                } else {
-                    telemetry.addData("Not a valid ObelisK Tag ", aprilTagEnum.getValue());
-                }
-            } catch (Exception e) {
-                telemetry.addData("Limelight", "No Valid AprilTags detected");
-            }
+    public Optional<AprilTagEnum> getObeliskAprilTag() {
+        Optional<AprilTagEnum> result = scanObeliskTag().map(fiducialResult -> AprilTagEnum.fromValue(fiducialResult.getFiducialId()));
+        if (result.isPresent()) {
+            telemetry.addData("Scanned Obelisk Tag ID: ", result.get().getValue());
         } else {
-            telemetry.addData("Limelight", "No AprilTags detected");
+            telemetry.addLine("Obelisk Tag not found");
         }
-        telemetry.update();
-        return aprilTagEnum;
+        return result;
+
+//        FiducialResult fr = scanAprilTag();
+//        AprilTagEnum aprilTagEnum = null;
+//        if (fr != null) {
+//            try {
+//                aprilTagEnum = AprilTagEnum.fromValue(fr.getFiducialId());
+//                if (AprilTagEnum.OBELISK_ALL.contains(aprilTagEnum)){
+//                    telemetry.addData("Scanned Obelisk Tag ID: ", aprilTagEnum.getValue());
+//                    aprilTagEnum = null;
+//                } else {
+//                    telemetry.addData("Not a valid ObelisK Tag ", aprilTagEnum.getValue());
+//                }
+//            } catch (Exception e) {
+//                telemetry.addData("Limelight", "No Valid AprilTags detected");
+//            }
+//        } else {
+//            telemetry.addData("Limelight", "No AprilTags detected");
+//        }
+//        telemetry.update();
+//        return aprilTagEnum;
     }
 
     public AprilTagPosition getAprilTagPosition(){
@@ -166,6 +176,17 @@ public class LimeLightAlign extends SubsystemBase {
         }
 
         return null;
+    }
+
+    private Optional<FiducialResult> scanObeliskTag() {
+        limelight.pipelineSwitch(PIPELINE_ID);
+        LLResult result = limelight.getLatestResult();
+
+        if (result != null && result.isValid()) {
+            return result.getFiducialResults().stream().filter(fiducialResult -> AprilTagEnum.isValidObeliskTag(fiducialResult.getFiducialId())).findFirst();
+        }
+
+        return Optional.empty();
     }
 
 
