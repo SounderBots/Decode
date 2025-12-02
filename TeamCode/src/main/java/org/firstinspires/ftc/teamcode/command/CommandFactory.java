@@ -66,23 +66,23 @@ public class CommandFactory {
     }
 
     public Command startMove(Pose start, Pose end, PathType pathType, double maxPower) {
-        return new DriveCommand(follower, start, end, pathType, true).withTempMaxPower(maxPower).withLimeLight(limeLightAlign);
+        return new DriveCommand(follower, start, end, pathType, true).withTempMaxPower(maxPower).withLimeLight(limeLightAlign).withTelemetry(telemetry);
     }
 
     public Command moveTo(Pose end, PathType pathType) {
-        return new DriveCommand(follower, end, pathType, false).withLimeLight(limeLightAlign);
+        return new DriveCommand(follower, end, pathType, false).withLimeLight(limeLightAlign).withTelemetry(telemetry);
     }
 
     public Command moveTo(Pose end, PathType pathType, double maxPower) {
-        return new DriveCommand(follower, end, pathType, false).withTempMaxPower(maxPower).withLimeLight(limeLightAlign);
+        return new DriveCommand(follower, end, pathType, false).withTempMaxPower(maxPower).withLimeLight(limeLightAlign).withTelemetry(telemetry);
     }
 
     public Command moveTo(Pose end, PathType pathType, double maxPower, long timeoutMs) {
-        return new DriveCommand(follower, List.of(follower.getPose(), end), pathType, timeoutMs, TimeUnit.MILLISECONDS, false).withTempMaxPower(maxPower).withLimeLight(limeLightAlign);
+        return new DriveCommand(follower, List.of(follower.getPose(), end), pathType, timeoutMs, TimeUnit.MILLISECONDS, false).withTempMaxPower(maxPower).withLimeLight(limeLightAlign).withTelemetry(telemetry);
     }
 
     public Command moveToCurve(double maxPower, Pose... poses) {
-        return new DriveCommand(follower, Arrays.asList(poses), PathType.CURVE, DriveCommand.DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, false).withLimeLight(limeLightAlign);
+        return new DriveCommand(follower, Arrays.asList(poses), PathType.CURVE, DriveCommand.DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, false).withLimeLight(limeLightAlign).withTelemetry(telemetry);
     }
 
     /**
@@ -116,12 +116,12 @@ public class CommandFactory {
     }
 
     public Command waitFrontArtifact() {
-        return new WaitUntilFrontArtifactIntaken(telemetry, transferChamber)
+        return new WaitUntilFrontArtifactIntaken(telemetry, transferChamber).withTelemetry(telemetry)
                 .andThen(new InstantCommand(transferChamber::IncrementArtifactCount));
     }
 
     public Command intakeRow() {
-        return stopperStop().andThen(new IntakeRowCommand(transferChamber, intake, telemetry, DEFAULT_TIME_OUT));
+        return stopperStop().andThen(new IntakeRowCommand(transferChamber, intake, telemetry, DEFAULT_TIME_OUT).withTelemetry(telemetry));
     }
 
     public Command topRollerOutput() {
@@ -224,7 +224,7 @@ public class CommandFactory {
     }
 
     public Command shootRows(ShootRange shootRange, Positions positions) {
-        return new IntakeObeliskObservedRowsCommand(shootRange, positions, this);
+        return new IntakeObeliskObservedRowsCommand(shootRange, positions, this).withTelemetry(telemetry);
     }
 
     protected Command intakeRow(Pose rowEndPose, double driveTrainPower) {

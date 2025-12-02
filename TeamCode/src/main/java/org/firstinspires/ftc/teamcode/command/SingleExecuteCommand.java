@@ -23,21 +23,16 @@ public class SingleExecuteCommand extends CommandBase {
     @Override
     public void execute() {
         super.execute();
-        Log.i(TAG, "executed: " + executed);
         if (!executed) {
-            Log.i(TAG, "start execute runnable");
             executed = true;
             if (runnable != null) {
-                Log.i(TAG, "before execute runnable");
                 runnable.run();
-                Log.i(TAG, "after execute runnable");
             }
         }
     }
 
     @Override
     public boolean isFinished() {
-        Log.i(TAG, "Finished: " + executed);
         return executed;
     }
 }

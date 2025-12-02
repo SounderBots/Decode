@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.command;
 
 import android.util.Log;
 
+import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
@@ -12,8 +13,11 @@ import org.firstinspires.ftc.teamcode.pedroPathing.DrawingToPanel;
 import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.StreamSupport;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +60,7 @@ public class DriveCommand extends SounderBotCommandBase {
         this.end = points.get(points.size() - 1);
         this.points = points;
         this.pathType = pathType;
+        this.telemetry = PanelsTelemetry.INSTANCE.getFtcTelemetry();
     }
 
     public DriveCommand withTempMaxPower(double tempMaxPower) {
@@ -95,6 +100,10 @@ public class DriveCommand extends SounderBotCommandBase {
             follower.update();
             DrawingToPanel.drawDebug(follower);
         }
+        Arrays.stream(follower.debug()).forEach(followerDebugLine -> {
+            telemetry.addData("Follower", followerDebugLine);
+        });
+        telemetry.update();
     }
 
     protected BezierCurve getCurve(Pose startPos) {
@@ -126,12 +135,18 @@ public class DriveCommand extends SounderBotCommandBase {
         tempMaxPower = -1;
         follower.deactivateAllPIDFs();
         Log.i(LOG_TAG, "Follower reported end position: " + follower.getPose());
+        telemetry.addData("Follower", "End position: " + follower.getPose());
         if (limeLightAlign != null) {
             Pose limeLightRobotPos = limeLightAlign.getRobotPositionBasedOnSpringTag();
             if (limeLightRobotPos != null) {
                 Log.i(LOG_TAG, "Limelight report robot position: " + limeLightRobotPos);
+                if (telemetry != null) {
+                    telemetry.addData("Limelight", "Robot position: " + limeLightRobotPos);
+                }
             }
         }
+
+        Objects.requireNonNull(telemetry).update();
     }
 
     public DriveCommand withLimeLight(LimeLightAlign limeLight) {

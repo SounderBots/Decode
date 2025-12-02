@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.subsystems.vision;
 
+import static com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
+import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -20,10 +23,6 @@ import org.firstinspires.ftc.teamcode.opmodes.auton.constants.CameraOffsets;
 import org.firstinspires.ftc.teamcode.opmodes.auton.constants.SpringTagPositions;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
-
-import com.pedropathing.geometry.PedroCoordinates;
-
-import static com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
 
 import java.util.List;
 import java.util.Optional;
@@ -170,7 +169,6 @@ public class LimeLightAlign extends SubsystemBase {
     }
 
     public void scanObjects(){
-
     }
 
     public Pose getRobotPositionBasedOnSpringTag() {
