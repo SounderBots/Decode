@@ -125,7 +125,10 @@ public class CommandFactory {
     }
 
     public Command topRollerOutput() {
-        return new SingleExecuteCommand(transferChamber::TopRollersOuttake);
+        return new SingleExecuteCommand(() -> {
+            transferChamber.TopRollersOuttake();
+            shooter.SetShootingFlag();
+        });
     }
 
     public Command stopTopRoller() {
