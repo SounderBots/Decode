@@ -27,7 +27,7 @@ public class DataLogger {
     private long startTime;
     private final StringBuilder lineBuilder = new StringBuilder();
 
-    public static boolean LogToSdCard = false;
+    public static boolean LogToSdCard = true;
     
     // "AUTO" = Try external SD first, fallback to internal
     // "/sdcard" = Force internal
@@ -43,7 +43,7 @@ public class DataLogger {
         this.maxFileCount = maxFileCount;
     }
 
-    public void startLogging(String... headers) {
+    public void initializeLogging(String... headers) {
         if (!LogToSdCard) {
             return;
         }

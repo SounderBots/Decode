@@ -2,8 +2,12 @@ package org.firstinspires.ftc.teamcode.subsystems.vision;
 
 import static com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
+import com.pedropathing.ftc.FTCCoordinates;
+import com.pedropathing.geometry.CoordinateSystem;
 import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -28,6 +32,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class LimeLightAlign extends SubsystemBase {
+
+    private static final String LOG_TAG = LimeLightAlign.class.getSimpleName();
 
     private Limelight3A limelight;
 
@@ -179,6 +185,7 @@ public class LimeLightAlign extends SubsystemBase {
             List<FiducialResult> fiducials = result.getFiducialResults();
             for (FiducialResult fr : fiducials) {
                 int id = fr.getFiducialId();
+
                 Pose tagMapPose = null;
                 if (id == 20) {
                     tagMapPose = SpringTagPositions.RED;
@@ -187,7 +194,26 @@ public class LimeLightAlign extends SubsystemBase {
                 }
 
                 if (tagMapPose != null) {
+                    Log.i(LOG_TAG, "Tag ID: " + id);
+                    telemetry.addData(LOG_TAG, "Tag ID: " + id);
                     Pose3D targetPose = fr.getTargetPoseCameraSpace();
+                    Log.i(LOG_TAG, "targetPose: " + targetPose);
+                    telemetry.addData(LOG_TAG, "targetPose: " + targetPose);
+
+                    Pose3D targetPoseRobot = fr.getTargetPoseRobotSpace();
+                    Log.i(LOG_TAG, "targetPoseRobot: " + targetPose);
+                    telemetry.addData(LOG_TAG, "targetPoseRobot: " + targetPose);
+
+                    Pose3D ftcRobotPose = fr.getRobotPoseFieldSpace();
+                    Log.i(LOG_TAG, "ftcRobotPose: " + ftcRobotPose);
+                    telemetry.addData(LOG_TAG, "ftcRobotPose: " + ftcRobotPose);
+                    Pose petroPose = new Pose(ftcRobotPose.getPosition().x, ftcRobotPose.getPosition().y, ftcRobotPose.getOrientation().getYaw(AngleUnit.RADIANS), FTCCoordinates.INSTANCE);
+                    Log.i(LOG_TAG, "petroPose: " + petroPose);
+                    telemetry.addData(LOG_TAG, "petroPose: " + petroPose);
+                    Pose converted = FTCCoordinates.INSTANCE.convertToPedro(petroPose);
+                    Log.i(LOG_TAG, "converted: " + converted);
+                    telemetry.addData(LOG_TAG, "converted: " + converted);
+
                     Position pos = targetPose.getPosition().toUnit(DistanceUnit.INCH);
                     YawPitchRollAngles rot = targetPose.getOrientation();
 
@@ -203,17 +229,17 @@ public class LimeLightAlign extends SubsystemBase {
 
                     // Extract Tag Yaw (Rotation around Y-axis in Camera Frame)
                     // YawPitchRollAngles (Z-X-Y) -> Roll is Y-axis
-                    double tagYaw = rot.getRoll(AngleUnit.DEGREES);
+                    // Convert tagYaw to radians for consistent unit usage with tagMapPose.getHeading()
+                    double tagYawRadians = Math.toRadians(rot.getRoll(AngleUnit.DEGREES));
 
                     // Calculate Robot Heading
                     // H_r = H_t - Yaw_{tr}
                     // Since Camera aligns with Robot, Yaw_{tr} = tagYaw.
-                    double robotHeading = tagMapPose.getHeading() - tagYaw;
+                    double robotHeading = tagMapPose.getHeading() - tagYawRadians; // Both are now in radians
 
-                    // Calculate Global Position
-                    double radHeading = Math.toRadians(robotHeading);
-                    double cosH = Math.cos(radHeading);
-                    double sinH = Math.sin(radHeading);
+                    // Calculate Global Position. robotHeading is already in radians.
+                    double cosH = Math.cos(robotHeading);
+                    double sinH = Math.sin(robotHeading);
 
                     // P_robot = P_tag - Rotate(H_r) * v_rt
                     // v_rt = (r_x, r_y)
@@ -232,10 +258,12 @@ public class LimeLightAlign extends SubsystemBase {
                     double robot_x = cam_x - (offX * cosH - offY * sinH);
                     double robot_y = cam_y - (offX * sinH + offY * cosH);
 
+                    telemetry.update();
                     return new Pose(robot_x, robot_y, robotHeading).getAsCoordinateSystem(PedroCoordinates.INSTANCE);
                 }
             }
         }
+        telemetry.update();
         return null;
     }
 
