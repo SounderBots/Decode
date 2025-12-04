@@ -31,7 +31,7 @@ public class Shooter extends SubsystemBase {
     @Config
     public static class ShooterConfig {
 
-        public static double ShooterTpsHi = 750;
+        public static double ShooterTpsHi = 695;
 
         public static double ShooterTpsLo = 825;
 
@@ -45,7 +45,7 @@ public class Shooter extends SubsystemBase {
 
         public static double IntakeMaxPower = 1;
 
-        public static double TiltServoHi = 0.95;
+        public static double TiltServoHi = 0.9;
 
         public static double TiltServoLo = 0.95;
 
@@ -255,35 +255,35 @@ public class Shooter extends SubsystemBase {
 
         if(position != null) {
             /*
-            134 - 825, 0.95
+            134 - 845, 0.95
             124 - 825, 0.95
-            114 - 825, 0.95
-            94 - 775, 0.95
-            84 - 775, 0.95
-            74 - 750, 0.95
-            64 - 750, 0.95
-            54 - 750, 0.95
-            44 - 750, 0.95
+            114 - 805, 0.95
+            94 - 760, 0.95
+            84 - 740, 0.95
+            74 - 720, 0.9
+            64 - 695, 0.9
+            54 - 695, 0.95
+            44 - 695, 0.95
             */
             double distance = position.distance();
             if (distance < 44) {
-                return new AutoSpeed(750, 0.95);
+                return new AutoSpeed(695, 0.95);
             } else if (distance < 54) {
-                return new AutoSpeed(750, 0.95);
+                return new AutoSpeed(695, 0.95);
             } else if (distance < 64) {
-                return new AutoSpeed(750, 0.95);
+                return new AutoSpeed(695, 0.9);
             } else if (distance < 74) {
-                return new AutoSpeed(750, 0.95);
+                return new AutoSpeed(720, 0.9);
             } else if (distance < 84) {
-                return new AutoSpeed(775, 0.95);
+                return new AutoSpeed(740, 0.95);
             } else if (distance < 94) {
-                return new AutoSpeed(775, 0.95);
+                return new AutoSpeed(760, 0.95);
             } else if (distance < 114) {
-                return new AutoSpeed(825, 0.95);
+                return new AutoSpeed(805, 0.95);
             } else if (distance < 124) {
                 return new AutoSpeed(825, 0.95);
             } else if (distance < 134) {
-                return new AutoSpeed(825, 0.95);
+                return new AutoSpeed(845, 0.95);
             }
         }
 
