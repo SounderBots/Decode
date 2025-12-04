@@ -89,7 +89,6 @@ public class MainTeleop extends OpModeTemplate {
                         new SequentialCommandGroup(
                                 new InstantCommand(() -> {
                                     transfer.TurnOnChamberRoller();
-                                    shooter.SetShootingFlag();
                                 }, transfer),
                                 new InstantCommand(stopper::Go, stopper)
                         ))
