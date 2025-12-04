@@ -20,13 +20,13 @@ public class BlueShortPositions implements Positions {
 
     public static double headingDegrees = 180;
 
-    public static double backShootAngleInDegrees = 110;
+    public static double backShootAngleInDegrees = 144.09;
     public static Pose backShootPosition = new Pose(56, 11, Math.toRadians(backShootAngleInDegrees));
     public static double frontShootAngleInDegrees = 136;
     public static Pose frontShootPosition = new Pose(57, 93, Math.toRadians(frontShootAngleInDegrees));
 
     public static Pose backStartPosition = new Pose(55.75, 8.16, Math.toRadians(90));
-    public static Pose frontStartPosition = new Pose(23.5, 125.75, Math.toRadians(140));
+    public static Pose frontStartPosition = new Pose(23.5, 125.75, Math.toRadians(backShootAngleInDegrees));
 
     public static Pose backFinishPosition = new Pose(48, 24, 0);
     public static Pose frontFinishPosition = new Pose(48, 120, 0);
