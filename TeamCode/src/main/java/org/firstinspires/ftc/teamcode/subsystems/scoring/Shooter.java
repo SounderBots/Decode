@@ -260,9 +260,9 @@ public class Shooter extends SubsystemBase {
             114 - 805, 0.95
             94 - 760, 0.95
             84 - 740, 0.95
-            74 - 720, 0.95
-            64 - 695, 0.95
-            54 - 695, 0.9
+            74 - 720, 0.9
+            64 - 695, 0.9
+            54 - 695, 0.95
             44 - 695, 0.95
             */
             double distance = position.distance();
