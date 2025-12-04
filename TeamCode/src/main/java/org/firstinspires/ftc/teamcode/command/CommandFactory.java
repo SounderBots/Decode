@@ -4,18 +4,23 @@ import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelDeadlineGroup;
 import com.arcrobotics.ftclib.command.ParallelRaceGroup;
+import com.arcrobotics.ftclib.command.SounderBotParallelRaceGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.opmodes.auton.constants.AutonCommonConfigs;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.RowsOnFloor;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.ShootRange;
+import org.firstinspires.ftc.teamcode.opmodes.auton.positions.Positions;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.AutonDriveTrain;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Stopper;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
+import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,7 +49,8 @@ public class CommandFactory {
 
     @Getter
     final Stopper stopper;
-//    final Shooter shooter;
+
+    final LimeLightAlign limeLightAlign;
 
 
 //    public Command driveToTarget(DriveToTargetCommand.DriveParameters driveParameters) {
@@ -59,33 +65,24 @@ public class CommandFactory {
         return new WaitCommand(durationMs);
     }
 
-//    public Command driveTrainTelemetry() {
-//        return new DriveTrainTelemetryCommand(autonDriveTrain, telemetry);
-//    }
-    public Command startMove(Pose start, Pose end) {
-        return new DriveToTargetPedroPathCommand(follower, start, end, true);
-    }
-
     public Command startMove(Pose start, Pose end, PathType pathType, double maxPower) {
-        return new DriveCommand(follower, start, end, pathType, true).withTempMaxPower(maxPower);
-//        return new DriveToTargetPedroPathCommand(follower, start, end, true).withTempMaxPower(maxPower);
+        return new DriveCommand(follower, start, end, pathType, true).withTempMaxPower(maxPower).withLimeLight(limeLightAlign).withTelemetry(telemetry);
     }
 
     public Command moveTo(Pose end, PathType pathType) {
-        return new DriveCommand(follower, end, pathType, false);
-//        return new DriveToTargetPedroPathCommand(follower, end, false);
+        return new DriveCommand(follower, end, pathType, false).withLimeLight(limeLightAlign).withTelemetry(telemetry);
     }
 
     public Command moveTo(Pose end, PathType pathType, double maxPower) {
-        return new DriveCommand(follower, end, pathType, false).withTempMaxPower(maxPower);
+        return new DriveCommand(follower, end, pathType, false).withTempMaxPower(maxPower).withLimeLight(limeLightAlign).withTelemetry(telemetry);
     }
 
     public Command moveTo(Pose end, PathType pathType, double maxPower, long timeoutMs) {
-        return new DriveCommand(follower, List.of(follower.getPose(), end), pathType, timeoutMs, TimeUnit.MILLISECONDS, false).withTempMaxPower(maxPower);
+        return new DriveCommand(follower, List.of(follower.getPose(), end), pathType, timeoutMs, TimeUnit.MILLISECONDS, false).withTempMaxPower(maxPower).withLimeLight(limeLightAlign).withTelemetry(telemetry);
     }
 
     public Command moveToCurve(double maxPower, Pose... poses) {
-        return new DriveCommand(follower, Arrays.asList(poses), PathType.CURVE, DriveCommand.DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, false);
+        return new DriveCommand(follower, Arrays.asList(poses), PathType.CURVE, DriveCommand.DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, false).withLimeLight(limeLightAlign).withTelemetry(telemetry);
     }
 
     /**
@@ -119,16 +116,19 @@ public class CommandFactory {
     }
 
     public Command waitFrontArtifact() {
-        return new WaitUntilFrontArtifactIntaken(telemetry, transferChamber)
+        return new WaitUntilFrontArtifactIntaken(telemetry, transferChamber).withTelemetry(telemetry)
                 .andThen(new InstantCommand(transferChamber::IncrementArtifactCount));
     }
 
     public Command intakeRow() {
-        return stopperStop().andThen(new IntakeRowCommand(transferChamber, intake, telemetry, DEFAULT_TIME_OUT));
+        return stopperStop().andThen(new IntakeRowCommand(transferChamber, intake, telemetry, DEFAULT_TIME_OUT).withTelemetry(telemetry));
     }
 
     public Command topRollerOutput() {
-        return new SingleExecuteCommand(transferChamber::TopRollersOuttake);
+        return new SingleExecuteCommand(() -> {
+            shooter.SetShootingFlag();
+            transferChamber.TopRollersOuttake();
+        });
     }
 
     public Command stopTopRoller() {
@@ -147,6 +147,10 @@ public class CommandFactory {
 
     public Command turnOffChamberRoller() {
         return new SingleExecuteCommand(transferChamber::TurnOffChamberRoller);
+    }
+
+    public Command turnOnChamberRoller() {
+        return new SingleExecuteCommand(transferChamber::TurnOnChamberRoller);
     }
 
     public Command turnOnSlowChamberRoller() {
@@ -192,30 +196,14 @@ public class CommandFactory {
     public Command loadAndShoot(Command shootCommand, boolean loadFirst) {
         return new ParallelDeadlineGroup(
                 sleep(loadFirst ? AutonCommonConfigs.shootWithLoadTimeoutInMS : AutonCommonConfigs.shootWithoutLoadTimeoutInMS),
-                stopperGo().andThen(startIntake())
-                        .andThen(turnOnSlowChamberRoller())
-//                        .andThen((loadFirst ? turnOnSlowChamberRoller() : noop()))
+                stopperGo()
+                        .andThen(startIntake())
+                        .andThen(turnOnChamberRoller())
                         .andThen(shootCommand)
                         .andThen(waitForShooterReady())
-                        .andThen(turnOnSlowChamberRoller())
                         .andThen(topRollerOutput())
 
         ).andThen(stopIntake()).andThen(stopTopRoller()).andThen(turnOffChamberRoller());
-//        long transferDelay = 200;
-//        return ballReset()
-////                .andThen(resetFeeder())
-//                .andThen(shootCommand)
-//                .andThen(loadArtifact())
-//                .andThen(sleep(transferDelay))
-//                .andThen(turnOffChamberRoller())
-//                .andThen(sleep(transferDelay))
-////                .andThen(feedArtifact())
-//                .andThen(sleep(transferDelay))
-//                .andThen(ballStow())
-////                .andThen(resetFeeder())
-//                .andThen(waitForShooterReady())
-//                .andThen(sleep(transferDelay + 200))
-//                .andThen(ballLaunch());
     }
 
     public Pose getCurrentFollowerPose() {
@@ -232,6 +220,56 @@ public class CommandFactory {
 
     public Command stopperStop() {
         return new InstantCommand(stopper::Stop);
+    }
+
+    public Command observeObelisk() {
+        return new ObserveObeliskCommand(limeLightAlign);
+    }
+
+    public Command shootRows(ShootRange shootRange, Positions positions) {
+        return new IntakeObeliskObservedRowsCommand(shootRange, positions, this).withTelemetry(telemetry);
+    }
+
+    protected Command intakeRow(Pose rowEndPose, double driveTrainPower) {
+        return new SounderBotParallelRaceGroup(
+                moveTo(rowEndPose, PathType.LINE, driveTrainPower),
+                intakeRow()
+        );
+    }
+
+    public Command getShootCommand(ShootRange shootRange) {
+        return switch (shootRange) {
+            case LONG -> farShootWithScale(AutonCommonConfigs.backShootVelocityScale, AutonCommonConfigs.TiltServoLo);
+            case SHORT -> closeShootWithScale(AutonCommonConfigs.frontShootVelocityScale, AutonCommonConfigs.TiltServoHi);
+        };
+    }
+
+    protected Command intakeRowAndShoot(Pose rowStartingPosition, Pose rowEndingPosition, double intakeDriveTrainPower, Pose rowShootingPosition, ShootRange shootRange, RowsOnFloor row, boolean shoot) {
+        double driveMaxPower = switch (row) {
+            case GPP ->
+                    switch (shootRange) {
+                        case LONG -> AutonCommonConfigs.slowMoveSpeed;
+                        case SHORT -> AutonCommonConfigs.fastMoveSpeed;
+                    };
+            case PGP -> AutonCommonConfigs.middleMoveSpeed;
+            case PPG ->
+                    switch (shootRange) {
+                        case LONG -> AutonCommonConfigs.fastMoveSpeed;
+                        case SHORT -> AutonCommonConfigs.slowMoveSpeed;
+                    };
+            default -> AutonCommonConfigs.middleMoveSpeed;
+        };
+
+        boolean isSecondRow = row == RowsOnFloor.PGP;
+
+        Command driveToShootCommand = isSecondRow
+                ? moveTo(rowStartingPosition, PathType.LINE, driveMaxPower).andThen(moveTo(rowShootingPosition, PathType.LINE, driveMaxPower))
+                : moveTo(rowShootingPosition, PathType.LINE, driveMaxPower);
+        return moveTo(rowStartingPosition, PathType.CURVE, driveMaxPower)
+                .andThen(intakeRow(rowEndingPosition, intakeDriveTrainPower)) // intake row (3 balls)
+                .andThen(driveToShootCommand) // move to shooting position
+                .andThen(shoot ? loadAndShoot(getShootCommand(shootRange), true) : noop()) // shoot row
+                ;
     }
 
 }

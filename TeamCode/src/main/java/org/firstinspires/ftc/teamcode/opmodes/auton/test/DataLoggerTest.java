@@ -123,7 +123,7 @@ public class DataLoggerTest extends LinearOpMode {
         try {
             if (opModeIsActive()) {
                 // Start logging with headers (Matched to Shooter.java naming)
-                logger.startLogging("TargetTPS", "ActualTPS", "Error", "PidPower", "FfPower", "TotalPower", "EncoderPos");
+                logger.initializeLogging("TargetTPS", "ActualTPS", "Error", "PidPower", "FfPower", "TotalPower", "EncoderPos");
                 
                 // Log the PIDF constants at the start of the file (Matched to Shooter.java metadata)
                 logger.logComment("PIDF Config: kP=" + kP + " kI=" + kI + " kD=" + kD);

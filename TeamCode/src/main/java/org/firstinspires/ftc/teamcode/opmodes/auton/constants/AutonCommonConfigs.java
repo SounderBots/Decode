@@ -6,19 +6,19 @@ import com.bylazar.configurables.annotations.Configurable;
 public class AutonCommonConfigs {
     public static double DrivetrainIntakePower = .6; //The speed the robot moves when intaking, not intake wheel speed
     public static double backShootVelocityScale = 1.059;
-    public static double frontShootVelocityScale = 1.007;
+    public static double frontShootVelocityScale = 1.0065;
 
     public static long betweenShootDelays = 400;
 
-    public static double TiltServoHi = 1.14;
+    public static double TiltServoHi = .7;
     public static double TiltServoLo = 1;
 
     public static double slowMoveSpeed = .6;
-    public static double middleMoveSpeed = .6;
-    public static double fastMoveSpeed = .6;
+    public static double middleMoveSpeed = .7;
+    public static double fastMoveSpeed = .7;
 
-    public static long shootWithLoadTimeoutInMS = 5000;
-    public static long shootWithoutLoadTimeoutInMS = 4000;
+    public static long shootWithLoadTimeoutInMS = 3750;
+    public static long shootWithoutLoadTimeoutInMS = 3500;
 
 //    public static Pose blueFrontFinishPosition = new Pose(48, 130, 0);
 //    public static Pose redFrontFinishPosition = new Pose(96, 120, 0);

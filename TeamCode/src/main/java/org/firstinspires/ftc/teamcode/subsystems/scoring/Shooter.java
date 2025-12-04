@@ -85,6 +85,12 @@ public class Shooter extends SubsystemBase {
 
     LimeLightAlign limelight;
 
+    public static final String[] LOG_COLUMNS = {
+        "ShooterReady", "IsShooting", "TargetTPS", "Tilt", 
+        "RightTPS", "RightError", "RightPowerPID", "RightPowerFF", "RightPower", 
+        "LeftTPS", "LeftError", "LeftPowerPID", "LeftPowerFF", "LeftPower"
+    };
+
     public Shooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator) {
         this(hardwareMap, gamepad, telemetry, speedIndicator, null, "Shooter");
     }
@@ -116,7 +122,7 @@ public class Shooter extends SubsystemBase {
         speedIndicator.changeRed();
 
         logger = new DataLogger(DataLogger.getLogFileName(opModeName, "ShooterLog"));
-        logger.startLogging("TargetTPS", "Tilt", "RightTPS", "RightError", "RightPowerPID", "RightPowerFF", "RightPower", "LeftTPS", "LeftError", "LeftPowerPID", "LeftPowerFF", "LeftPower");
+        logger.initializeLogging(LOG_COLUMNS);
 
         // Log the PIDF constants at the start of the file
         logger.logComment("PIDF Config: kP=" + ShooterControlConfig.kP + " kI=" + ShooterControlConfig.kI + " kD=" + ShooterControlConfig.kD);
@@ -145,6 +151,11 @@ public class Shooter extends SubsystemBase {
     boolean wasLastColorGreen = false;
     long counter = 0;
     double lastTilt = 0;
+    boolean isShooting = false;
+
+    public void SetShootingFlag() {
+        isShooting = true;
+    }
 
     @Override
     public void periodic() {
@@ -176,7 +187,6 @@ public class Shooter extends SubsystemBase {
             if(!wasLastColorGreen) {
                 wasLastColorGreen = true;
                 speedIndicator.changeGreen();
-                logger.logComment("Shooter Ready");
             }
         } else {
             if(wasLastColorGreen) {
@@ -205,7 +215,8 @@ public class Shooter extends SubsystemBase {
         rightFlywheel.set(rightPower);
         leftFlywheel.set(leftPower);
 
-        logger.log(targetVelocity, lastTilt, rightVelocity, rightError, rightPidPower, rightFeedforwardValue, rightPower, leftVelocity, leftError, leftPidPower, leftFeedforwardValue, leftPower);
+        logger.log(wasLastColorGreen ? 1 : 0, isShooting ? 1 : 0, targetVelocity, lastTilt, rightVelocity, rightError, rightPidPower, rightFeedforwardValue, rightPower, leftVelocity, leftError, leftPidPower, leftFeedforwardValue, leftPower);
+        isShooting = false;
 
         if(MainTeleop.Telemetry.Shooter) {
             telemetry.addData("target velocity", this.targetVelocity);

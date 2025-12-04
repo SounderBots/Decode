@@ -4,6 +4,8 @@ import android.util.Log;
 
 import com.arcrobotics.ftclib.command.CommandBase;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 public abstract class SounderBotCommandBase extends CommandBase {
     private static final String LOG_TAG = SounderBotCommandBase.class.getSimpleName();
     boolean finished = false;
@@ -11,6 +13,7 @@ public abstract class SounderBotCommandBase extends CommandBase {
 
     protected long startTime = -1;
 
+    Telemetry telemetry;
 
     public SounderBotCommandBase(long timeOut) {
         TIME_OUT_MS = timeOut;
@@ -50,13 +53,16 @@ public abstract class SounderBotCommandBase extends CommandBase {
         return false;
     }
 
+    public long getTimeoutMs() {
+        return TIME_OUT_MS;
+    }
+
     protected abstract void doExecute();
 
     protected void onTimeout() {
         Log.w(LOG_TAG, String.format("Command (name=%s) reached timeout (timeout=%d seconds or %d ms)", getClass().getSimpleName(), TIME_OUT_MS / 1000, TIME_OUT_MS));
         Log.w(CommonConstants.DEBUG_TAG, String.format("Command (name=%s) reached timeout (timeout=%d seconds or %d ms)", getClass().getSimpleName(), TIME_OUT_MS / 1000, TIME_OUT_MS));
         finished = true;
-        end(true);
     }
 
     protected abstract boolean isTargetReached();
@@ -77,5 +83,10 @@ public abstract class SounderBotCommandBase extends CommandBase {
         } else {
             return 0;
         }
+    }
+
+    public SounderBotCommandBase withTelemetry(Telemetry telemetry) {
+        this.telemetry = telemetry;
+        return this;
     }
 }
