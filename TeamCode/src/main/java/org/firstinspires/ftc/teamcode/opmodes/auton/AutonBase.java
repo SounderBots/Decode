@@ -25,7 +25,6 @@ public abstract class AutonBase extends CommandAutoOpMode {
         Command command = moveAndShootPreloads()
                 .andThen(moveAndObserveObelisk())
                 .andThen(commandFactory.shootRows(shootRange(), getPositions()));
-
         return moveOutAtLastSecond(command);
     }
 

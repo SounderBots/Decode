@@ -143,15 +143,12 @@ public class DriveCommand extends SounderBotCommandBase {
         Log.i(LOG_TAG, "Follower reported end position: " + follower.getPose());
         telemetry.addData("Follower", "End position: " + follower.getPose());
         if (limeLightAlign != null) {
-            Pose limeLightRobotPos = limeLightAlign.getRobotPositionBasedOnSpringTag();
-            if (limeLightRobotPos != null) {
-                Log.i(LOG_TAG, "Limelight report robot position: " + limeLightRobotPos);
+            limeLightAlign.getRobotPosition().ifPresent(pose -> {
+                Log.i(LOG_TAG, "Limelight report robot position: " + pose);
                 if (telemetry != null) {
-                    telemetry.addData("Limelight", "Robot position: " + limeLightRobotPos);
+                    telemetry.addData("Limelight", "Robot position: " + pose);
                 }
-            } else {
-
-            }
+            });
         }
 
         Objects.requireNonNull(telemetry).update();
