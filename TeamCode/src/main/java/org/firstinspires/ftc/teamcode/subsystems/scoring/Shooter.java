@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 import org.firstinspires.ftc.teamcode.datalogger.DataLogger;
+import org.firstinspires.ftc.teamcode.util.WifiMonitor;
 
 public class Shooter extends SubsystemBase {
 
@@ -27,6 +28,7 @@ public class Shooter extends SubsystemBase {
 
     RGBLightIndicator speedIndicator;
     DataLogger logger;
+    WifiMonitor wifiMonitor;
 
     @Config
     public static class ShooterConfig {
@@ -88,7 +90,8 @@ public class Shooter extends SubsystemBase {
     public static final String[] LOG_COLUMNS = {
         "ShooterReady", "IsShooting", "TargetTPS", "Tilt", 
         "RightTPS", "RightError", "RightPowerPID", "RightPowerFF", "RightPower", 
-        "LeftTPS", "LeftError", "LeftPowerPID", "LeftPowerFF", "LeftPower"
+        "LeftTPS", "LeftError", "LeftPowerPID", "LeftPowerFF", "LeftPower",
+        "RSSI", "LinkSpeed"
     };
 
     public Shooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator) {
@@ -120,6 +123,8 @@ public class Shooter extends SubsystemBase {
         this.leftFlywheel.setZeroPowerBehavior( Motor.ZeroPowerBehavior.FLOAT);
 
         speedIndicator.changeRed();
+
+        wifiMonitor = new WifiMonitor();
 
         logger = new DataLogger(DataLogger.getLogFileName(opModeName, "ShooterLog"));
         logger.initializeLogging(LOG_COLUMNS);
@@ -215,7 +220,7 @@ public class Shooter extends SubsystemBase {
         rightFlywheel.set(rightPower);
         leftFlywheel.set(leftPower);
 
-        logger.log(wasLastColorGreen ? 1 : 0, isShooting ? 1 : 0, targetVelocity, lastTilt, rightVelocity, rightError, rightPidPower, rightFeedforwardValue, rightPower, leftVelocity, leftError, leftPidPower, leftFeedforwardValue, leftPower);
+        logger.log(wasLastColorGreen ? 1 : 0, isShooting ? 1 : 0, targetVelocity, lastTilt, rightVelocity, rightError, rightPidPower, rightFeedforwardValue, rightPower, leftVelocity, leftError, leftPidPower, leftFeedforwardValue, leftPower, wifiMonitor.getSignalStrength(), wifiMonitor.getLinkSpeed());
         isShooting = false;
 
         if(MainTeleop.Telemetry.Shooter) {

@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.datalogger.DataLogger;
+import org.firstinspires.ftc.teamcode.util.WifiMonitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ public class DataLoggerTest extends LinearOpMode {
     private MotorEx testMotor;
     private DataLogger logger;
     private ElapsedTime timer;
+    private WifiMonitor wifiMonitor;
 
     public static double TargetVelocity = 0;
     public static boolean InvertMotor = true;
@@ -99,6 +101,8 @@ public class DataLoggerTest extends LinearOpMode {
             testMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
             testMotor.setInverted(InvertMotor); // Configurable inversion
 
+            wifiMonitor = new WifiMonitor();
+
         } catch (Exception e) {
             telemetry.addData("Error", "Could not initialize motor: " + e.getMessage());
             telemetry.update();
@@ -123,7 +127,7 @@ public class DataLoggerTest extends LinearOpMode {
         try {
             if (opModeIsActive()) {
                 // Start logging with headers (Matched to Shooter.java naming)
-                logger.initializeLogging("TargetTPS", "ActualTPS", "Error", "PidPower", "FfPower", "TotalPower", "EncoderPos");
+                logger.initializeLogging("TargetTPS", "ActualTPS", "Error", "PidPower", "FfPower", "TotalPower", "EncoderPos", "RSSI", "LinkSpeed");
                 
                 // Log the PIDF constants at the start of the file (Matched to Shooter.java metadata)
                 logger.logComment("PIDF Config: kP=" + kP + " kI=" + kI + " kD=" + kD);
@@ -174,7 +178,9 @@ public class DataLoggerTest extends LinearOpMode {
                         pidPower,
                         ffPower,
                         totalPower,
-                        testMotor.getCurrentPosition()
+                        testMotor.getCurrentPosition(),
+                        wifiMonitor.getSignalStrength(),
+                        wifiMonitor.getLinkSpeed()
                     );
 
                     telemetry.addData("Time", "%.2f", currentTime);
