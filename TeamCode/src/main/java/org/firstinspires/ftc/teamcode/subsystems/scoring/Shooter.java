@@ -293,7 +293,7 @@ public class Shooter extends SubsystemBase {
             }
         }
 
-        return new AutoSpeed(800, .5);
+        return new AutoSpeed(695, 0.9);
     }
 
     private double clamp(double value, double min, double max) {
