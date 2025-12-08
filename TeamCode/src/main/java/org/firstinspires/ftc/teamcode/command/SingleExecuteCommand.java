@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.command;
 
-import android.util.Log;
-
 import com.arcrobotics.ftclib.command.CommandBase;
 
 public class SingleExecuteCommand extends CommandBase {

@@ -36,6 +36,12 @@ Downloads CSV log files from the Control Hub to your local computer.
 *   Connect your computer to the Control Hub via Wi-Fi or USB.
 *   Logs will be saved to the current directory (or `logs/` folder if configured).
 
+for mac, use command line
+```shell
+adb pull /sdcard/FIRST/data/logs .
+```
+to pull logs
+
 ### B. `clean_logs.ps1`
 Deletes all log files from the Control Hub (Internal Storage & SD Card) to free up space.
 

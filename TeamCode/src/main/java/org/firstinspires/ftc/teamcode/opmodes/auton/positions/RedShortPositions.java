@@ -26,11 +26,11 @@ public class RedShortPositions implements Positions {
         return getShortShootPosition().withHeading(Math.toRadians(preloadShootAngleInDegree));
     }
 
-    public static double frontShootAngleInDegrees = 38;
+    public static double frontShootAngleInDegrees = 35.91;
     public static Pose frontShootPosition = new Pose(87, 93, Math.toRadians(frontShootAngleInDegrees));
 
     public static Pose backStartPosition = new Pose(87.5, 8.3, Math.toRadians(90));
-    public static Pose frontStartPosition = new Pose(120.5, 125.75, Math.toRadians(38));
+    public static Pose frontStartPosition = new Pose(120.5, 125.75, Math.toRadians(frontShootAngleInDegrees));
 
     public static Pose backFinishPosition = new Pose(96, 24, 0);
     public static Pose frontFinishPosition = new Pose(96, 120, 0);

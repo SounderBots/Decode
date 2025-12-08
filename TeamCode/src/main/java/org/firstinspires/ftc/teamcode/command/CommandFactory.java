@@ -15,8 +15,8 @@ import org.firstinspires.ftc.teamcode.opmodes.auton.constants.RowsOnFloor;
 import org.firstinspires.ftc.teamcode.opmodes.auton.constants.ShootRange;
 import org.firstinspires.ftc.teamcode.opmodes.auton.positions.Positions;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.AutonDriveTrain;
-import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
+import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Stopper;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
@@ -232,7 +232,7 @@ public class CommandFactory {
 
     protected Command intakeRow(Pose rowEndPose, double driveTrainPower) {
         return new SounderBotParallelRaceGroup(
-                moveTo(rowEndPose, PathType.LINE, driveTrainPower),
+                moveTo(rowEndPose, PathType.LINE, driveTrainPower).andThen(sleep(1000)),
                 intakeRow()
         );
     }
