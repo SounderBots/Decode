@@ -12,10 +12,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.AprilTagPosition;
+import org.firstinspires.ftc.teamcode.datalogger.DataLogger;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
-import org.firstinspires.ftc.teamcode.datalogger.DataLogger;
 
 public class Shooter extends SubsystemBase {
 

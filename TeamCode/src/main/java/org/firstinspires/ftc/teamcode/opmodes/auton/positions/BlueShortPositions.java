@@ -6,7 +6,7 @@ import com.pedropathing.geometry.Pose;
 @Configurable
 public class BlueShortPositions implements Positions {
 
-    public static double rowStartX = 44;
+    public static double rowStartX = 52;
     public static double rowEndXLongIntake = 10;
     public static double rowEndXShortIntake = 16;
 
@@ -14,7 +14,7 @@ public class BlueShortPositions implements Positions {
     //first row is the row close to the trangle
     public static double firstRowStartY = 35;
     public static double secondRowStartY = 60.5;
-    public static double thirdRowStartY = 83;
+    public static double thirdRowStartY = 87;
 
     public static double rowEndYOffset = 0;
 
@@ -30,7 +30,7 @@ public class BlueShortPositions implements Positions {
 
     public static Pose backFinishPosition = new Pose(48, 24, 0);
     public static Pose frontFinishPosition = new Pose(48, 120, 0);
-    public static double obeliskObserveHeadingInDegrees = 80;
+    public static double obeliskObserveHeadingInDegrees = 70;
     public static Pose obeliskObservePosition = frontShootPosition.withHeading(Math.toRadians(obeliskObserveHeadingInDegrees));
 
     public BlueShortPositions() {

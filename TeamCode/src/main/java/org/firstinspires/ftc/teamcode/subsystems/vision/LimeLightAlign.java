@@ -16,19 +16,15 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Supplier;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.command.CommonConstants;
 import org.firstinspires.ftc.teamcode.common.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.common.AprilTagPosition;
-import org.firstinspires.ftc.teamcode.opmodes.auton.constants.CameraOffsets;
-import org.firstinspires.ftc.teamcode.opmodes.auton.constants.SpringTagPositions;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.AutonCommonConfigs;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 
-import java.util.List;
 import java.util.Optional;
 
 public class LimeLightAlign extends SubsystemBase {
@@ -63,6 +59,11 @@ public class LimeLightAlign extends SubsystemBase {
     @Override
     public void periodic() {
         super.periodic();
+
+        if (petroPathingPoseSupplier != null) {
+            limelight.updateRobotOrientation(petroPathingPoseSupplier.get()
+                    .getAsCoordinateSystem(FTCCoordinates.INSTANCE).getHeading());
+        }
 
         //getObeliskAprilTag();
         AprilTagPosition aprilTagPosition = getAprilTagPosition();
@@ -239,10 +240,18 @@ public class LimeLightAlign extends SubsystemBase {
             return Optional.empty();
         }
 
-        Pose ftcPose = new Pose(limelightReported.getPosition().x, limelightReported.getPosition().y, limelightReported.getOrientation().getYaw(AngleUnit.RADIANS), FTCCoordinates.INSTANCE);
-        Log.i(LOG_TAG, "limelight reported ftcPose = " + ftcPose);
+        Pose ftcPose = new Pose(
+                meterToInch(limelightReported.getPosition().x),
+                meterToInch(limelightReported.getPosition().y),
+                limelightReported.getOrientation().getYaw(AngleUnit.RADIANS),
+                FTCCoordinates.INSTANCE);
+        Log.i(AutonCommonConfigs.LOG_TAG, "limelight reported ftcPose = " + ftcPose);
         Pose pedroPose = ftcPose.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
-        Log.i(LOG_TAG, "limelight reported pedroPose = " + pedroPose);
+        Log.i(AutonCommonConfigs.LOG_TAG, "limelight reported pedroPose = " + pedroPose);
         return Optional.of(pedroPose);
+    }
+
+    private double meterToInch(double meter) {
+        return meter * 39.3701;
     }
 }

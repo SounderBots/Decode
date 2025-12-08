@@ -9,6 +9,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.AutonCommonConfigs;
 import org.firstinspires.ftc.teamcode.pedroPathing.DrawingToPanel;
 import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 
@@ -17,7 +18,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.StreamSupport;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -140,11 +140,11 @@ public class DriveCommand extends SounderBotCommandBase {
         follower.setMaxPower(1);
         tempMaxPower = -1;
         follower.deactivateAllPIDFs();
-        Log.i(LOG_TAG, "Follower reported end position: " + follower.getPose());
+        Log.i(AutonCommonConfigs.LOG_TAG, "Follower reported end position: " + follower.getPose());
         telemetry.addData("Follower", "End position: " + follower.getPose());
         if (limeLightAlign != null) {
             limeLightAlign.getRobotPosition().ifPresent(pose -> {
-                Log.i(LOG_TAG, "Limelight report robot position: " + pose);
+                Log.i(AutonCommonConfigs.LOG_TAG, "Limelight report robot position: " + pose);
                 if (telemetry != null) {
                     telemetry.addData("Limelight", "Robot position: " + pose);
                 }

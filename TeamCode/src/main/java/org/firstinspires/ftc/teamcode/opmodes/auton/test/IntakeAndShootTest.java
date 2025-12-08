@@ -6,8 +6,8 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.command.PathType;
-import org.firstinspires.ftc.teamcode.opmodes.auton.constants.AutonCommonConfigs;
 import org.firstinspires.ftc.teamcode.opmodes.auton.CommandAutoOpMode;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.AutonCommonConfigs;
 
 @Autonomous(name="Intake and shoot test", group="Test")
 @Configurable

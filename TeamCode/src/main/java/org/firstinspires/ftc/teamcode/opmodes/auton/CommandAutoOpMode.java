@@ -7,11 +7,11 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandOpMode;
-import com.arcrobotics.ftclib.command.ParallelRaceGroup;
 import com.arcrobotics.ftclib.command.SounderBotParallelRaceGroup;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.teamcode.command.CommandFactory;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -39,8 +39,6 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
         super.reset();
     }
 
-    private static final String LOG_TAG = "AUTO_DEBUG";
-
     @Override
     public void waitForStart() {
         super.waitForStart();
@@ -66,9 +64,13 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
         RGBLightIndicator rgbLightIndicator = new RGBLightIndicator(hardwareMap, telemetry, "RGBIndicator");
         Shooter shooter = new Shooter(hardwareMap, operatorGamePad, telemetry, rgbLightIndicator, null, this.getClass().getSimpleName());
         Stopper stopper = new Stopper(hardwareMap, operatorGamePad, telemetry);
-        LimeLightAlign limeLightAlign = new LimeLightAlign(hardwareMap, telemetry);
         Follower follower = Constants.createFollower(hardwareMap);
-        limeLightAlign.withHeadingSupplier(follower::getPose);
+        LimeLightAlign limeLightAlign = new LimeLightAlign(hardwareMap, telemetry)
+                .withHeadingSupplier(() -> {
+                    Pose followerPose = follower.getPose();
+//                    Log.i(AutonCommonConfigs.LOG_TAG, "follower reported pose: " + followerPose);
+                    return followerPose;
+                });
         logInitStep("all subsystems created");
 
 
