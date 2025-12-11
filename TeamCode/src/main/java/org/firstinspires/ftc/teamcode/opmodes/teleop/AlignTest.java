@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;

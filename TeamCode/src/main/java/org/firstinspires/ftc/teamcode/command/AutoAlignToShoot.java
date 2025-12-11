@@ -7,7 +7,6 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.AprilTagPosition;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.DriveTrainBase;
-import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 import org.firstinspires.ftc.teamcode.util.SonicPIDFController;
 
@@ -65,7 +64,6 @@ public class AutoAlignToShoot extends CommandBase {
         super.initialize();
     }
 
-    long id = 0;
     boolean isAligned = false;
 
     @Override
