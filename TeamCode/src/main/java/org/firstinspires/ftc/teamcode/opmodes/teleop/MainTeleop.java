@@ -2,12 +2,14 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.InstantCommand;
+import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.command.AutoAlignToShoot;
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.DriverFeedback;
@@ -42,6 +44,8 @@ public class MainTeleop extends OpModeTemplate {
         public static boolean Shooter = false;
 
         public static boolean LimeLight = false;
+
+        public static boolean AutoAlign = false;
     }
 
     @Configurable
@@ -66,6 +70,7 @@ public class MainTeleop extends OpModeTemplate {
         this.transfer = new TransferChamber(hardwareMap, operatorGamepad, telemetry);
         this.feedback = new DriverFeedback(hardwareMap, driverGamepad, operatorGamepad, telemetry);
         this.stopper = new Stopper(hardwareMap, operatorGamepad, telemetry);
+        this.shooter.AutoSpeedAndTilt();
 
         new Trigger(() -> gamepad2.right_stick_y < -0.5)
                 .whenActive(new InstantCommand(intake::StartIntake, intake));
@@ -146,6 +151,24 @@ public class MainTeleop extends OpModeTemplate {
 
         driverGamepad.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
                 .whenPressed(new InstantCommand(intake::StopIntake, intake));
+
+        driverGamepad.getGamepadButton(GamepadKeys.Button.A)
+                .whenPressed(
+                        new SequentialCommandGroup(
+                                new InstantCommand(drive::AutoAlignOn, drive),
+                                new ParallelCommandGroup
+                                (
+                                        new AutoAlignToShoot(limeLight, drive, telemetry),
+                                        new InstantCommand(stopper::Go, stopper)
+                                ),
+                                new InstantCommand(drive::AutoAlignOff, drive)
+                        )
+                );
+
+        driverGamepad.getGamepadButton(GamepadKeys.Button.B)
+                .whenPressed(
+                        new InstantCommand(drive::AutoAlignOff, drive)
+                );
 
         register(drive, intake, shooter, light, limeLight, stopper);
     }

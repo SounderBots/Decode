@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.drivetrain;
 
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -21,14 +22,31 @@ public class TeleopDrivetrain extends DriveTrainBase {
     public void periodic() {
         super.periodic();
 
-        mecanumDrive.driveRobotCentric(
-                 gamepad.getLeftX() * power * -1 * direction,
-                gamepad.getLeftY() * power * -1 * direction,
-                gamepad.getRightX() * power * -.7
-        );
+        // A bit tricky here. If autoalign is turned on, then we turn off this teleop drive
+        // since it counteracts the power sent for alignment (causes jerky motion).
+        // We revert back to teleop behavior after the command complete - either
+        // aligns or times out after 1500ms. The other way to revert is for the Driver
+        // to hit the 'B' button
+        if(!autoAlign) {
+            mecanumDrive.driveRobotCentric(
+                    gamepad.getLeftX() * power * -1 * direction,
+                    gamepad.getLeftY() * power * -1 * direction,
+                    gamepad.getRightX() * power * -.7
+            );
+        }
     }
 
     public void ToggleDirection() {
         direction = direction * -1;
+    }
+
+    boolean autoAlign = false;
+
+    public void AutoAlignOn() {
+        this.autoAlign = true;
+    }
+
+    public void AutoAlignOff() {
+        this.autoAlign = false;
     }
 }

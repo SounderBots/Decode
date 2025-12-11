@@ -88,6 +88,8 @@ public class Shooter extends SubsystemBase {
 
     LimeLightAlign limelight;
 
+    boolean isDemoMode = false;
+
     public static final String[] LOG_COLUMNS = {
         "ShooterReady", "IsShooting", "TargetTPS", "Tilt", 
         "RightTPS", "RightError", "RightPowerPID", "RightPowerFF", "RightPower", 
@@ -104,9 +106,19 @@ public class Shooter extends SubsystemBase {
     }
 
     public Shooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator, LimeLightAlign limelight, String opModeName) {
+        this(hardwareMap, gamepad, telemetry, speedIndicator, limelight, "Shooter", false);
+
+    }
+
+    public Shooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator, LimeLightAlign limelight, String opModeName, boolean isDemoMode) {
         this.gamepad = gamepad;
         this.telemetry = telemetry;
         this.limelight = limelight;
+        this.isDemoMode = isDemoMode;
+
+        if(isDemoMode) {
+            autoSpeed = true;
+        }
 
         this.speedIndicator = speedIndicator;
 
@@ -218,8 +230,11 @@ public class Shooter extends SubsystemBase {
         leftPower = clamp(leftPower, -1.0, 1.0);
         rightPower = clamp(rightPower, -1.0, 1.0);
 
-        rightFlywheel.set(rightPower);
-        leftFlywheel.set(leftPower);
+        if(!isDemoMode) {
+            // Don't waste battery on flywheels during demos
+            rightFlywheel.set(rightPower);
+            leftFlywheel.set(leftPower);
+        }
 
         logger.log(wasLastColorGreen ? 1 : 0, isShooting ? 1 : 0, targetVelocity, lastTilt, rightVelocity, rightError, rightPidPower, rightFeedforwardValue, rightPower, leftVelocity, leftError, leftPidPower, leftFeedforwardValue, leftPower, wifiMonitor.getSignalStrength(), wifiMonitor.getLinkSpeed());
         isShooting = false;
@@ -260,46 +275,65 @@ public class Shooter extends SubsystemBase {
         AprilTagPosition position = this.limelight.getAprilTagPosition();
 
         if(position != null) {
-        //     /*
-        //     134 - 845, 0.95
-        //     124 - 825, 0.95
-        //     114 - 805, 0.95
-        //     94 - 760, 0.95
-        //     84 - 740, 0.95
-        //     74 - 720, 0.9
-        //     64 - 695, 0.9
-        //     54 - 695, 0.95
-        //     44 - 695, 0.95
-        //     */
-        //     double distance = position.distance();
-        //     if (distance < 44) {
-        //         return new AutoSpeed(695, 0.95);
-        //     } else if (distance < 54) {
-        //         return new AutoSpeed(695, 0.95);
-        //     } else if (distance < 64) {
-        //         return new AutoSpeed(695, 0.9);
-        //     } else if (distance < 74) {
-        //         return new AutoSpeed(720, 0.9);
-        //     } else if (distance < 84) {
-        //         return new AutoSpeed(740, 0.95);
-        //     } else if (distance < 94) {
-        //         return new AutoSpeed(760, 0.95);
-        //     } else if (distance < 114) {
-        //         return new AutoSpeed(805, 0.95);
-        //     } else if (distance < 124) {
-        //         return new AutoSpeed(825, 0.95);
-        //     } else if (distance < 134) {
-        //         return new AutoSpeed(845, 0.95);
-        //     }
-        // }
+            double distance = position.distance();
 
-        // return new AutoSpeed(695, 0.9);
-        
             //y = 0.0101722*x^2 - 0.0456217*x + 672.12131
             double tps = 0.0101722 * distance * distance - 0.0456217 * distance + 672.12131;
-            return new AutoSpeed(tps, 0.95);
+            double tilt = getTilt(distance);
+            return new AutoSpeed(tps, tilt);
         }
+
         return new AutoSpeed(695, 0.9);
+    }
+
+    private double getTilt(double distance) {
+
+        if(!isDemoMode) {
+            if (distance < 44) {
+                return 0.95;
+            } else if (distance < 54) {
+                return 0.95;
+            } else if (distance < 64) {
+                return 0.9;
+            } else if (distance < 74) {
+                return 0.9;
+            } else if (distance < 84) {
+                return 0.95;
+            } else if (distance < 94) {
+                return 0.95;
+            } else if (distance < 114) {
+                return 0.95;
+            } else if (distance < 124) {
+                return 0.95;
+            } else if (distance < 134) {
+                return 0.95;
+            } else {
+                return .95;
+            }
+        } else {
+            // Exaggerated tilt to help in demos
+            if (distance < 44) {
+                return 0.95;
+            } else if (distance < 54) {
+                return 0.85;
+            } else if (distance < 64) {
+                return 0.75;
+            } else if (distance < 74) {
+                return 0.65;
+            } else if (distance < 84) {
+                return 0.55;
+            } else if (distance < 94) {
+                return 0.45;
+            } else if (distance < 114) {
+                return 0.45;
+            } else if (distance < 124) {
+                return 0.45;
+            } else if (distance < 134) {
+                return 0.45;
+            } else {
+                return .85;
+            }
+        }
     }
 
     private double clamp(double value, double min, double max) {
