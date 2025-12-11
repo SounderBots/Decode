@@ -3,21 +3,20 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop;
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
-import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
+import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.DriverFeedback;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.scoring.Stopper;
-import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
-import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
+import org.firstinspires.ftc.teamcode.subsystems.scoring.Stopper;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.TransferChamber;
+import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 
 @TeleOp
 @Configurable

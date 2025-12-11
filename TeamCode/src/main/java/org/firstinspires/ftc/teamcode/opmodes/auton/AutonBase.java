@@ -16,16 +16,14 @@ import org.firstinspires.ftc.teamcode.opmodes.auton.positions.Positions;
 import org.firstinspires.ftc.teamcode.opmodes.auton.positions.RedLongPositions;
 import org.firstinspires.ftc.teamcode.opmodes.auton.positions.RedShortPositions;
 
-import java.util.List;
-
 public abstract class AutonBase extends CommandAutoOpMode {
 
     @Override
     protected Command createCommand() {
+        boolean shouldObserveObelisk = shootRange() == ShootRange.SHORT;
         Command command = moveAndShootPreloads()
-                .andThen(moveAndObserveObelisk())
+                .andThen(shouldObserveObelisk ? moveAndObserveObelisk() : commandFactory.noop())
                 .andThen(commandFactory.shootRows(shootRange(), getPositions()));
-
         return moveOutAtLastSecond(command);
     }
 

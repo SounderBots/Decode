@@ -29,7 +29,7 @@ public class RedLongPositions implements Positions {
     public static Pose backFinishPosition = new Pose(96, 24, 0);
     public static Pose frontFinishPosition = new Pose(96, 120, 0);
 
-    public static double driveTrainIntakePowerScale = 1.5;
+    public static double driveTrainIntakePowerScale = 1.2;
 
     public static double longShootPreloadHeadingInDegree = 70;
     public static Pose longShootPreloadPosition = new Pose(88, 11, Math.toRadians(longShootPreloadHeadingInDegree));

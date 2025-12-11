@@ -36,6 +36,12 @@ Downloads CSV log files from the Control Hub to your local computer.
 *   Connect your computer to the Control Hub via Wi-Fi or USB.
 *   Logs will be saved to the current directory (or `logs/` folder if configured).
 
+for mac, use command line
+```shell
+adb pull /sdcard/FIRST/data/logs .
+```
+to pull logs
+
 ### B. `clean_logs.ps1`
 Deletes all log files from the Control Hub (Internal Storage & SD Card) to free up space.
 
@@ -48,9 +54,22 @@ Deletes all log files from the Control Hub (Internal Storage & SD Card) to free 
 *   Prompts for confirmation before deleting files.
 *   Use `.\clean_logs.ps1 -Force` to skip confirmation.
 
-### C. `analyze_pid.py`
-**Purpose:** Visualizes PID performance to help you tune `kP`, `kI`, and `kD`. It calculates metrics like Overshoot and Settling Time.
-**Best for:** Step Response tests (e.g., instantly setting target velocity from 0 to 1000).
+### C. `fetch_system_logs.ps1`
+Downloads the Android System Log (`logcat`) from the Control Hub. This is critical for diagnosing **Wi-Fi connection drops**, app crashes, or other system-level issues.
+
+**Usage:**
+```powershell
+.\fetch_system_logs.ps1
+```
+*   Saves a text file (e.g., `logcat_20231206_120000.txt`) to the current directory.
+*   **What to look for:**
+    *   Search for `WifiStateMachine` to see when the robot connects/disconnects.
+    *   Search for `wpa_supplicant` for authentication errors.
+    *   Search for `Robocol` for FTC network messages.
+
+### D. `analyze_pid.py`
+**Purpose:** Visualizes PID performance and analyzes shot consistency. It detects shots automatically and provides detailed metrics on stability and latency.
+**Best for:** Tuning shooter consistency and diagnosing mechanical/software delays.
 
 **Usage:**
 ```powershell
@@ -60,20 +79,24 @@ python analyze_pid.py "path/to/log.csv"
 # Analyze the latest log file automatically
 python analyze_pid.py
 
-# Save the plot as an image and open it (Recommended if window freezes)
+# Save the plot as an image and open it
 python analyze_pid.py --save
 ```
 
-**Interpreting Results:**
-*   **RMSE (Root Mean Square Error):** The average error over time. Lower is better.
-*   **Overshoot %:** How much the motor exceeds the target velocity.
-    *   *> 5-10%*: System is too aggressive. **Decrease kP** or **Increase kD**.
-*   **Settling Time:** How long it takes to stabilize.
-    *   *Slow (> 1s)*: System is sluggish. **Increase kP** or tune Feedforward (`kV`).
-*   **Steady-State Error:** The error remaining after the system settles.
-    *   *Non-zero*: **Increase kI** or adjust `kV`/`kS`.
+**Key Features:**
+*   **Interactive Filtering:** If the log is large, you can select specific shots to analyze in separate windows (e.g., enter `1, 3-5`).
+*   **Shot Stability Analysis:**
+    *   **Red Index in Console:** Indicates a **Start Diff > 0** (motors were not synced when the shot started).
+    *   **Orange Zones on Plot:** Indicates the shot was taken while the motor was **Unstable** (accelerating too fast).
+*   **Shot Latency:** Measures the delay between the code command (`IsShooting`) and the actual motor response.
+*   **Interactive Tooltip:** Hold **Left Ctrl** and hover over the plot to see exact values.
 
-### D. `derive_coefficients.py`
+**Interpreting Results:**
+*   **Loop Frequency:** Should be consistent (< 20ms). Spikes > 50ms indicate code lag.
+*   **Shot Latency:** High latency (> 300ms) suggests mechanical backlash or loop delays.
+*   **Discrepancy (Red Fill):** Large red areas between motor lines mean the left/right motors are fighting each other.
+
+### E. `derive_coefficients.py`
 **Purpose:** Performs System Identification (Linear Regression) to mathematically derive the physical Feedforward coefficients (`kS`, `kV`, `kA`) for your motors.
 **Best for:** Ramp Tests (slowly accelerating from 0 to max speed) or Quasistatic tests.
 
@@ -113,3 +136,23 @@ The script outputs three coefficients:
     *   If you need better Feedforward, run `derive_coefficients.py` on a ramp test log.
     *   Update the constants in your Java code (`Shooter.java` or `DriveConstants.java`).
     *   Repeat.
+
+---
+
+## 4. Wi-Fi & Connection Monitoring
+
+To investigate connection drops, the `WifiMonitor` utility logs signal strength (RSSI) and Link Speed.
+
+**Integrated Logging:**
+The `Shooter` subsystem now automatically logs Wi-Fi stats. Every time you run `MainTeleop` or `ShooterTest`, the CSV log will include:
+*   `RSSI`: Signal strength in dBm.
+*   `LinkSpeed`: Connection speed in Mbps.
+
+**Manual Usage (for other OpModes):**
+1.  **Initialize:** `WifiMonitor wifi = new WifiMonitor();`
+2.  **Log:** `dataLogger.log(..., wifi.getSignalStrength(), wifi.getLinkSpeed());`
+
+**Analysis:**
+*   **RSSI < -80 dBm**: Weak signal. You are entering a dead zone.
+*   **Link Speed drops**: Interference or distance issue.
+

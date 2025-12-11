@@ -12,10 +12,12 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.AprilTagPosition;
+import org.firstinspires.ftc.teamcode.datalogger.DataLogger;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
 import org.firstinspires.ftc.teamcode.datalogger.DataLogger;
+import org.firstinspires.ftc.teamcode.util.WifiMonitor;
 
 public class Shooter extends SubsystemBase {
 
@@ -27,6 +29,7 @@ public class Shooter extends SubsystemBase {
 
     RGBLightIndicator speedIndicator;
     DataLogger logger;
+    WifiMonitor wifiMonitor;
 
     @Config
     public static class ShooterConfig {
@@ -88,7 +91,8 @@ public class Shooter extends SubsystemBase {
     public static final String[] LOG_COLUMNS = {
         "ShooterReady", "IsShooting", "TargetTPS", "Tilt", 
         "RightTPS", "RightError", "RightPowerPID", "RightPowerFF", "RightPower", 
-        "LeftTPS", "LeftError", "LeftPowerPID", "LeftPowerFF", "LeftPower"
+        "LeftTPS", "LeftError", "LeftPowerPID", "LeftPowerFF", "LeftPower",
+        "RSSI", "LinkSpeed"
     };
 
     public Shooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator) {
@@ -120,6 +124,8 @@ public class Shooter extends SubsystemBase {
         this.leftFlywheel.setZeroPowerBehavior( Motor.ZeroPowerBehavior.FLOAT);
 
         speedIndicator.changeRed();
+
+        wifiMonitor = new WifiMonitor();
 
         logger = new DataLogger(DataLogger.getLogFileName(opModeName, "ShooterLog"));
         logger.initializeLogging(LOG_COLUMNS);
@@ -215,7 +221,7 @@ public class Shooter extends SubsystemBase {
         rightFlywheel.set(rightPower);
         leftFlywheel.set(leftPower);
 
-        logger.log(wasLastColorGreen ? 1 : 0, isShooting ? 1 : 0, targetVelocity, lastTilt, rightVelocity, rightError, rightPidPower, rightFeedforwardValue, rightPower, leftVelocity, leftError, leftPidPower, leftFeedforwardValue, leftPower);
+        logger.log(wasLastColorGreen ? 1 : 0, isShooting ? 1 : 0, targetVelocity, lastTilt, rightVelocity, rightError, rightPidPower, rightFeedforwardValue, rightPower, leftVelocity, leftError, leftPidPower, leftFeedforwardValue, leftPower, wifiMonitor.getSignalStrength(), wifiMonitor.getLinkSpeed());
         isShooting = false;
 
         if(MainTeleop.Telemetry.Shooter) {
@@ -254,40 +260,46 @@ public class Shooter extends SubsystemBase {
         AprilTagPosition position = this.limelight.getAprilTagPosition();
 
         if(position != null) {
-            /*
-            134 - 845, 0.95
-            124 - 825, 0.95
-            114 - 805, 0.95
-            94 - 760, 0.95
-            84 - 740, 0.95
-            74 - 720, 0.9
-            64 - 695, 0.9
-            54 - 695, 0.95
-            44 - 695, 0.95
-            */
-            double distance = position.distance();
-            if (distance < 44) {
-                return new AutoSpeed(695, 0.95);
-            } else if (distance < 54) {
-                return new AutoSpeed(695, 0.95);
-            } else if (distance < 64) {
-                return new AutoSpeed(695, 0.9);
-            } else if (distance < 74) {
-                return new AutoSpeed(720, 0.9);
-            } else if (distance < 84) {
-                return new AutoSpeed(740, 0.95);
-            } else if (distance < 94) {
-                return new AutoSpeed(760, 0.95);
-            } else if (distance < 114) {
-                return new AutoSpeed(805, 0.95);
-            } else if (distance < 124) {
-                return new AutoSpeed(825, 0.95);
-            } else if (distance < 134) {
-                return new AutoSpeed(845, 0.95);
-            }
-        }
+        //     /*
+        //     134 - 845, 0.95
+        //     124 - 825, 0.95
+        //     114 - 805, 0.95
+        //     94 - 760, 0.95
+        //     84 - 740, 0.95
+        //     74 - 720, 0.9
+        //     64 - 695, 0.9
+        //     54 - 695, 0.95
+        //     44 - 695, 0.95
+        //     */
+        //     double distance = position.distance();
+        //     if (distance < 44) {
+        //         return new AutoSpeed(695, 0.95);
+        //     } else if (distance < 54) {
+        //         return new AutoSpeed(695, 0.95);
+        //     } else if (distance < 64) {
+        //         return new AutoSpeed(695, 0.9);
+        //     } else if (distance < 74) {
+        //         return new AutoSpeed(720, 0.9);
+        //     } else if (distance < 84) {
+        //         return new AutoSpeed(740, 0.95);
+        //     } else if (distance < 94) {
+        //         return new AutoSpeed(760, 0.95);
+        //     } else if (distance < 114) {
+        //         return new AutoSpeed(805, 0.95);
+        //     } else if (distance < 124) {
+        //         return new AutoSpeed(825, 0.95);
+        //     } else if (distance < 134) {
+        //         return new AutoSpeed(845, 0.95);
+        //     }
+        // }
 
-        return new AutoSpeed(800, .5);
+        // return new AutoSpeed(695, 0.9);
+        
+            //y = 0.0101722*x^2 - 0.0456217*x + 672.12131
+            double tps = 0.0101722 * distance * distance - 0.0456217 * distance + 672.12131;
+            return new AutoSpeed(tps, 0.95);
+        }
+        return new AutoSpeed(695, 0.9);
     }
 
     private double clamp(double value, double min, double max) {

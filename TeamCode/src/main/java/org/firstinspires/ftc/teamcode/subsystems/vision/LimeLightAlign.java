@@ -7,28 +7,24 @@ import android.util.Log;
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.pedropathing.ftc.FTCCoordinates;
-import com.pedropathing.geometry.CoordinateSystem;
 import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.Supplier;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.command.CommonConstants;
 import org.firstinspires.ftc.teamcode.common.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.common.AprilTagPosition;
-import org.firstinspires.ftc.teamcode.opmodes.auton.constants.CameraOffsets;
-import org.firstinspires.ftc.teamcode.opmodes.auton.constants.SpringTagPositions;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.AutonCommonConfigs;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 
-import java.util.List;
 import java.util.Optional;
 
 public class LimeLightAlign extends SubsystemBase {
@@ -42,6 +38,8 @@ public class LimeLightAlign extends SubsystemBase {
     private static final int PIPELINE_ID = 4; // April tag pipeline id
 
     private double horizontalAngle, verticalAngle;
+
+    Supplier<Pose> petroPathingPoseSupplier;
 
     @Config
     public static class LimelightConfig {
@@ -61,6 +59,11 @@ public class LimeLightAlign extends SubsystemBase {
     @Override
     public void periodic() {
         super.periodic();
+
+        if (petroPathingPoseSupplier != null) {
+            limelight.updateRobotOrientation(petroPathingPoseSupplier.get()
+                    .getAsCoordinateSystem(FTCCoordinates.INSTANCE).getHeading());
+        }
 
         //getObeliskAprilTag();
         AprilTagPosition aprilTagPosition = getAprilTagPosition();
@@ -101,6 +104,11 @@ public class LimeLightAlign extends SubsystemBase {
         this.rightIndicator = new RGBLightIndicator(hardwareMap, telemetry, "RightAlign");
 
         start();
+    }
+
+    public LimeLightAlign withHeadingSupplier(Supplier<Pose> poseSupplier) {
+        this.petroPathingPoseSupplier = poseSupplier;
+        return this;
     }
 
     public Optional<AprilTagEnum> getObeliskAprilTag() {
@@ -177,96 +185,6 @@ public class LimeLightAlign extends SubsystemBase {
     public void scanObjects(){
     }
 
-    public Pose getRobotPositionBasedOnSpringTag() {
-        limelight.pipelineSwitch(PIPELINE_ID);
-        LLResult result = limelight.getLatestResult();
-
-        if (result != null && result.isValid()) {
-            List<FiducialResult> fiducials = result.getFiducialResults();
-            for (FiducialResult fr : fiducials) {
-                int id = fr.getFiducialId();
-
-                Pose tagMapPose = null;
-                if (id == 20) {
-                    tagMapPose = SpringTagPositions.RED;
-                } else if (id == 24) {
-                    tagMapPose = SpringTagPositions.BLUE;
-                }
-
-                if (tagMapPose != null) {
-                    Log.i(LOG_TAG, "Tag ID: " + id);
-                    telemetry.addData(LOG_TAG, "Tag ID: " + id);
-                    Pose3D targetPose = fr.getTargetPoseCameraSpace();
-                    Log.i(LOG_TAG, "targetPose: " + targetPose);
-                    telemetry.addData(LOG_TAG, "targetPose: " + targetPose);
-
-                    Pose3D targetPoseRobot = fr.getTargetPoseRobotSpace();
-                    Log.i(LOG_TAG, "targetPoseRobot: " + targetPose);
-                    telemetry.addData(LOG_TAG, "targetPoseRobot: " + targetPose);
-
-                    Pose3D ftcRobotPose = fr.getRobotPoseFieldSpace();
-                    Log.i(LOG_TAG, "ftcRobotPose: " + ftcRobotPose);
-                    telemetry.addData(LOG_TAG, "ftcRobotPose: " + ftcRobotPose);
-                    Pose petroPose = new Pose(ftcRobotPose.getPosition().x, ftcRobotPose.getPosition().y, ftcRobotPose.getOrientation().getYaw(AngleUnit.RADIANS), FTCCoordinates.INSTANCE);
-                    Log.i(LOG_TAG, "petroPose: " + petroPose);
-                    telemetry.addData(LOG_TAG, "petroPose: " + petroPose);
-                    Pose converted = FTCCoordinates.INSTANCE.convertToPedro(petroPose);
-                    Log.i(LOG_TAG, "converted: " + converted);
-                    telemetry.addData(LOG_TAG, "converted: " + converted);
-
-                    Position pos = targetPose.getPosition().toUnit(DistanceUnit.INCH);
-                    YawPitchRollAngles rot = targetPose.getOrientation();
-
-                    // Camera Coordinate System: Z forward, X right, Y down.
-                    // Robot Coordinate System (Pedro): X forward, Y left.
-                    // Assuming Camera is mounted forward on the robot.
-
-                    // Transform Camera to Robot Frame
-                    // Robot X = Camera Z
-                    // Robot Y = -Camera X
-                    double r_x = pos.z;
-                    double r_y = -pos.x;
-
-                    // Extract Tag Yaw (Rotation around Y-axis in Camera Frame)
-                    // YawPitchRollAngles (Z-X-Y) -> Roll is Y-axis
-                    // Convert tagYaw to radians for consistent unit usage with tagMapPose.getHeading()
-                    double tagYawRadians = Math.toRadians(rot.getRoll(AngleUnit.DEGREES));
-
-                    // Calculate Robot Heading
-                    // H_r = H_t - Yaw_{tr}
-                    // Since Camera aligns with Robot, Yaw_{tr} = tagYaw.
-                    double robotHeading = tagMapPose.getHeading() - tagYawRadians; // Both are now in radians
-
-                    // Calculate Global Position. robotHeading is already in radians.
-                    double cosH = Math.cos(robotHeading);
-                    double sinH = Math.sin(robotHeading);
-
-                    // P_robot = P_tag - Rotate(H_r) * v_rt
-                    // v_rt = (r_x, r_y)
-                    // Rotate(H_r) * v_rt = (r_x cosH - r_y sinH, r_x sinH + r_y cosH)
-                    double global_dx = r_x * cosH - r_y * sinH;
-                    double global_dy = r_x * sinH + r_y * cosH;
-
-                    double cam_x = tagMapPose.getX() - global_dx;
-                    double cam_y = tagMapPose.getY() - global_dy;
-
-                    // Adjust for Camera Offset to get Robot Center
-                    double offX = CameraOffsets.FRONT_OFFSET_INCHES;
-                    double offY = -CameraOffsets.RIGHT_OFFSET_INCHES; // Right is -Y in Robot Frame
-
-                    // Robot Center = Camera Pos - Rotate(H) * Offset
-                    double robot_x = cam_x - (offX * cosH - offY * sinH);
-                    double robot_y = cam_y - (offX * sinH + offY * cosH);
-
-                    telemetry.update();
-                    return new Pose(robot_x, robot_y, robotHeading).getAsCoordinateSystem(PedroCoordinates.INSTANCE);
-                }
-            }
-        }
-        telemetry.update();
-        return null;
-    }
-
     private FiducialResult scanAprilTag() {
 
         // Set AprilTag pipeline
@@ -299,6 +217,41 @@ public class LimeLightAlign extends SubsystemBase {
         telemetry.update();
         // Optional: reduce telemetry update frequency
         telemetry.setMsTransmissionInterval(20);
+    }
 
+    public Optional<Pose> getRobotPosition() {
+        if (petroPathingPoseSupplier == null) {
+            Log.i(LOG_TAG, "petroPathingPoseSupplier is null");
+            return Optional.empty();
+        }
+
+        limelight.updateRobotOrientation(petroPathingPoseSupplier.get()
+                .getAsCoordinateSystem(FTCCoordinates.INSTANCE).getHeading());
+        LLResult scanResult = limelight.getLatestResult();
+
+        if (scanResult == null) {
+            Log.i(LOG_TAG, "no limelight scan result");
+            return Optional.empty();
+        }
+
+        Pose3D limelightReported = scanResult.getBotpose();
+        if (limelightReported == null) {
+            Log.i(LOG_TAG, "no limelight reported pose");
+            return Optional.empty();
+        }
+
+        Pose ftcPose = new Pose(
+                meterToInch(limelightReported.getPosition().x),
+                meterToInch(limelightReported.getPosition().y),
+                limelightReported.getOrientation().getYaw(AngleUnit.RADIANS),
+                FTCCoordinates.INSTANCE);
+        Log.i(AutonCommonConfigs.LOG_TAG, "limelight reported ftcPose = " + ftcPose);
+        Pose pedroPose = ftcPose.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
+        Log.i(AutonCommonConfigs.LOG_TAG, "limelight reported pedroPose = " + pedroPose);
+        return Optional.of(pedroPose);
+    }
+
+    private double meterToInch(double meter) {
+        return meter * 39.3701;
     }
 }

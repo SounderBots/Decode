@@ -6,7 +6,7 @@ import com.pedropathing.geometry.Pose;
 @Configurable
 public class BlueShortPositions implements Positions {
 
-    public static double rowStartX = 44;
+    public static double rowStartX = 52;
     public static double rowEndXLongIntake = 10;
     public static double rowEndXShortIntake = 16;
 
@@ -14,23 +14,23 @@ public class BlueShortPositions implements Positions {
     //first row is the row close to the trangle
     public static double firstRowStartY = 35;
     public static double secondRowStartY = 60.5;
-    public static double thirdRowStartY = 83;
+    public static double thirdRowStartY = 87;
 
     public static double rowEndYOffset = 0;
 
     public static double headingDegrees = 180;
 
-    public static double backShootAngleInDegrees = 110;
+    public static double backShootAngleInDegrees = 144.09;
     public static Pose backShootPosition = new Pose(56, 11, Math.toRadians(backShootAngleInDegrees));
     public static double frontShootAngleInDegrees = 136;
     public static Pose frontShootPosition = new Pose(57, 93, Math.toRadians(frontShootAngleInDegrees));
 
     public static Pose backStartPosition = new Pose(55.75, 8.16, Math.toRadians(90));
-    public static Pose frontStartPosition = new Pose(23.5, 125.75, Math.toRadians(140));
+    public static Pose frontStartPosition = new Pose(23.5, 125.75, Math.toRadians(backShootAngleInDegrees));
 
     public static Pose backFinishPosition = new Pose(48, 24, 0);
     public static Pose frontFinishPosition = new Pose(48, 120, 0);
-    public static double obeliskObserveHeadingInDegrees = 80;
+    public static double obeliskObserveHeadingInDegrees = 70;
     public static Pose obeliskObservePosition = frontShootPosition.withHeading(Math.toRadians(obeliskObserveHeadingInDegrees));
 
     public BlueShortPositions() {

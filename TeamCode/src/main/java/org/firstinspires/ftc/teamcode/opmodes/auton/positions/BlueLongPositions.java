@@ -12,7 +12,7 @@ public class BlueLongPositions implements Positions {
 
     // each row y increase 24 inches
     //first row is the row close to the trangle
-    public static double firstRowStartY = 35;
+    public static double firstRowStartY = 32;
     public static double secondRowStartY = 63;
     public static double thirdRowStartY = 83;
 
@@ -20,7 +20,7 @@ public class BlueLongPositions implements Positions {
 
     public static double headingDegrees = 180;
 
-    public static double backShootAngleInDegrees = 110;
+    public static double backShootAngleInDegrees = 111;
     public static Pose backShootPosition = new Pose(56, 11, Math.toRadians(backShootAngleInDegrees));
     public static double frontShootAngleInDegrees = 136;
     public static Pose frontShootPosition = new Pose(57, 93, Math.toRadians(frontShootAngleInDegrees));
@@ -31,7 +31,7 @@ public class BlueLongPositions implements Positions {
     public static Pose backFinishPosition = new Pose(48, 24, 0);
     public static Pose frontFinishPosition = new Pose(48, 120, 0);
 
-    public static double driveTrainIntakePowerScale = 1.5;
+    public static double driveTrainIntakePowerScale = 1.2;
 
     public static double longShootPreloadHeadingInDegree = 110;
     public static Pose longShootPreloadPosition = new Pose(56, 11, Math.toRadians(longShootPreloadHeadingInDegree));

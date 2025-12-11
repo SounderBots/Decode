@@ -7,9 +7,11 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandOpMode;
-import com.arcrobotics.ftclib.command.ParallelRaceGroup;
+import com.arcrobotics.ftclib.command.SounderBotParallelRaceGroup;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.bylazar.telemetry.PanelsTelemetry;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.teamcode.command.CommandFactory;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -37,8 +39,6 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
         super.reset();
     }
 
-    private static final String LOG_TAG = "AUTO_DEBUG";
-
     @Override
     public void waitForStart() {
         super.waitForStart();
@@ -52,6 +52,7 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
         telemetry = new DelegateOrVoidTelemetry(new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry(), PanelsTelemetry.INSTANCE.getFtcTelemetry()), emitTelemetry);
         GamepadEx driverGamePad = new GamepadEx(gamepad1);
         GamepadEx operatorGamePad = new GamepadEx(gamepad2);
+        logInitStep("telemetry, gamepads created");
         AutonDriveTrain driveTrain = new AutonDriveTrain(hardwareMap, telemetry);
         TransferChamber transferChamber = new TransferChamber(hardwareMap, operatorGamePad, telemetry) {
             @Override
@@ -63,25 +64,17 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
         RGBLightIndicator rgbLightIndicator = new RGBLightIndicator(hardwareMap, telemetry, "RGBIndicator");
         Shooter shooter = new Shooter(hardwareMap, operatorGamePad, telemetry, rgbLightIndicator, null, this.getClass().getSimpleName());
         Stopper stopper = new Stopper(hardwareMap, operatorGamePad, telemetry);
-        LimeLightAlign limeLightAlign = new LimeLightAlign(hardwareMap, telemetry);
-
-//
-
-        logInitStep("telemetry, gamepads created");
-
-//        DriverFeedback feedback = barebone ? null : new DriverFeedback(hardwareMap, driverGamePad, operatorGamePad, telemetry);
-//
-//        //LimeLight limeLight = barebone ? null : new LimeLight(hardwareMap, telemetry);
-//        DriveTrain driveTrain = new DriveTrain(hardwareMap, driverGamePad, telemetry, null, null);
-//        MultiAxisIntake intake = barebone ? null : new MultiAxisIntake(hardwareMap, operatorGamePad, telemetry, feedback);
-//        DeliveryPivot pivot = barebone ? null : new DeliveryPivot(hardwareMap, operatorGamePad, telemetry, feedback, null);
-//        DeliverySlider slider = barebone ? null : new DeliverySlider(hardwareMap, operatorGamePad, telemetry, feedback, pivot);
-////        SpecimenSlider specimenSlider = barebone ? null : new SpecimenSlider(hardwareMap, telemetry, feedback);
-////        SpecimenSliderClaw  specimenSliderClaw = barebone ? null : new SpecimenSliderClaw(hardwareMap, telemetry, feedback);
-//        SampleSweeper sampleSweeper = new SampleSweeper(hardwareMap, operatorGamePad, telemetry, feedback);
-//        Bumper bumper = new Bumper(hardwareMap);
+        Follower follower = Constants.createFollower(hardwareMap);
+        LimeLightAlign limeLightAlign = new LimeLightAlign(hardwareMap, telemetry)
+                .withHeadingSupplier(() -> {
+                    Pose followerPose = follower.getPose();
+//                    Log.i(AutonCommonConfigs.LOG_TAG, "follower reported pose: " + followerPose);
+                    return followerPose;
+                });
         logInitStep("all subsystems created");
-        commandFactory = new CommandFactory(telemetry, driveTrain, Constants.createFollower(hardwareMap), null, intake, shooter, transferChamber, stopper, limeLightAlign);
+
+
+        commandFactory = new CommandFactory(telemetry, driveTrain, follower, null, intake, shooter, transferChamber, stopper, limeLightAlign);
 
         logInitStep("command factory created");
         logInitStep("before setting intake");
@@ -89,7 +82,7 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
         logInitStep("After setting intake");
 
         // sleep 30s after createCommand is a fill gap command to avoid IndexOutOfBoundException
-        finalGroup = new ParallelRaceGroup(
+        finalGroup = new SounderBotParallelRaceGroup(
                 commandFactory.sleep(3200000),
                 createCommand().andThen(
                         commandFactory.sleep(3000000)
