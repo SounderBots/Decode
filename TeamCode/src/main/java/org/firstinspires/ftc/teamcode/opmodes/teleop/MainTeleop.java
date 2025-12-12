@@ -152,7 +152,7 @@ public class MainTeleop extends OpModeTemplate {
         driverGamepad.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
                 .whenPressed(new InstantCommand(intake::StopIntake, intake));
 
-        driverGamepad.getGamepadButton(GamepadKeys.Button.A)
+        driverGamepad.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
                 .whenPressed(
                         new SequentialCommandGroup(
                                 new InstantCommand(drive::AutoAlignOn, drive),
@@ -165,7 +165,7 @@ public class MainTeleop extends OpModeTemplate {
                         )
                 );
 
-        driverGamepad.getGamepadButton(GamepadKeys.Button.B)
+        driverGamepad.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER)
                 .whenPressed(
                         new InstantCommand(drive::AutoAlignOff, drive)
                 );

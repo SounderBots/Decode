@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 import org.firstinspires.ftc.teamcode.subsystems.scoring.Shooter;
 
-@TeleOp
+//@TeleOp
 public class ShooterTest extends OpModeTemplate {
 
     Shooter shooter;

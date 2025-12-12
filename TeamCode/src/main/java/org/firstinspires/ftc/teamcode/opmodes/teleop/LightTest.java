@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
 
-@TeleOp
+//@TeleOp
 public class LightTest extends OpModeTemplate {
 
     RGBLightIndicator light;

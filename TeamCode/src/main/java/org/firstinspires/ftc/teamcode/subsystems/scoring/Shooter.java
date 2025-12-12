@@ -277,7 +277,7 @@ public class Shooter extends SubsystemBase {
             double distance = position.distance();
 
             //y = 0.0101722*x^2 - 0.0456217*x + 672.12131
-            double tps = 0.0101722 * distance * distance - 0.0456217 * distance + 672.12131;
+            double tps = 0.0101722 * distance * distance - 0.0456217 * distance + 700; //672.12131;
             double tilt = getTilt(distance);
             return new AutoSpeed(tps, tilt);
         }

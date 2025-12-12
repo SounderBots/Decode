@@ -10,7 +10,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.opmodes.OpModeTemplate;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.AutonDriveTrain;
 
-@TeleOp
+//@TeleOp
 public class AutonDriveTrainCalibrate extends OpModeTemplate {
     private static final String LOG_TAG = AutonDriveTrainCalibrate.class.getSimpleName();
 
