@@ -20,7 +20,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     @Override
     protected Command createCommand() {
-        boolean shouldObserveObelisk = shootRange() == ShootRange.SHORT;
+        boolean shouldObserveObelisk = (shootRange() == ShootRange.SHORT) && getPositions().observeObelisk();
         Command command = moveAndShootPreloads()
                 .andThen(shouldObserveObelisk ? moveAndObserveObelisk() : commandFactory.noop())
                 .andThen(commandFactory.shootRows(shootRange(), getPositions()));

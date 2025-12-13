@@ -34,4 +34,16 @@ public interface Positions {
     default Pose getShortPreloadShootPosition() {
         return getShortShootPosition();
     }
+
+    default boolean openGateBetweenPPGAndPGP() {
+        return false;
+    }
+
+    default boolean observeObelisk() {
+        return true;
+    }
+
+    default double getOpenGateHeadingDegrees() {
+        return 0;
+    }
 }

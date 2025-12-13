@@ -111,4 +111,9 @@ public class RedShortPositions implements Positions {
     public Pose getPPGEndPosition() {
         return new Pose(rowEndXShortIntake, thirdRowStartY, Math.toRadians(intakeHeadingDegrees));
     }
+
+    @Override
+    public double getOpenGateHeadingDegrees() {
+        return 180;
+    }
 }

@@ -39,7 +39,8 @@ public class IntakeObeliskObservedRowsCommand extends SounderBotCommandBase{
             Log.i(LOG_TAG, "Rows to intake: " + rowsOnFloors.stream().map(RowsOnFloor::name).collect(Collectors.joining(", ")));
             result = commandFactory.noop();
             for (RowsOnFloor row : rowsOnFloors) {
-                result = result.andThen(commandFactory.intakeRowAndShoot(
+                result = result.andThen(commandFactory.openGateBetweenPPGAndPGP(positions, row))
+                    .andThen(commandFactory.intakeRowAndShoot(
                         getRowStartingPosition(row),
                         getRowEndingPosition(row),
                         getIntakeDriveTrainPower(),
@@ -47,7 +48,7 @@ public class IntakeObeliskObservedRowsCommand extends SounderBotCommandBase{
                         shootRange,
                         row,
                         true
-                ));
+                    ));
             }
             result.schedule();
             CommandRuntimeSharedProperties.observedObeliskShowedRow = RowsOnFloor.NOT_TRIED;

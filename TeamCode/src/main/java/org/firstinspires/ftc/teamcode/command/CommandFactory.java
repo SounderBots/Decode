@@ -13,6 +13,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.opmodes.auton.constants.AutonCommonConfigs;
 import org.firstinspires.ftc.teamcode.opmodes.auton.constants.RowsOnFloor;
 import org.firstinspires.ftc.teamcode.opmodes.auton.constants.ShootRange;
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.Side;
 import org.firstinspires.ftc.teamcode.opmodes.auton.positions.Positions;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.AutonDriveTrain;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
@@ -270,6 +271,17 @@ public class CommandFactory {
                 .andThen(driveToShootCommand) // move to shooting position
                 .andThen(shoot ? loadAndShoot(getShootCommand(shootRange), true) : noop()) // shoot row
                 ;
+    }
+
+    public Command openGateBetweenPPGAndPGP(Positions positions, RowsOnFloor row) {
+        if (!positions.openGateBetweenPPGAndPGP() && row != RowsOnFloor.PGP) {
+            return noop();
+        }
+
+        double openGateHeadingDegrees = positions.getOpenGateHeadingDegrees();
+        Pose openGateStartPos = positions.getPPGStartPosition().scale(.5).plus(positions.getPGPStartPosition().scale(.5)).withHeading(Math.toRadians(openGateHeadingDegrees));
+        Pose openGateEndPos = positions.getPPGEndPosition().scale(.5).plus(positions.getPGPEndPosition().scale(.5)).withHeading(Math.toRadians(openGateHeadingDegrees));
+        return moveTo(openGateStartPos, PathType.CURVE).andThen(moveTo(openGateEndPos, PathType.LINE)).andThen(sleep(1000));
     }
 
 }
