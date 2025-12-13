@@ -35,17 +35,10 @@ public class TransferChamber extends SubsystemBase {
 
         this.chamberMotor = new Motor(hardwareMap, "Intake");
 
-        highArtifactSensor = hardwareMap.get(DistanceSensor.class, "HighSensor");
         frontArtifactSensor = hardwareMap.get(DistanceSensor.class, "FrontSensor");
-
-        this.rightLauncher = hardwareMap.get(Servo.class,"RightLauncher");
-        this.leftLauncher = hardwareMap.get(Servo.class,"LeftLauncher");
-
-        this.feeder = hardwareMap.get(Servo.class,"Feeder");
 
         this.backRoller = hardwareMap.get(CRServo.class,"BackRoller");
         this.frontRoller = hardwareMap.get(CRServo.class,"FrontRoller");
-
     }
 
     @Override
