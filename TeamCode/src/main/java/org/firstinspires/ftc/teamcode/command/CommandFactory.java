@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.command;
 
+import android.util.Log;
+
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelDeadlineGroup;
@@ -32,6 +34,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class CommandFactory {
+
+    private static final String LOG_TAG = CommandFactory.class.getSimpleName();
 
     public static final int DEFAULT_TIME_OUT = 2000;
     final Telemetry telemetry;
@@ -286,12 +290,19 @@ public class CommandFactory {
             return noop();
         }
 
-        double openGateHeadingDegrees = positions.getOpenGateHeadingDegrees();
-        Pose openGateStartPos = positions.getPPGStartPosition().scale(.5).plus(positions.getPGPStartPosition().scale(.5)).withHeading(Math.toRadians(openGateHeadingDegrees));
-        openGateStartPos = openGateStartPos.withY(openGateStartPos.getY() + AutonCommonConfigs.openGateYOffset);
-        openGateStartPos = openGateStartPos.withX(openGateStartPos.getX() + AutonCommonConfigs.openGateXOffset);
-        Pose openGateEndPos = openGateStartPos.withX(positions.getGPPEndPosition().getX());
-        return moveTo(openGateStartPos, PathType.LINE).andThen(moveTo(openGateEndPos, PathType.LINE, .5, 2500)).andThen(moveTo(openGateStartPos, PathType.LINE, .7));
+        Pose openGateStartPos = positions.getOpenGateStartPosition();
+        Pose openGatePos = positions.getOpenGatePosition();
+        Log.i(LOG_TAG, "open gate start position: " + openGateStartPos);
+        Log.i(LOG_TAG, "open gate position: " + openGatePos);
+
+//        double openGateHeadingDegrees = positions.getOpenGateHeadingDegrees();
+//        Pose openGateStartPos = positions.getPPGStartPosition().scale(.5).plus(positions.getPGPStartPosition().scale(.5)).withHeading(Math.toRadians(openGateHeadingDegrees));
+//        openGateStartPos = openGateStartPos.withY(openGateStartPos.getY() + AutonCommonConfigs.openGateYOffset);
+//        openGateStartPos = openGateStartPos.withX(openGateStartPos.getX() + AutonCommonConfigs.openGateXOffset);
+//        Pose openGateEndPos = openGateStartPos.withX(positions.getGPPEndPosition().getX());
+        return moveTo(openGateStartPos, PathType.LINE)
+                .andThen(moveTo(openGatePos, PathType.LINE, .5, 2500))
+                .andThen(moveTo(openGateStartPos, PathType.LINE, .7));
     }
 
 }

@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.opmodes.auton.positions;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 
+import org.firstinspires.ftc.teamcode.opmodes.auton.constants.AutonCommonConfigs;
+
 @Configurable
 public interface Positions {
     public Pose getGPPStartPosition();
@@ -50,4 +52,17 @@ public interface Positions {
     Pose getGPPShootPosition();
     Pose getPGPShootPosition();
     Pose getPPGShootPosition();
+
+    default Pose getOpenGateStartPosition() {
+        double openGateHeadingDegrees = getOpenGateHeadingDegrees();
+        Pose openGateStartPos = getPPGStartPosition().scale(.5).plus(getPGPStartPosition().scale(.5)).withHeading(Math.toRadians(openGateHeadingDegrees));
+        return openGateStartPos
+                .withX(openGateStartPos.getX() + AutonCommonConfigs.openGateXOffset)
+                .withY(openGateStartPos.getY() + AutonCommonConfigs.openGateYOffset);
+
+    }
+
+    default Pose getOpenGatePosition() {
+        return getOpenGateStartPosition().withX(getGPPEndPosition().getX());
+    }
 }
