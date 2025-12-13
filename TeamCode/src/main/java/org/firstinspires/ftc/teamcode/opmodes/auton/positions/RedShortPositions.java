@@ -40,6 +40,9 @@ public class RedShortPositions implements Positions {
     public static double obeliskObserveHeadingInDegrees = 110;
     public static Pose obeliskObservePosition = frontShootPosition.withHeading(Math.toRadians(obeliskObserveHeadingInDegrees));
 
+    public static Pose GPPShootingPosition = new Pose(87, 93, Math.toRadians(frontShootAngleInDegrees));
+    public static Pose PGPShootingPosition = new Pose(77, 83, Math.toRadians(frontShootAngleInDegrees));
+
     public RedShortPositions() {
         backShootPosition = backShootPosition.setHeading(Math.toRadians(backShootAngleInDegrees));
         frontShootPosition = frontShootPosition.setHeading(Math.toRadians(frontShootAngleInDegrees));
@@ -115,5 +118,20 @@ public class RedShortPositions implements Positions {
     @Override
     public double getOpenGateHeadingDegrees() {
         return 180;
+    }
+
+    @Override
+    public Pose getGPPShootPosition() {
+        return GPPShootingPosition;
+    }
+
+    @Override
+    public Pose getPGPShootPosition() {
+        return PGPShootingPosition;
+    }
+
+    @Override
+    public Pose getPPGShootPosition() {
+        return getShortShootPosition();
     }
 }

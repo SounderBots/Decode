@@ -32,6 +32,8 @@ public class BlueShortPositions implements Positions {
     public static Pose frontFinishPosition = new Pose(48, (secondRowStartY + thirdRowStartY) / 2 + 10, Math.toRadians(0));
     public static double obeliskObserveHeadingInDegrees = 70;
     public static Pose obeliskObservePosition = frontShootPosition.withHeading(Math.toRadians(obeliskObserveHeadingInDegrees));
+    public static Pose GPPShootingPosition = new Pose(57, 93, Math.toRadians(frontShootAngleInDegrees));
+    public static Pose PGPShootingPosition = new Pose(67, 83, Math.toRadians(frontShootAngleInDegrees));
 
     public BlueShortPositions() {
         backShootPosition = backShootPosition.setHeading(Math.toRadians(backShootAngleInDegrees));
@@ -106,6 +108,21 @@ public class BlueShortPositions implements Positions {
     @Override
     public Pose getPPGEndPosition() {
         return new Pose(rowEndXShortIntake, thirdRowStartY + rowEndYOffset, Math.toRadians(headingDegrees));
+    }
+
+    @Override
+    public Pose getGPPShootPosition() {
+        return GPPShootingPosition;
+    }
+
+    @Override
+    public Pose getPGPShootPosition() {
+        return PGPShootingPosition;
+    }
+
+    @Override
+    public Pose getPPGShootPosition() {
+        return getShortShootPosition();
     }
 //    // each row y increase 24 inches
 //    public static Pose firstRowStartingPosition = new Pose(108, 32.16, Math.toRadians(0));

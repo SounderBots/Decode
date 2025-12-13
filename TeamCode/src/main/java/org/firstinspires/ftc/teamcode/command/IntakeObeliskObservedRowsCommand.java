@@ -50,7 +50,7 @@ public class IntakeObeliskObservedRowsCommand extends SounderBotCommandBase{
                         getRowStartingPosition(row),
                         getRowEndingPosition(row),
                         getIntakeDriveTrainPower(),
-                        getRowShootingPosition(),
+                        getRowShootingPosition(row),
                         shootRange,
                         row,
                         true
@@ -96,11 +96,19 @@ public class IntakeObeliskObservedRowsCommand extends SounderBotCommandBase{
         };
     }
 
-    protected Pose getRowShootingPosition() {
-        return switch (shootRange) {
-            case SHORT -> positions.getShortShootPosition();
-            case LONG -> positions.getLongShootPosition();
+    protected Pose getRowShootingPosition(RowsOnFloor row) {
+        return switch (row) {
+            case GPP -> positions.getGPPShootPosition();
+            case PGP -> positions.getPGPShootPosition();
+            default -> switch (shootRange) {
+                case SHORT -> positions.getShortShootPosition();
+                case LONG -> positions.getLongShootPosition();
+            };
         };
+//        return switch (shootRange) {
+//            case SHORT -> positions.getShortShootPosition();
+//            case LONG -> positions.getLongShootPosition();
+//        };
     }
 
     public double getIntakeDriveTrainPower() {

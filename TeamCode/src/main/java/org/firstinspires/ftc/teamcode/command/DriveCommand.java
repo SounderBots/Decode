@@ -135,6 +135,7 @@ public class DriveCommand extends SounderBotCommandBase {
     @Override
     public void end(boolean interrupted) {
         super.end(interrupted);
+        follower.holdPoint(follower.getPose());
         following = false;
         follower.breakFollowing();
         follower.setMaxPower(1);

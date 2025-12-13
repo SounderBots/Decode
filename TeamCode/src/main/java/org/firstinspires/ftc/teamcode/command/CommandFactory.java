@@ -86,6 +86,10 @@ public class CommandFactory {
         return new DriveCommand(follower, Arrays.asList(poses), PathType.CURVE, DriveCommand.DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, false).withLimeLight(limeLightAlign).withTelemetry(telemetry);
     }
 
+    public Command shooterAutoAlign() {
+        return new SingleExecuteCommand(shooter::AutoSpeedAndTilt);
+    }
+
     /**
      * turn on chamber roller then intake roller.
      */
@@ -239,10 +243,14 @@ public class CommandFactory {
     }
 
     public Command getShootCommand(ShootRange shootRange) {
-        return switch (shootRange) {
-            case LONG -> farShootWithScale(AutonCommonConfigs.backShootVelocityScale, AutonCommonConfigs.TiltServoLo);
-            case SHORT -> closeShootWithScale(AutonCommonConfigs.frontShootVelocityScale, AutonCommonConfigs.TiltServoHi);
-        };
+
+        return noop();
+//        return new SingleExecuteCommand(shooter::autonShoot);
+
+//        return switch (shootRange) {
+//            case LONG -> farShootWithScale(AutonCommonConfigs.backShootVelocityScale, AutonCommonConfigs.TiltServoLo);
+//            case SHORT -> closeShootWithScale(AutonCommonConfigs.frontShootVelocityScale, AutonCommonConfigs.TiltServoHi);
+//        };
     }
 
     protected Command intakeRowAndShoot(Pose rowStartingPosition, Pose rowEndingPosition, double intakeDriveTrainPower, Pose rowShootingPosition, ShootRange shootRange, RowsOnFloor row, boolean shoot) {
@@ -280,8 +288,10 @@ public class CommandFactory {
 
         double openGateHeadingDegrees = positions.getOpenGateHeadingDegrees();
         Pose openGateStartPos = positions.getPPGStartPosition().scale(.5).plus(positions.getPGPStartPosition().scale(.5)).withHeading(Math.toRadians(openGateHeadingDegrees));
-        Pose openGateEndPos = positions.getPPGEndPosition().scale(.5).plus(positions.getPGPEndPosition().scale(.5)).withHeading(Math.toRadians(openGateHeadingDegrees));
-        return moveTo(openGateStartPos, PathType.LINE).andThen(moveTo(openGateEndPos, PathType.LINE)).andThen(sleep(1000));
+        openGateStartPos = openGateStartPos.withY(openGateStartPos.getY() + AutonCommonConfigs.openGateYOffset);
+        openGateStartPos = openGateStartPos.withX(openGateStartPos.getX() + AutonCommonConfigs.openGateXOffset);
+        Pose openGateEndPos = openGateStartPos.withX(positions.getGPPEndPosition().getX());
+        return moveTo(openGateStartPos, PathType.LINE).andThen(moveTo(openGateEndPos, PathType.LINE, .5, 2500)).andThen(moveTo(openGateStartPos, PathType.LINE, .7));
     }
 
 }

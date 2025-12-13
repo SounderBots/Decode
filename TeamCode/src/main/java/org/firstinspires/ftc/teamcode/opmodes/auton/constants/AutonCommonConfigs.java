@@ -18,8 +18,10 @@ public class AutonCommonConfigs {
     public static double middleMoveSpeed = .7;
     public static double fastMoveSpeed = .7;
 
-    public static long shootWithLoadTimeoutInMS = 3750;
-    public static long shootWithoutLoadTimeoutInMS = 3500;
+    public static long shootWithLoadTimeoutInMS = 3000;
+    public static long shootWithoutLoadTimeoutInMS = 2000;
+    public static long openGateYOffset = 8;
+    public static long openGateXOffset = -10;
 
 //    public static Pose blueFrontFinishPosition = new Pose(48, 130, 0);
 //    public static Pose redFrontFinishPosition = new Pose(96, 120, 0);

@@ -124,6 +124,21 @@ public class BlueLongPositions implements Positions {
     public Pose getLongPreloadShootPosition() {
         return longShootPreloadPosition;
     }
+
+    @Override
+    public Pose getGPPShootPosition() {
+        return getLongShootPosition();
+    }
+
+    @Override
+    public Pose getPGPShootPosition() {
+        return getLongShootPosition();
+    }
+
+    @Override
+    public Pose getPPGShootPosition() {
+        return getLongShootPosition();
+    }
 //    // each row y increase 24 inches
 //    public static Pose firstRowStartingPosition = new Pose(108, 32.16, Math.toRadians(0));
 //    public static Pose secondRowStartingPosition = new Pose(108, 56.16, Math.toRadians(0));

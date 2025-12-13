@@ -270,7 +270,7 @@ public class Shooter extends SubsystemBase {
         public double Tilt;
     }
 
-    private AutoSpeed GetAutoSpeed() {
+    public AutoSpeed GetAutoSpeed() {
         AprilTagPosition position = this.limelight.getAprilTagPosition();
 
         if(position != null) {
@@ -288,13 +288,13 @@ public class Shooter extends SubsystemBase {
     private AutoSpeed GetAutoSpeed(double distance) {
         if(!isDemoMode) {
             if (distance < 44) {
-                return new AutoSpeed( 695, 0.95);
+                return new AutoSpeed( 695, 1);
             } else if (distance < 54) {
-                return new AutoSpeed( 695, 0.95);
+                return new AutoSpeed( 695, 1);
             } else if (distance < 64) {
-                return new AutoSpeed( 695, 0.9); // for auto short
+                return new AutoSpeed( 710, 0.95); // for auto short
             } else if (distance < 74) {
-                return new AutoSpeed( 720, 0.9);
+                return new AutoSpeed( 720, 0.95);
             } else if (distance < 84) {
                 return new AutoSpeed( 740, 0.95);
             } else if (distance < 94) {
@@ -380,6 +380,13 @@ public class Shooter extends SubsystemBase {
         this.liftServo.setPosition(ShooterConfig.TiltServoLo * elevationScale);
         this.targetVelocity = ShooterConfig.ShooterTpsHi * scale;
         this.lastTilt = ShooterConfig.TiltServoLo;
+    }
+
+    public void autonShoot() {
+        AutoSpeed targetSpeed = GetAutoSpeed();
+        this.liftServo.setPosition(targetSpeed.Tilt);
+        this.targetVelocity = targetSpeed.Tps;
+
     }
 
     public boolean isReadyToShoot() {

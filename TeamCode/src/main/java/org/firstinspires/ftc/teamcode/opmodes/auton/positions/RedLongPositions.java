@@ -118,4 +118,19 @@ public class RedLongPositions implements Positions {
     public Pose getLongPreloadShootPosition() {
         return longShootPreloadPosition;
     }
+
+    @Override
+    public Pose getGPPShootPosition() {
+        return getLongShootPosition();
+    }
+
+    @Override
+    public Pose getPGPShootPosition() {
+        return getLongShootPosition();
+    }
+
+    @Override
+    public Pose getPPGShootPosition() {
+        return getLongShootPosition();
+    }
 }

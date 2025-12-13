@@ -46,4 +46,8 @@ public interface Positions {
     default double getOpenGateHeadingDegrees() {
         return 0;
     }
+
+    Pose getGPPShootPosition();
+    Pose getPGPShootPosition();
+    Pose getPPGShootPosition();
 }

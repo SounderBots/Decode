@@ -21,15 +21,17 @@ public abstract class AutonBase extends CommandAutoOpMode {
     @Override
     protected Command createCommand() {
         boolean shouldObserveObelisk = (shootRange() == ShootRange.SHORT) && getPositions().observeObelisk();
-        Command command = moveAndShootPreloads()
+        Command command = commandFactory.shooterAutoAlign().andThen(moveAndShootPreloads())
                 .andThen(shouldObserveObelisk ? moveAndObserveObelisk() : commandFactory.noop())
                 .andThen(commandFactory.shootRows(shootRange(), getPositions()));
         return moveOutAtLastSecond(command);
     }
 
+
     protected Command moveAndShootPreloads() {
         return commandFactory
                 .startMove(getStartingPosition(), getPreloadShootPosition(), PathType.LINE, .6) // move to shooting position
+                .andThen(commandFactory.sleep(500))
                 .andThen(commandFactory.loadAndShoot(getShootCommand(), false)) // shoot preloads
                 ;
     }
