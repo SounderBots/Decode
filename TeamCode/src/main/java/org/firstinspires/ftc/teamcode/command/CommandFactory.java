@@ -292,8 +292,10 @@ public class CommandFactory {
 
         Pose openGateStartPos = positions.getOpenGateStartPosition();
         Pose openGatePos = positions.getOpenGatePosition();
+        Pose openGateExitPos = positions.getOpenGateExitPosition();
         Log.i(LOG_TAG, "open gate start position: " + openGateStartPos);
         Log.i(LOG_TAG, "open gate position: " + openGatePos);
+        Log.i(LOG_TAG, "open gate exit position: " + openGateExitPos);
 
 //        double openGateHeadingDegrees = positions.getOpenGateHeadingDegrees();
 //        Pose openGateStartPos = positions.getPPGStartPosition().scale(.5).plus(positions.getPGPStartPosition().scale(.5)).withHeading(Math.toRadians(openGateHeadingDegrees));
@@ -302,7 +304,7 @@ public class CommandFactory {
 //        Pose openGateEndPos = openGateStartPos.withX(positions.getGPPEndPosition().getX());
         return moveTo(openGateStartPos, PathType.LINE)
                 .andThen(moveTo(openGatePos, PathType.LINE, .5, 2500))
-                .andThen(moveTo(openGateStartPos, PathType.LINE, .7));
+                .andThen(moveTo(openGateExitPos, PathType.LINE, .7));
     }
 
 }

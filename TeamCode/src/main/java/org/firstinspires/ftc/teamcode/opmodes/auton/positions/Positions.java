@@ -65,4 +65,8 @@ public interface Positions {
     default Pose getOpenGatePosition() {
         return getOpenGateStartPosition().withX(getGPPEndPosition().getX());
     }
+
+    default Pose getOpenGateExitPosition() {
+        return getOpenGateStartPosition();
+    }
 }

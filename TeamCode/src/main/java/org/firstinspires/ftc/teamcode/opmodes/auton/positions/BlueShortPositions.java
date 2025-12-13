@@ -35,6 +35,10 @@ public class BlueShortPositions implements Positions {
     public static Pose GPPShootingPosition = new Pose(57, 93, Math.toRadians(frontShootAngleInDegrees));
     public static Pose PGPShootingPosition = new Pose(67, 83, Math.toRadians(frontShootAngleInDegrees));
 
+    public static Pose openGateStartPosition = new Pose(0, 0, 0);
+    public static Pose openGatePosition = new Pose(0, 0, 0);
+    public static Pose openGateExitPosition = new Pose(0, 0, 0);
+
     public BlueShortPositions() {
         backShootPosition = backShootPosition.setHeading(Math.toRadians(backShootAngleInDegrees));
         frontShootPosition = frontShootPosition.setHeading(Math.toRadians(frontShootAngleInDegrees));
@@ -131,6 +135,21 @@ public class BlueShortPositions implements Positions {
 //
 //    public static Pose firstRowEndingPosition = new Pose(118, 32.16, Math.toRadians(0));
 //    public static Pose secondRowEndingPosition = new Pose(118, 56.16, Math.toRadians(0));
+
+    @Override
+    public Pose getOpenGateStartPosition() {
+        return Positions.super.getOpenGateStartPosition();
+    }
+
+    @Override
+    public Pose getOpenGatePosition() {
+        return Positions.super.getOpenGatePosition();
+    }
+
+    @Override
+    public Pose getOpenGateExitPosition() {
+        return Positions.super.getOpenGateExitPosition();
+    }
 //    public static Pose thirdRowEndingPosition = new Pose(118, 80.16, Math.toRadians(0));
 
 }

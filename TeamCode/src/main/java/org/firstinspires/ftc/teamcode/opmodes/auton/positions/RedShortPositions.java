@@ -20,6 +20,9 @@ public class RedShortPositions implements Positions {
 
     public static double backShootAngleInDegrees = 70;
     public static Pose backShootPosition = new Pose(88, 11, Math.toRadians(backShootAngleInDegrees));
+    public static Pose openGateStartPosition = new Pose(0, 0, 0);
+    public static Pose openGatePosition = new Pose(0, 0, 0);
+    public static Pose openGateExitPosition = new Pose(0, 0, 0);
 
     @Override
     public Pose getShortPreloadShootPosition() {
@@ -133,5 +136,20 @@ public class RedShortPositions implements Positions {
     @Override
     public Pose getPPGShootPosition() {
         return getShortShootPosition();
+    }
+
+    @Override
+    public Pose getOpenGateStartPosition() {
+        return Positions.super.getOpenGateStartPosition();
+    }
+
+    @Override
+    public Pose getOpenGatePosition() {
+        return Positions.super.getOpenGatePosition();
+    }
+
+    @Override
+    public Pose getOpenGateExitPosition() {
+        return Positions.super.getOpenGateExitPosition();
     }
 }
