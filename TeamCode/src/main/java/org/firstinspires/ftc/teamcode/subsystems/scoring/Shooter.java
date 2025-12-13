@@ -47,9 +47,9 @@ public class Shooter extends SubsystemBase {
 
         public static double IntakeMaxPower = 1;
 
-        public static double TiltServoHi = 1;
+        public static double TiltServoHi = 0.95;
 
-        public static double TiltServoLo = 1;
+        public static double TiltServoLo = 0.95;
 
         public static double FlywheelAcceptableTpsError = 40;
 
@@ -288,36 +288,36 @@ public class Shooter extends SubsystemBase {
     private AutoSpeed GetAutoSpeed(double distance) {
         if(!isDemoMode) {
             /*
-            44 - 730, 1 
-            54 - 710, 1
-            64 - 720, 1
-            74 - 740, 1
-            84 - 750, 1
-            94 - 760, 1
-            114 - 810, 1
-            124 - 825, 1
-            134 - 845, 1
+            44 - 730, 0.95
+            54 - 710, 0.95
+            64 - 720, 0.95
+            74 - 740, 0.95
+            84 - 740, 0.95
+            94 - 760, 0.95
+            114 - 810, 0.95
+            124 - 825, 0.95
+            134 - 845, 0.95
             */
             if (distance < 44) {
-                return new AutoSpeed(730, 1);
+                return new AutoSpeed(730, 0.95);
             } else if (distance < 54) {
-                return new AutoSpeed(710, 1);
+                return new AutoSpeed(710, 0.95);
             } else if (distance < 64) {
-                return new AutoSpeed(720, 1); // for auto short
+                return new AutoSpeed(720, 0.95); // for auto short
             } else if (distance < 74) {
-                return new AutoSpeed(740, 1);
+                return new AutoSpeed(740, 0.95);
             } else if (distance < 84) {
-                return new AutoSpeed(750, 1);
+                return new AutoSpeed(750, 0.95);
             } else if (distance < 94) {
-                return new AutoSpeed(760, 1);
+                return new AutoSpeed(760, 0.95);
             } else if (distance < 114) {
-                return new AutoSpeed(810, 1);
+                return new AutoSpeed(810, 0.95);
             } else if (distance < 124) {
-                return new AutoSpeed(825, 1);
+                return new AutoSpeed(825, 0.95);
             } else if (distance < 134) {
-                return new AutoSpeed(845, 1);
+                return new AutoSpeed(845, 0.95);
             } else {
-                return new AutoSpeed(720, 1);
+                return new AutoSpeed(720, 0.95);
             }
         } else {
             // Exaggerated tilt to help in demos
