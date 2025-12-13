@@ -273,15 +273,15 @@ public class CommandFactory {
                 ;
     }
 
-    public Command openGateBetweenPPGAndPGP(Positions positions, RowsOnFloor row) {
-        if (!positions.openGateBetweenPPGAndPGP() && row != RowsOnFloor.PGP) {
+    public Command openGateBetweenPPGAndPGP(Positions positions) {
+        if (!positions.openGateBetweenPPGAndPGP()) {
             return noop();
         }
 
         double openGateHeadingDegrees = positions.getOpenGateHeadingDegrees();
         Pose openGateStartPos = positions.getPPGStartPosition().scale(.5).plus(positions.getPGPStartPosition().scale(.5)).withHeading(Math.toRadians(openGateHeadingDegrees));
         Pose openGateEndPos = positions.getPPGEndPosition().scale(.5).plus(positions.getPGPEndPosition().scale(.5)).withHeading(Math.toRadians(openGateHeadingDegrees));
-        return moveTo(openGateStartPos, PathType.CURVE).andThen(moveTo(openGateEndPos, PathType.LINE)).andThen(sleep(1000));
+        return moveTo(openGateStartPos, PathType.LINE).andThen(moveTo(openGateEndPos, PathType.LINE)).andThen(sleep(1000));
     }
 
 }

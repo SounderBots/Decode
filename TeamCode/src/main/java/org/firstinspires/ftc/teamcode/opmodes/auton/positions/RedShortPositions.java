@@ -33,7 +33,7 @@ public class RedShortPositions implements Positions {
     public static Pose frontStartPosition = new Pose(120.5, 125.75, Math.toRadians(frontShootAngleInDegrees));
 
     public static Pose backFinishPosition = new Pose(96, 24, 0);
-    public static Pose frontFinishPosition = new Pose(96, (secondRowStartY + thirdRowStartY) / 2, 180);
+    public static Pose frontFinishPosition = new Pose(96, (secondRowStartY + thirdRowStartY) / 2, Math.toRadians(180));
 
     public static double preloadShootAngleInDegree = 42;
 

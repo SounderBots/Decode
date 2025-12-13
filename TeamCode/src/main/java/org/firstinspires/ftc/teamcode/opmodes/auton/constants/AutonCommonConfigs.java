@@ -7,11 +7,11 @@ public class AutonCommonConfigs {
     public static final String LOG_TAG = "AUTO_DEBUG";
     public static double DrivetrainIntakePower = .6; //The speed the robot moves when intaking, not intake wheel speed
     public static double backShootVelocityScale = 1.2;
-    public static double frontShootVelocityScale = 1.00;
+    public static double frontShootVelocityScale = .9;
 
     public static long betweenShootDelays = 400;
 
-    public static double TiltServoHi = .75;
+    public static double TiltServoHi = .85;
     public static double TiltServoLo = 1;
 
     public static double slowMoveSpeed = .6;

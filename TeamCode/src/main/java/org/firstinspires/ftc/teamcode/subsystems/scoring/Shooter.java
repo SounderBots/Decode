@@ -292,7 +292,7 @@ public class Shooter extends SubsystemBase {
             } else if (distance < 54) {
                 return new AutoSpeed( 695, 0.95);
             } else if (distance < 64) {
-                return new AutoSpeed( 695, 0.9);
+                return new AutoSpeed( 695, 0.9); // for auto short
             } else if (distance < 74) {
                 return new AutoSpeed( 720, 0.9);
             } else if (distance < 84) {
