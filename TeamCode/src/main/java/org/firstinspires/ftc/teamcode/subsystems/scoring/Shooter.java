@@ -277,60 +277,59 @@ public class Shooter extends SubsystemBase {
             double distance = position.distance();
 
             //y = 0.0101722*x^2 - 0.0456217*x + 672.12131
-            double tps = 0.0101722 * distance * distance - 0.0456217 * distance + 700; //672.12131;
-            double tilt = getTilt(distance);
-            return new AutoSpeed(tps, tilt);
+//            double tps = 0.0101722 * distance * distance - 0.0456217 * distance + 700; //672.12131;
+//            double tilt = getTilt(distance);
+            return this.GetAutoSpeed(distance);
         }
 
         return new AutoSpeed(695, 0.9);
     }
 
-    private double getTilt(double distance) {
-
+    private AutoSpeed GetAutoSpeed(double distance) {
         if(!isDemoMode) {
             if (distance < 44) {
-                return 0.95;
+                return new AutoSpeed( 695, 0.95);
             } else if (distance < 54) {
-                return 0.95;
+                return new AutoSpeed( 695, 0.95);
             } else if (distance < 64) {
-                return 0.9;
+                return new AutoSpeed( 695, 0.9);
             } else if (distance < 74) {
-                return 0.9;
+                return new AutoSpeed( 720, 0.9);
             } else if (distance < 84) {
-                return 0.95;
+                return new AutoSpeed( 740, 0.95);
             } else if (distance < 94) {
-                return 0.95;
+                return new AutoSpeed( 760, 0.95);
             } else if (distance < 114) {
-                return 0.95;
+                return new AutoSpeed( 805, 0.95);
             } else if (distance < 124) {
-                return 0.95;
+                return new AutoSpeed( 825, 0.95);
             } else if (distance < 134) {
-                return 0.95;
+                return new AutoSpeed( 845, 0.95);
             } else {
-                return .95;
+                return new AutoSpeed( 695, 0.95);
             }
         } else {
             // Exaggerated tilt to help in demos
             if (distance < 44) {
-                return 0.95;
+                return new AutoSpeed( 695, 0.95);
             } else if (distance < 54) {
-                return 0.85;
+                return new AutoSpeed( 695, 0.85);
             } else if (distance < 64) {
-                return 0.75;
+                return new AutoSpeed( 695, 0.75);
             } else if (distance < 74) {
-                return 0.65;
+                return new AutoSpeed( 695, 0.65);
             } else if (distance < 84) {
-                return 0.55;
+                return new AutoSpeed( 695, 0.55);
             } else if (distance < 94) {
-                return 0.45;
+                return new AutoSpeed( 695, 0.45);
             } else if (distance < 114) {
-                return 0.45;
+                return new AutoSpeed( 695, 0.45);
             } else if (distance < 124) {
-                return 0.45;
+                return new AutoSpeed( 695, 0.45);
             } else if (distance < 134) {
-                return 0.45;
+                return new AutoSpeed( 695, 0.45);
             } else {
-                return .85;
+                return new AutoSpeed( 695, 0.85);
             }
         }
     }
