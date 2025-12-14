@@ -67,6 +67,10 @@ public class TransferChamber extends SubsystemBase {
         chamberMotor.set(MainTeleop.MainTeleopConfig.ChamberIntakePower);
     }
 
+    public void TurnOnAutonChamberRoller() {
+        chamberMotor.set(MainTeleop.MainTeleopConfig.AutonChamberIntakePower);
+    }
+
     public void TurnOnSlowChamberRoller() {
         Log.i("Chamber Roller", "Turning on slow roller");
         chamberMotor.set(MainTeleop.MainTeleopConfig.ChamberIntakeSlowPower);

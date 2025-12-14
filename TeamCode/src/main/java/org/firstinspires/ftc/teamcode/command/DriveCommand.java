@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.command;
 
 import android.util.Log;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
@@ -23,8 +24,11 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Configurable
 public class DriveCommand extends SounderBotCommandBase {
 
+    public static double stopVError = .5;
+    private boolean considerStopVError = false;
     private static final String LOG_TAG = DriveCommand.class.getSimpleName();
     final Follower follower;
     PathChain pathChain;
@@ -68,6 +72,11 @@ public class DriveCommand extends SounderBotCommandBase {
         return this;
     }
 
+    public DriveCommand considerStopVError() {
+        this.considerStopVError = true;
+        return this;
+    }
+
     @Override
     public void initialize() {
         super.initialize();
@@ -90,6 +99,8 @@ public class DriveCommand extends SounderBotCommandBase {
             pathChain = follower.pathBuilder()
                     .addPath(getCurve(startPos))
                     .setLinearHeadingInterpolation(startPos.getHeading(), end.getHeading())
+                    .setGlobalDeceleration(AutonCommonConfigs.driveTrainGlobalDeceleration)
+                    .setBrakingStart(AutonCommonConfigs.driveTrainGBreakingStart)
                     .build();
             if (tempMaxPower > 0) {
                 follower.setMaxPower(tempMaxPower);
@@ -129,7 +140,11 @@ public class DriveCommand extends SounderBotCommandBase {
 
     @Override
     protected boolean isTargetReached() {
-        return following && !(follower.isBusy());
+        boolean result = following && (!follower.isBusy());
+        if (considerStopVError) {
+            result = result && (follower.getVelocity().getMagnitude() < stopVError);
+        }
+        return result;
     }
 
     @Override

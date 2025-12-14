@@ -30,4 +30,9 @@ public class RedShootFromBack extends AutonBase {
     protected ShootRange shootRange() {
         return ShootRange.LONG;
     }
+
+    @Override
+    boolean isDriveConsiderStopError() {
+        return true;
+    }
 }

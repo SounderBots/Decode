@@ -23,6 +23,11 @@ public class BlueShootFromBack extends AutonBase {
     }
 
     @Override
+    boolean isDriveConsiderStopError() {
+        return true;
+    }
+
+    @Override
     protected ShootRange shootRange() {
         return ShootRange.LONG;
     }

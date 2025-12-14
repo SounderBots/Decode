@@ -20,17 +20,17 @@ public class RedShortPositions implements Positions {
 
     public static double backShootAngleInDegrees = 70;
     public static Pose backShootPosition = new Pose(88, 11, Math.toRadians(backShootAngleInDegrees));
-    public static Pose openGateStartPosition = new Pose(0, 0, 0);
-    public static Pose openGatePosition = new Pose(0, 0, 0);
-    public static Pose openGateExitPosition = new Pose(0, 0, 0);
+    public static Pose openGateStartPosition = new Pose(116, 79.75, Math.toRadians(180));
+    public static Pose openGatePosition = new Pose(146.0, 79.75, Math.toRadians(180));
+    public static Pose openGateExitPosition = new Pose(90, 79.75, Math.toRadians(0));
 
     @Override
     public Pose getShortPreloadShootPosition() {
         return getShortShootPosition().withHeading(Math.toRadians(preloadShootAngleInDegree));
     }
 
-    public static double frontShootAngleInDegrees = 35.91;
-    public static Pose frontShootPosition = new Pose(87, 93, Math.toRadians(frontShootAngleInDegrees));
+    public static double frontShootAngleInDegrees = 36.5;
+    public static Pose frontShootPosition = new Pose(92, 98.0, Math.toRadians(frontShootAngleInDegrees));
 
     public static Pose backStartPosition = new Pose(87.5, 8.3, Math.toRadians(90));
     public static Pose frontStartPosition = new Pose(120.5, 125.75, Math.toRadians(frontShootAngleInDegrees));
@@ -44,7 +44,7 @@ public class RedShortPositions implements Positions {
     public static Pose obeliskObservePosition = frontShootPosition.withHeading(Math.toRadians(obeliskObserveHeadingInDegrees));
 
     public static Pose GPPShootingPosition = new Pose(87, 93, Math.toRadians(frontShootAngleInDegrees));
-    public static Pose PGPShootingPosition = new Pose(77, 83, Math.toRadians(frontShootAngleInDegrees));
+    public static Pose PGPShootingPosition = new Pose(83, 89, Math.toRadians(frontShootAngleInDegrees));
 
     public RedShortPositions() {
         backShootPosition = backShootPosition.setHeading(Math.toRadians(backShootAngleInDegrees));
@@ -140,16 +140,16 @@ public class RedShortPositions implements Positions {
 
     @Override
     public Pose getOpenGateStartPosition() {
-        return Positions.super.getOpenGateStartPosition();
+        return openGateStartPosition;
     }
 
     @Override
     public Pose getOpenGatePosition() {
-        return Positions.super.getOpenGatePosition();
+        return openGatePosition;
     }
 
     @Override
     public Pose getOpenGateExitPosition() {
-        return Positions.super.getOpenGateExitPosition();
+        return openGateExitPosition;
     }
 }

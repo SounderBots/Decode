@@ -18,8 +18,15 @@ import org.firstinspires.ftc.teamcode.opmodes.auton.positions.RedShortPositions;
 
 public abstract class AutonBase extends CommandAutoOpMode {
 
+    boolean isDriveConsiderStopError () {
+        return false;
+    }
+
     @Override
     protected Command createCommand() {
+        if (isDriveConsiderStopError()) {
+            commandFactory.driveTrainConsiderVError();
+        }
         boolean shouldObserveObelisk = (shootRange() == ShootRange.SHORT) && getPositions().observeObelisk();
         Command command = commandFactory.shooterAutoAlign().andThen(moveAndShootPreloads())
                 .andThen(shouldObserveObelisk ? moveAndObserveObelisk() : commandFactory.noop())
@@ -30,7 +37,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     protected Command moveAndShootPreloads() {
         return commandFactory
-                .startMove(getStartingPosition(), getPreloadShootPosition(), PathType.LINE, .6) // move to shooting position
+                .startMove(getStartingPosition(), getPreloadShootPosition(), PathType.LINE, AutonCommonConfigs.middleMoveSpeed) // move to shooting position
                 .andThen(commandFactory.sleep(500))
                 .andThen(commandFactory.loadAndShoot(getShootCommand(), false)) // shoot preloads
                 ;

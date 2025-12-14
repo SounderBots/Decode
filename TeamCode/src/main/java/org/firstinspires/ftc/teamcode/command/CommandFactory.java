@@ -43,6 +43,8 @@ public class CommandFactory {
     final Follower follower;
     final TeleopDrivetrain teleopDrivetrain;
 
+    boolean driveConsiderVError = false;
+
     @Getter
     final Intake intake;
 
@@ -66,28 +68,40 @@ public class CommandFactory {
 //        return new MecanumMoveToTargetCommand(autonDriveTrain.getMecanumDrive(), autonDriveTrain.getPinpoint(), new Pose2d(targetXInches, targetYInches, new Rotation2d(Math.toRadians(targetHeadingInDegrees))), 2000);
 //    }
 
+    public CommandFactory driveTrainConsiderVError() {
+        driveConsiderVError = true;
+        return this;
+    }
+
     public Command sleep(long durationMs) {
         return new WaitCommand(durationMs);
     }
 
     public Command startMove(Pose start, Pose end, PathType pathType, double maxPower) {
-        return new DriveCommand(follower, start, end, pathType, true).withTempMaxPower(maxPower).withLimeLight(limeLightAlign).withTelemetry(telemetry);
+        return setupStopConsiderError(new DriveCommand(follower, start, end, pathType, true).withTempMaxPower(maxPower).withLimeLight(limeLightAlign).withTelemetry(telemetry));
     }
 
     public Command moveTo(Pose end, PathType pathType) {
-        return new DriveCommand(follower, end, pathType, false).withLimeLight(limeLightAlign).withTelemetry(telemetry);
+        return setupStopConsiderError(new DriveCommand(follower, end, pathType, false).withLimeLight(limeLightAlign).withTelemetry(telemetry));
     }
 
     public Command moveTo(Pose end, PathType pathType, double maxPower) {
-        return new DriveCommand(follower, end, pathType, false).withTempMaxPower(maxPower).withLimeLight(limeLightAlign).withTelemetry(telemetry);
+        return setupStopConsiderError(new DriveCommand(follower, end, pathType, false).withTempMaxPower(maxPower).withLimeLight(limeLightAlign).withTelemetry(telemetry));
     }
 
     public Command moveTo(Pose end, PathType pathType, double maxPower, long timeoutMs) {
-        return new DriveCommand(follower, List.of(follower.getPose(), end), pathType, timeoutMs, TimeUnit.MILLISECONDS, false).withTempMaxPower(maxPower).withLimeLight(limeLightAlign).withTelemetry(telemetry);
+        return setupStopConsiderError(new DriveCommand(follower, List.of(follower.getPose(), end), pathType, timeoutMs, TimeUnit.MILLISECONDS, false).withTempMaxPower(maxPower).withLimeLight(limeLightAlign).withTelemetry(telemetry));
     }
 
     public Command moveToCurve(double maxPower, Pose... poses) {
-        return new DriveCommand(follower, Arrays.asList(poses), PathType.CURVE, DriveCommand.DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, false).withLimeLight(limeLightAlign).withTelemetry(telemetry);
+        return setupStopConsiderError(new DriveCommand(follower, Arrays.asList(poses), PathType.CURVE, DriveCommand.DEFAULT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, false).withLimeLight(limeLightAlign).withTelemetry(telemetry));
+    }
+
+    public Command setupStopConsiderError(Command command) {
+        if (command instanceof DriveCommand driveCommand && driveConsiderVError) {
+            return driveCommand.considerStopVError();
+        }
+        return command;
     }
 
     public Command shooterAutoAlign() {
@@ -159,7 +173,7 @@ public class CommandFactory {
     }
 
     public Command turnOnChamberRoller() {
-        return new SingleExecuteCommand(transferChamber::TurnOnChamberRoller);
+        return new SingleExecuteCommand(transferChamber::TurnOnSlowChamberRoller);
     }
 
     public Command turnOnSlowChamberRoller() {
@@ -277,7 +291,7 @@ public class CommandFactory {
 
         Command driveToShootCommand = isSecondRow
                 ? moveTo(rowStartingPosition, PathType.LINE, driveMaxPower).andThen(moveTo(rowShootingPosition, PathType.LINE, driveMaxPower))
-                : moveTo(rowShootingPosition, PathType.LINE, driveMaxPower);
+                : moveTo(rowShootingPosition, PathType.LINE, AutonCommonConfigs.fastMoveSpeed);
         return moveTo(rowStartingPosition, PathType.CURVE, driveMaxPower)
                 .andThen(intakeRow(rowEndingPosition, intakeDriveTrainPower)) // intake row (3 balls)
                 .andThen(driveToShootCommand) // move to shooting position
@@ -302,9 +316,9 @@ public class CommandFactory {
 //        openGateStartPos = openGateStartPos.withY(openGateStartPos.getY() + AutonCommonConfigs.openGateYOffset);
 //        openGateStartPos = openGateStartPos.withX(openGateStartPos.getX() + AutonCommonConfigs.openGateXOffset);
 //        Pose openGateEndPos = openGateStartPos.withX(positions.getGPPEndPosition().getX());
-        return moveTo(openGateStartPos, PathType.LINE)
-                .andThen(moveTo(openGatePos, PathType.LINE, .5, 2500))
-                .andThen(moveTo(openGateExitPos, PathType.LINE, .7));
+        return moveTo(openGateStartPos, PathType.LINE, AutonCommonConfigs.middleMoveSpeed)
+                .andThen(moveTo(openGatePos, PathType.LINE, AutonCommonConfigs.middleMoveSpeed, 1500))
+                .andThen(moveTo(openGateExitPos, PathType.LINE, AutonCommonConfigs.fastMoveSpeed));
     }
 
 }

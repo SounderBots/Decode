@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.scoring;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDFController;
@@ -20,6 +22,7 @@ import org.firstinspires.ftc.teamcode.util.WifiMonitor;
 
 public class Shooter extends SubsystemBase {
 
+    private static final String LOG_TAG = Shooter.class.getSimpleName();
     Telemetry telemetry;
     GamepadEx gamepad;
     MotorEx leftFlywheel, rightFlywheel;
@@ -273,16 +276,20 @@ public class Shooter extends SubsystemBase {
     public AutoSpeed GetAutoSpeed() {
         AprilTagPosition position = this.limelight.getAprilTagPosition();
 
+        AutoSpeed result = new AutoSpeed(695, 0.9);
         if(position != null) {
             double distance = position.distance();
 
             //y = 0.0101722*x^2 - 0.0456217*x + 672.12131
 //            double tps = 0.0101722 * distance * distance - 0.0456217 * distance + 700; //672.12131;
 //            double tilt = getTilt(distance);
-            return this.GetAutoSpeed(distance);
+            result = this.GetAutoSpeed(distance);
         }
 
-        return new AutoSpeed(695, 0.9);
+        Log.i(LOG_TAG, "AutoSpeed: tps = " + result.Tps + ", tile: " + result.Tilt);
+        telemetry.addData("AutoSpeed", "tps = " + result.Tps + ", tile: " + result.Tilt);
+        telemetry.update();
+        return result;
     }
 
     private AutoSpeed GetAutoSpeed(double distance) {

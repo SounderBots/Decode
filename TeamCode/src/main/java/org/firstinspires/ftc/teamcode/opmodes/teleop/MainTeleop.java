@@ -55,6 +55,8 @@ public class MainTeleop extends OpModeTemplate {
 
         public static double ChamberIntakePower = -0.9;
 
+        public static double AutonChamberIntakePower = -0.85;
+
         public static double ChamberIntakeSlowPower = -0.8;
     }
 

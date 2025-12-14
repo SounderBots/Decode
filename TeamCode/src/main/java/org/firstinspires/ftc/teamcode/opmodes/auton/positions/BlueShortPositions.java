@@ -22,8 +22,8 @@ public class BlueShortPositions implements Positions {
 
     public static double backShootAngleInDegrees = 144.09;
     public static Pose backShootPosition = new Pose(56, 11, Math.toRadians(backShootAngleInDegrees));
-    public static double frontShootAngleInDegrees = 136;
-    public static Pose frontShootPosition = new Pose(57, 93, Math.toRadians(frontShootAngleInDegrees));
+    public static double frontShootAngleInDegrees = 137.0;
+    public static Pose frontShootPosition = new Pose(54.0, 96.0, Math.toRadians(frontShootAngleInDegrees));
 
     public static Pose backStartPosition = new Pose(55.75, 8.16, Math.toRadians(90));
     public static Pose frontStartPosition = new Pose(23.5, 125.75, Math.toRadians(backShootAngleInDegrees));
@@ -33,11 +33,11 @@ public class BlueShortPositions implements Positions {
     public static double obeliskObserveHeadingInDegrees = 70;
     public static Pose obeliskObservePosition = frontShootPosition.withHeading(Math.toRadians(obeliskObserveHeadingInDegrees));
     public static Pose GPPShootingPosition = new Pose(57, 93, Math.toRadians(frontShootAngleInDegrees));
-    public static Pose PGPShootingPosition = new Pose(67, 83, Math.toRadians(frontShootAngleInDegrees));
+    public static Pose PGPShootingPosition = new Pose(62.0, 88.0, Math.toRadians(frontShootAngleInDegrees));
 
-    public static Pose openGateStartPosition = new Pose(0, 0, 0);
-    public static Pose openGatePosition = new Pose(0, 0, 0);
-    public static Pose openGateExitPosition = new Pose(0, 0, 0);
+    public static Pose openGateStartPosition = new Pose(30, 78, 0);
+    public static Pose openGatePosition = new Pose(10.0, 78, 0);
+    public static Pose openGateExitPosition = new Pose(55.0, 78, 180);
 
     public BlueShortPositions() {
         backShootPosition = backShootPosition.setHeading(Math.toRadians(backShootAngleInDegrees));
@@ -138,17 +138,17 @@ public class BlueShortPositions implements Positions {
 
     @Override
     public Pose getOpenGateStartPosition() {
-        return Positions.super.getOpenGateStartPosition();
+        return openGateStartPosition;
     }
 
     @Override
     public Pose getOpenGatePosition() {
-        return Positions.super.getOpenGatePosition();
+        return openGatePosition;
     }
 
     @Override
     public Pose getOpenGateExitPosition() {
-        return Positions.super.getOpenGateExitPosition();
+        return openGateExitPosition;
     }
 //    public static Pose thirdRowEndingPosition = new Pose(118, 80.16, Math.toRadians(0));
 

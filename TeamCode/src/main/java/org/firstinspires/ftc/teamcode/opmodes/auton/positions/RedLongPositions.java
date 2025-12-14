@@ -19,7 +19,7 @@ public class RedLongPositions implements Positions {
     public static double intakeHeadingDegrees = 0;
 
     public static double backShootAngleInDegrees = 68;
-    public static Pose backShootPosition = new Pose(88, 11, Math.toRadians(backShootAngleInDegrees));
+    public static Pose backShootPosition = new Pose(88, 13, Math.toRadians(backShootAngleInDegrees));
     public static double frontShootAngleInDegrees = 42;
     public static Pose frontShootPosition = new Pose(87, 93, Math.toRadians(frontShootAngleInDegrees));
 

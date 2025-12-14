@@ -37,4 +37,9 @@ public class RedFromBackDelayShoot extends AutonBase {
                 .andThen(intakeRowAndShoot(RowsOnFloor.GPP, false))
                 .andThen(commandFactory.moveTo(new Pose(107, 35, 0), PathType.LINE, 0.7));
     }
+
+    @Override
+    boolean isDriveConsiderStopError() {
+        return true;
+    }
 }
