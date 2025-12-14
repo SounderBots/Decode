@@ -27,7 +27,6 @@ public class TransferChamber extends SubsystemBase {
 
     Servo rightLauncher, leftLauncher, feeder;
 
-    CRServo backRoller, frontRoller;
 
     public TransferChamber(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry) {
         this.gamepad = gamepad;
@@ -35,17 +34,7 @@ public class TransferChamber extends SubsystemBase {
 
         this.chamberMotor = new Motor(hardwareMap, "Intake");
 
-        highArtifactSensor = hardwareMap.get(DistanceSensor.class, "HighSensor");
         frontArtifactSensor = hardwareMap.get(DistanceSensor.class, "FrontSensor");
-
-        this.rightLauncher = hardwareMap.get(Servo.class,"RightLauncher");
-        this.leftLauncher = hardwareMap.get(Servo.class,"LeftLauncher");
-
-        this.feeder = hardwareMap.get(Servo.class,"Feeder");
-
-        this.backRoller = hardwareMap.get(CRServo.class,"BackRoller");
-        this.frontRoller = hardwareMap.get(CRServo.class,"FrontRoller");
-
     }
 
     @Override
@@ -168,17 +157,11 @@ public class TransferChamber extends SubsystemBase {
     }
 
     public void TopRollersOuttake() {
-        this.backRoller.setPower(1);
-        this.frontRoller.setPower(-1);
     }
 
     public void TopRollersIntake() {
-        this.backRoller.setPower(-1);
-        this.frontRoller.setPower(1);
     }
 
     public void TopRollersStop() {
-        this.backRoller.setPower(0);
-        this.frontRoller.setPower(0);
     }
 }
