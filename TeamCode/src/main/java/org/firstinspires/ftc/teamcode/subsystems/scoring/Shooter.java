@@ -55,7 +55,7 @@ public class Shooter extends SubsystemBase {
 
         public static long AutoSpeedCheckSkipCount = 10;
 
-        }
+    }
 
     @Config
     public static class ShooterControlConfig {
@@ -90,10 +90,10 @@ public class Shooter extends SubsystemBase {
     boolean isDemoMode = false;
 
     public static final String[] LOG_COLUMNS = {
-        "ShooterReady", "IsShooting", "TargetTPS", "Tilt", 
-        "RightTPS", "RightError", "RightPowerPID", "RightPowerFF", "RightPower", 
-        "LeftTPS", "LeftError", "LeftPowerPID", "LeftPowerFF", "LeftPower",
-        "RSSI", "LinkSpeed"
+            "ShooterReady", "IsShooting", "TargetTPS", "Tilt",
+            "RightTPS", "RightError", "RightPowerPID", "RightPowerFF", "RightPower",
+            "LeftTPS", "LeftError", "LeftPowerPID", "LeftPowerFF", "LeftPower",
+            "RSSI", "LinkSpeed"
     };
 
     public Shooter(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator) {
@@ -307,7 +307,7 @@ public class Shooter extends SubsystemBase {
             } else if (distance < 74) {
                 return new AutoSpeed(740, 0.95);
             } else if (distance < 84) {
-                return new AutoSpeed(750, 0.95);
+                return new AutoSpeed(740, 0.95);
             } else if (distance < 94) {
                 return new AutoSpeed(760, 0.95);
             } else if (distance < 114) {
