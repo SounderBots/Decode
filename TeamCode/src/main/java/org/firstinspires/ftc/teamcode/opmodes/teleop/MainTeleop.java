@@ -155,7 +155,7 @@ public class MainTeleop extends OpModeTemplate {
                 .whenPressed(new InstantCommand(intake::StopIntake, intake));
 
         driverGamepad.getGamepadButton(GamepadKeys.Button.A)
-                .whenPressed(new InstantCommand(drive::ToggleBrakeCoast, drive));
+                .whenPressed(new InstantCommand(intake::ToggleOuttake, intake));
 
         driverGamepad.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
                 .whenPressed(

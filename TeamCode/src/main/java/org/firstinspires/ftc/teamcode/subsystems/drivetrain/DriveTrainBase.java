@@ -65,14 +65,14 @@ public class DriveTrainBase extends SubsystemBase {
         isBrakeMode = !isBrakeMode;
     }
 
-    protected void SetBrakeMode() {
+    public void SetBrakeMode() {
         backLeft.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         frontLeft.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
     }
 
-    protected void SetCoastMode() {
+    public void SetCoastMode() {
         backLeft.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         backRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         frontLeft.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
