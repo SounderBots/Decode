@@ -191,6 +191,7 @@ public class Shooter extends SubsystemBase {
                 lastTilt = expectedSpeed.Tilt;
             }
 
+
             counter = 0;
         }
 
