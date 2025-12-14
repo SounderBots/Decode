@@ -54,6 +54,31 @@ public class DriveTrainBase extends SubsystemBase {
 
     }
 
+    private boolean isBrakeMode = true;
+
+    public void ToggleBrakeCoast() {
+        if(isBrakeMode) {
+            SetCoastMode();
+        } else {
+            SetBrakeMode();
+        }
+        isBrakeMode = !isBrakeMode;
+    }
+
+    protected void SetBrakeMode() {
+        backLeft.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        frontLeft.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+    }
+
+    protected void SetCoastMode() {
+        backLeft.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        backRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        frontLeft.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        frontRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+    }
+
     void resetMotor(Motor motor) {
         motor.stopAndResetEncoder();
         motor.resetEncoder();
