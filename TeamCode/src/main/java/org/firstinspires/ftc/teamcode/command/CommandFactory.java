@@ -5,7 +5,6 @@ import android.util.Log;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelDeadlineGroup;
-import com.arcrobotics.ftclib.command.ParallelRaceGroup;
 import com.arcrobotics.ftclib.command.SounderBotParallelRaceGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.pedropathing.follower.Follower;
@@ -15,7 +14,6 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.opmodes.auton.constants.AutonCommonConfigs;
 import org.firstinspires.ftc.teamcode.opmodes.auton.constants.RowsOnFloor;
 import org.firstinspires.ftc.teamcode.opmodes.auton.constants.ShootRange;
-import org.firstinspires.ftc.teamcode.opmodes.auton.constants.Side;
 import org.firstinspires.ftc.teamcode.opmodes.auton.positions.Positions;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.AutonDriveTrain;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.TeleopDrivetrain;
@@ -126,17 +124,17 @@ public class CommandFactory {
         return sleep(1000);
     }
 
-    /**
-     * intake 3 or 2 seconds timeout
-     */
-    public Command intakeRowDeadline() {
-        return new ParallelRaceGroup(
-                sleep(2000),
-                waitFrontArtifact()
-                        .andThen(waitFrontArtifact())
-                        .andThen(waitFrontArtifact())
-        );
-    }
+//    /**
+//     * intake 3 or 2 seconds timeout
+//     */
+//    public Command intakeRowDeadline() {
+//        return new ParallelRaceGroup(
+//                sleep(2000),
+//                waitFrontArtifact()
+//                        .andThen(waitFrontArtifact())
+//                        .andThen(waitFrontArtifact())
+//        );
+//    }
 
     public Command waitFrontArtifact() {
         return new WaitUntilFrontArtifactIntaken(telemetry, transferChamber).withTelemetry(telemetry)
