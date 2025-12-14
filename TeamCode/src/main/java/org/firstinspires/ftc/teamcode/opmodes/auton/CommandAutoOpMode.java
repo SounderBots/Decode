@@ -7,7 +7,6 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandOpMode;
-import com.arcrobotics.ftclib.command.SounderBotParallelRaceGroup;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
@@ -62,7 +61,6 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
         };
         Intake intake = new Intake(hardwareMap, operatorGamePad, telemetry);
         RGBLightIndicator rgbLightIndicator = new RGBLightIndicator(hardwareMap, telemetry, "RGBIndicator");
-        Shooter shooter = new Shooter(hardwareMap, operatorGamePad, telemetry, rgbLightIndicator, null, this.getClass().getSimpleName());
         Stopper stopper = new Stopper(hardwareMap, operatorGamePad, telemetry);
         Follower follower = Constants.createFollower(hardwareMap);
         LimeLightAlign limeLightAlign = new LimeLightAlign(hardwareMap, telemetry)
@@ -71,6 +69,8 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
 //                    Log.i(AutonCommonConfigs.LOG_TAG, "follower reported pose: " + followerPose);
                     return followerPose;
                 });
+        Shooter shooter = new Shooter(hardwareMap, operatorGamePad, telemetry, rgbLightIndicator, limeLightAlign, this.getClass().getSimpleName());
+        shooter.AutoSpeedAndTilt();
         logInitStep("all subsystems created");
 
 
@@ -82,11 +82,12 @@ public abstract class CommandAutoOpMode extends CommandOpMode {
         logInitStep("After setting intake");
 
         // sleep 30s after createCommand is a fill gap command to avoid IndexOutOfBoundException
-        finalGroup = new SounderBotParallelRaceGroup(
-                commandFactory.sleep(3200000),
-                createCommand().andThen(
-                        commandFactory.sleep(3000000)
-                ));
+//        finalGroup = new SounderBotParallelRaceGroup(
+//                commandFactory.sleep(3200000),
+//                createCommand().andThen(
+//                        commandFactory.sleep(3000000)
+//                ));
+        finalGroup = createCommand();
         logInitStep("Commands created");
     }
 

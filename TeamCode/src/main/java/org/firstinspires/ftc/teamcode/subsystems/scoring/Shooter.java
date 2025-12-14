@@ -33,6 +33,8 @@ public class Shooter extends SubsystemBase {
     DataLogger logger;
     WifiMonitor wifiMonitor;
 
+    AutoSpeed lastKnownNonDefault;
+
     @Config
     public static class ShooterConfig {
 
@@ -150,7 +152,7 @@ public class Shooter extends SubsystemBase {
 
         if(MainTeleop.Telemetry.Shooter) {
             telemetry.addData("target velocity", this.targetVelocity);
-            telemetry.addData("target tilt", this.targetVelocity);
+            telemetry.addData("target tilt", this.lastTilt);
 
             telemetry.addData("right velocity", 0);
             telemetry.addData("right error", 0);
@@ -166,6 +168,9 @@ public class Shooter extends SubsystemBase {
 
             telemetry.update();
         }
+
+        Log.i(LOG_TAG, "target velocity: " + this.targetVelocity);
+        Log.i(LOG_TAG, "target tilt: " + this.lastTilt);
     }
 
     boolean wasLastColorGreen = false;
@@ -181,8 +186,10 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         super.periodic();
 
+        Log.i(LOG_TAG, "AutoSpeed = " + autoSpeed + ", counter = " + counter);
         // Don't check limelight every time.
         if(autoSpeed && counter++ == ShooterConfig.AutoSpeedCheckSkipCount) {
+
             AutoSpeed expectedSpeed = GetAutoSpeed();
             targetVelocity = expectedSpeed.Tps;
 
@@ -193,6 +200,8 @@ public class Shooter extends SubsystemBase {
 
 
             counter = 0;
+        } else {
+            Log.i(LOG_TAG, "AutoSpeed is not used");
         }
 
         double rightVelocity = rightFlywheel.getVelocity();
@@ -260,6 +269,9 @@ public class Shooter extends SubsystemBase {
 
             telemetry.update();
         }
+
+        Log.i(LOG_TAG, "target velocity: " + this.targetVelocity);
+        Log.i(LOG_TAG, "tilt: " + this.lastTilt);
     }
 
     public class AutoSpeed {
@@ -272,12 +284,24 @@ public class Shooter extends SubsystemBase {
         public double Tps;
 
         public double Tilt;
+        public boolean isDefault() {
+            return Tps == 695 && Tilt == 0.9;
+        }
     }
 
     public AutoSpeed GetAutoSpeed() {
+        AutoSpeed result = new AutoSpeed(695, 0.9);
+        if (this.limelight == null) {
+            Log.i(LOG_TAG, "No limelight");
+            if (lastKnownNonDefault != null) {
+                Log.i(LOG_TAG, "Using last known non-default: Tps = " + lastKnownNonDefault.Tps + ", tilt = " + lastKnownNonDefault.Tilt);
+                return lastKnownNonDefault;
+            }
+            return result;
+        }
         AprilTagPosition position = this.limelight.getAprilTagPosition();
 
-        AutoSpeed result = new AutoSpeed(695, 0.9);
+
         if(position != null) {
             double distance = position.distance();
 
@@ -285,15 +309,20 @@ public class Shooter extends SubsystemBase {
 //            double tps = 0.0101722 * distance * distance - 0.0456217 * distance + 700; //672.12131;
 //            double tilt = getTilt(distance);
             result = this.GetAutoSpeed(distance);
+            lastKnownNonDefault = result;
+        } else {
+            if (lastKnownNonDefault != null) {
+                Log.i(LOG_TAG, "Using last known non-default: Tps = " + lastKnownNonDefault.Tps + ", tilt = " + lastKnownNonDefault.Tilt);
+                return lastKnownNonDefault;
+            }
         }
 
         Log.i(LOG_TAG, "AutoSpeed: tps = " + result.Tps + ", tile: " + result.Tilt);
-        telemetry.addData("AutoSpeed", "tps = " + result.Tps + ", tile: " + result.Tilt);
-        telemetry.update();
         return result;
     }
 
     private AutoSpeed GetAutoSpeed(double distance) {
+        Log.i(LOG_TAG, "input distance for GetAutoSpeed = " + distance);
         if(!isDemoMode) {
             /*
             44 - 730, 0.95
@@ -412,7 +441,7 @@ public class Shooter extends SubsystemBase {
         return wasLastColorGreen;
     }
 
-    boolean autoSpeed = false;
+    boolean autoSpeed = true;
 
     public void AutoSpeedAndTilt() {
         if(this.limelight != null) {

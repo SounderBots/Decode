@@ -111,16 +111,16 @@ public class DriveCommand extends SounderBotCommandBase {
             follower.update();
             DrawingToPanel.drawDebug(follower);
         }
-        try {
-            Arrays.stream(follower.debug()).forEach(followerDebugLine -> {
-                telemetry.addData("Follower", followerDebugLine);
-            });
-        } catch (Exception e) {
-            Log.e(LOG_TAG, "follower.debug throws exception with message: " + e.getMessage());
-            telemetry.addData("Follower", "Error from follower.debug: " + e.getMessage());
-            // do nothing
-        }
-        telemetry.update();
+//        try {
+//            Arrays.stream(follower.debug()).forEach(followerDebugLine -> {
+//                telemetry.addData("Follower", followerDebugLine);
+//            });
+//        } catch (Exception e) {
+//            Log.e(LOG_TAG, "follower.debug throws exception with message: " + e.getMessage());
+//            telemetry.addData("Follower", "Error from follower.debug: " + e.getMessage());
+//            // do nothing
+//        }
+//        telemetry.update();
     }
 
     protected BezierCurve getCurve(Pose startPos) {

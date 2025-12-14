@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes.auton;
 
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.ParallelDeadlineGroup;
-import com.arcrobotics.ftclib.command.ParallelRaceGroup;
+import com.arcrobotics.ftclib.command.SounderBotParallelRaceGroup;
 import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.teamcode.command.PathType;
@@ -75,7 +75,7 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     protected Command intakeRow(RowsOnFloor row) {
         Pose rowEndPose = getRowEndingPosition(row);
-        return new ParallelRaceGroup(
+        return new SounderBotParallelRaceGroup(
                 commandFactory.moveTo(rowEndPose, PathType.LINE, getIntakeDriveTrainPower()),
                 commandFactory.intakeRow()
         );
