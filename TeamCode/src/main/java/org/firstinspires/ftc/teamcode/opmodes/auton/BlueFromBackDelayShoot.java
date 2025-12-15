@@ -38,7 +38,7 @@ public class BlueFromBackDelayShoot extends AutonBase {
         Pose startPosition = getStartingPosition();
         return commandFactory.sleep(delayInMS)
                 .andThen(moveAndShootPreloads())
-                .andThen(intakeRowAndShoot(RowsOnFloor.GPP, false))
+                .andThen(intakeRowAndShoot(RowsOnFloor.GPP, true))
                 .andThen(commandFactory.moveTo((new Pose(37, 35, 0)), PathType.LINE, 0.7));
     }
 
