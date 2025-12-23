@@ -49,6 +49,36 @@ def parse_log_file(file_path):
         print(f"Error parsing CSV: {e}")
         return None
 
+def find_ramp_start(df_slice, power_col, max_p):
+    """Finds the timestamp where the motor power started ramping up."""
+    peak_idx = df_slice[power_col][::-1].idxmax()
+    slice_indices = df_slice.index.tolist()
+    try:
+        loc = slice_indices.index(peak_idx)
+    except ValueError:
+        loc = len(slice_indices) - 1
+        
+    ramp_start_time = df_slice.loc[peak_idx]['Timestamp']
+    slope_threshold = 0.02
+    
+    for i in range(loc, 0, -1):
+        curr_idx = slice_indices[i]
+        prev_idx = slice_indices[i-1]
+        curr_val = df_slice.loc[curr_idx, power_col]
+        prev_val = df_slice.loc[prev_idx, power_col]
+        diff = curr_val - prev_val
+        
+        if diff < -0.01: 
+            ramp_start_time = df_slice.loc[curr_idx]['Timestamp']
+            break
+        if diff < slope_threshold:
+            if curr_val < (max_p - 0.1):
+                ramp_start_time = df_slice.loc[curr_idx]['Timestamp']
+                break
+        
+        ramp_start_time = df_slice.loc[prev_idx]['Timestamp']
+    return ramp_start_time
+
 def detect_shot_times_in_window(df, start_time, end_time, tps_cols, drop_threshold_pct=0.10):
     """
     Detects ALL actual shot times within a given window by looking for significant TPS drops
@@ -120,36 +150,7 @@ def detect_shot_times_in_window(df, start_time, end_time, tps_cols, drop_thresho
                         
                         if max_p - min_p > 0.4:
                             # Backwards Slope Logic
-                            # Find the LAST peak (closest to the drop) to avoid finding the previous shot's peak
-                            peak_idx = pre_drop_slice[power_col][::-1].idxmax()
-                            slice_indices = pre_drop_slice.index.tolist()
-                            try:
-                                loc = slice_indices.index(peak_idx)
-                            except ValueError:
-                                loc = len(slice_indices) - 1
-                                
-                            ramp_start_time = pre_drop_slice.loc[peak_idx]['Timestamp']
-                            slope_threshold = 0.02
-                            
-                            for i in range(loc, 0, -1):
-                                curr_idx = slice_indices[i]
-                                prev_idx = slice_indices[i-1]
-                                curr_val = pre_drop_slice.loc[curr_idx, power_col]
-                                prev_val = pre_drop_slice.loc[prev_idx, power_col]
-                                diff = curr_val - prev_val
-                                
-                                if diff < -0.01: 
-                                    ramp_start_time = pre_drop_slice.loc[curr_idx]['Timestamp']
-                                    break
-                                if diff < slope_threshold:
-                                    # Only stop if we are NOT on the peak plateau
-                                    if curr_val < (max_p - 0.1):
-                                        ramp_start_time = pre_drop_slice.loc[curr_idx]['Timestamp']
-                                        break
-                                    # Else continue walking back across the plateau
-                                
-                                ramp_start_time = pre_drop_slice.loc[prev_idx]['Timestamp']
-                            
+                            ramp_start_time = find_ramp_start(pre_drop_slice, power_col, max_p)
                             event_detected_times.append(ramp_start_time)
                         else:
                             # Fallback: Last minimum
@@ -191,6 +192,69 @@ def detect_shot_times_in_window(df, start_time, end_time, tps_cols, drop_thresho
         print(f"Warning: Error detecting shot times: {e}")
         return []
 
+def setup_cursor(fig, axes, df, tps_cols):
+    """Sets up the interactive hover cursor."""
+    vlines = [ax.axvline(x=df['Timestamp'].iloc[0], color='gray', linestyle='--', alpha=0.8, visible=False) for ax in axes]
+    
+    annot = axes[0].annotate("", xy=(0,0), xytext=(10,10), textcoords="offset points",
+                            bbox=dict(boxstyle="round", fc="w", alpha=0.9),
+                            arrowprops=dict(arrowstyle="->"), zorder=10)
+    annot.set_visible(False)
+    
+    last_idx = [None]
+
+    def update_annot(idx):
+        x = df['Timestamp'].iloc[idx]
+        text_lines = [f"Time: {x:.3f}s", f"Target: {df['TargetTPS'].iloc[idx]:.0f}"]
+        for tps_col in tps_cols:
+            val = df[tps_col].iloc[idx]
+            text_lines.append(f"{tps_col}: {val:.0f}")
+            prefix = tps_col[:-3]
+            err_col = f"{prefix}Error"
+            if err_col in df.columns:
+                text_lines.append(f"{prefix}Err: {df[err_col].iloc[idx]:.0f}")
+        annot.xy = (x, df['TargetTPS'].iloc[idx])
+        annot.set_text("\n".join(text_lines))
+
+    def hover(event):
+        should_show = (event.key == 'control') and (event.inaxes in axes)
+        if not should_show:
+            if annot.get_visible():
+                annot.set_visible(False)
+                for vl in vlines: vl.set_visible(False)
+                fig.canvas.draw_idle()
+            return
+
+        target_x = event.xdata
+        timestamps = df['Timestamp'].values
+        idx = timestamps.searchsorted(target_x)
+        if idx >= len(timestamps): idx = len(timestamps) - 1
+        if idx > 0:
+            if abs(timestamps[idx] - target_x) > abs(timestamps[idx-1] - target_x):
+                idx = idx - 1
+        
+        if idx != last_idx[0]:
+            last_idx[0] = idx
+            x_pos = timestamps[idx]
+            for vl in vlines:
+                vl.set_xdata([x_pos, x_pos])
+                vl.set_visible(True)
+            
+            update_annot(idx)
+            
+            ylim = axes[0].get_ylim()
+            y_range = ylim[1] - ylim[0]
+            y_val = df['TargetTPS'].iloc[idx]
+            if (y_val - ylim[0]) / y_range > 0.8:
+                 annot.xytext = (10, -100)
+            else:
+                 annot.xytext = (10, 10)
+
+            annot.set_visible(True)
+            fig.canvas.draw_idle()
+
+    fig.canvas.mpl_connect("motion_notify_event", hover)
+
 def analyze_pid(file_path, save_plot=False):
     print(f"Analyzing {file_path}...")
     df = parse_log_file(file_path)
@@ -217,7 +281,8 @@ def analyze_pid(file_path, save_plot=False):
 
     # --- Loop Frequency Analysis ---
     # Calculate time differences between consecutive rows
-    dt = df['Timestamp'].diff().dropna()
+    dt_full = df['Timestamp'].diff().fillna(0.01)
+    dt = dt_full[1:] # Drop the first element (filler) for stats
     
     if not dt.empty:
         # Convert to milliseconds for easier reading
@@ -292,9 +357,7 @@ def analyze_pid(file_path, save_plot=False):
             print(f"Max Latency:    {lat_max:.0f} ms")
             print(f"Mean Latency:   {lat_mean:.0f} ms")
 
-    df_full = df.copy() # Save full data for metrics
-
-    # Check if ANY motor has power columns to decide on 3rd subplot
+    # Check if ANY motor has power columns to decide on 2nd subplot
     # We do a quick check for likely power columns
     has_power = False
     for tps_col in tps_cols:
@@ -329,12 +392,11 @@ def analyze_pid(file_path, save_plot=False):
     active_ready_mask = ready_mask & (df['TargetTPS'].abs() > 100)
 
     # --- Stability Analysis (Calculation & Printing) ---
-    dt = df['Timestamp'].diff().fillna(0.01)
     unstable_mask = pd.Series(False, index=df.index)
     
     for tps_col in tps_cols:
         velocity = df[tps_col]
-        acceleration = velocity.diff() / dt
+        acceleration = velocity.diff() / dt_full
         accel_threshold = df['TargetTPS'].abs() * 2.0 
         accel_threshold = accel_threshold.clip(lower=500)
         is_unstable = acceleration.abs() > accel_threshold
@@ -478,21 +540,15 @@ def analyze_pid(file_path, save_plot=False):
             y_max_plot += 100
             y_min_plot -= 100
 
-        if 'ShooterReady' in plot_df.columns:
-            ready_times = plot_df[plot_df['ShooterReady'] == 1]['Timestamp']
-            if not ready_times.empty:
-                plt.vlines(x=ready_times, ymin=y_min_plot, ymax=y_max_plot, 
-                           colors='green', alpha=0.1, label='Ready Signal')
-
         if 'IsShooting' in plot_df.columns:
             shooting_times = plot_df[plot_df['IsShooting'] == 1]['Timestamp']
             if not shooting_times.empty:
                 plt.vlines(x=shooting_times, ymin=y_min_plot, ymax=y_max_plot, 
                            colors='purple', linestyles='--', linewidth=1.5, alpha=0.5, label='Shoot Cmd')
-                
+
         if shots_to_plot:
             plt.vlines(x=shots_to_plot, ymin=y_min_plot, ymax=y_max_plot, 
-                       colors='red', linestyles='-', linewidth=2, alpha=0.6, label='Actual Shot')
+                       colors='green', linestyles='-', linewidth=2, alpha=0.6, label='Actual Shot')
             
             # Plot Unstable Zones (Filtered)
             first_unstable_plotted = False
@@ -502,14 +558,12 @@ def analyze_pid(file_path, save_plot=False):
                     plt.axvspan(t_shot - 0.05, t_shot + 0.05, color='orange', alpha=0.5, label=label)
                     first_unstable_plotted = True
 
-
-
         motor_plot_data = [] # Store data for discrepancy fill
 
         for i, tps_col in enumerate(tps_cols):
             # Determine prefix (e.g., "Right" from "RightTPS", or "" from "ActualTPS")
             prefix = tps_col[:-3] 
-            color = color_map.get(tps_col, palette[i % len(palette)])
+            color = color_map[tps_col]
             
             # Determine associated columns
             error_col = f"{prefix}Error"
@@ -546,13 +600,8 @@ def analyze_pid(file_path, save_plot=False):
         
         # Highlight Discrepancy if exactly 2 motors
         if len(motor_plot_data) == 2:
-            # Calculate Discrepancy Metrics
             col1_name, col1_data = motor_plot_data[0]
             col2_name, col2_data = motor_plot_data[1]
-            
-            discrepancy = (col1_data - col2_data).abs()
-            max_diff = discrepancy.max()
-            mean_diff = discrepancy.mean()
             
             # Filter for when target is non-zero to avoid idle noise
             # AND Filter for Shooting Phase (TPS Dropping)
@@ -596,7 +645,7 @@ def analyze_pid(file_path, save_plot=False):
                              color='red', alpha=0.3, label='L/R Sync Mismatch')
 
         plt.sca(axes[0])
-        plt.title(f'Velocity Tracking: {os.path.basename(file_path)} - {title_suffix}\nOrange Zone = Unstable Shot | Red Zone = Sync Mismatch')
+        plt.title(f'Velocity Tracking: {os.path.basename(file_path)} - {title_suffix}')
         plt.ylabel('Velocity (TPS)')
         plt.legend(loc='lower right')
         plt.grid(True, which='both', linestyle='--', alpha=0.7)
@@ -619,91 +668,7 @@ def analyze_pid(file_path, save_plot=False):
         plt.tight_layout()
 
         # --- Interactive Cursor (Optimized) ---
-        # Use a vertical line that snaps to data points to avoid constant redraws
-        
-        # Use plot_df for cursor alignment
-        vlines = [ax.axvline(x=plot_df['Timestamp'].iloc[0], color='gray', linestyle='--', alpha=0.8, visible=False) for ax in axes]
-        
-        # Annotation box on the first subplot
-        annot = axes[0].annotate("", xy=(0,0), xytext=(10,10), textcoords="offset points",
-                                bbox=dict(boxstyle="round", fc="w", alpha=0.9),
-                                arrowprops=dict(arrowstyle="->"), zorder=10)
-        annot.set_visible(False)
-        
-        # Store last index to prevent unnecessary redraws
-        last_idx = [None]
-
-        def update_annot(idx, _plot_df=plot_df): # Capture plot_df in closure
-            x = _plot_df['Timestamp'].iloc[idx]
-            
-            # Build text with info from all motors
-            text_lines = [f"Time: {x:.3f}s", f"Target: {_plot_df['TargetTPS'].iloc[idx]:.0f}"]
-            
-            for tps_col in tps_cols:
-                val = _plot_df[tps_col].iloc[idx]
-                text_lines.append(f"{tps_col}: {val:.0f}")
-                
-                # Add Error info
-                prefix = tps_col[:-3]
-                err_col = f"{prefix}Error"
-                if err_col in _plot_df.columns:
-                    text_lines.append(f"{prefix}Err: {_plot_df[err_col].iloc[idx]:.0f}")
-                    
-            annot.xy = (x, _plot_df['TargetTPS'].iloc[idx])
-            annot.set_text("\n".join(text_lines))
-
-        def hover(event, _plot_df=plot_df, _vlines=vlines, _last_idx=last_idx):
-            # Performance: Only show if Left Ctrl is pressed AND mouse is inside axes
-            should_show = (event.key == 'control') and (event.inaxes in axes)
-
-            if not should_show:
-                if annot.get_visible():
-                    annot.set_visible(False)
-                    for vl in _vlines: vl.set_visible(False)
-                    fig.canvas.draw_idle()
-                return
-
-            # Find nearest timestamp index
-            # Binary search for performance O(log N)
-            target_x = event.xdata
-            timestamps = _plot_df['Timestamp'].values
-            idx = timestamps.searchsorted(target_x)
-            
-            # Clamp index and find closest
-            if idx >= len(timestamps): idx = len(timestamps) - 1
-            if idx > 0:
-                # Check which is closer: idx or idx-1
-                if abs(timestamps[idx] - target_x) > abs(timestamps[idx-1] - target_x):
-                    idx = idx - 1
-            
-            # Only redraw if index changed (Major Performance Optimization)
-            if idx != _last_idx[0]:
-                _last_idx[0] = idx
-                
-                # Update position
-                x_pos = timestamps[idx]
-                for vl in _vlines:
-                    vl.set_xdata([x_pos, x_pos])
-                    vl.set_visible(True)
-                
-                update_annot(idx, _plot_df)
-                
-                # Smart positioning to avoid overlap with title/top
-                # Check if we are in the top 20% of the visible y-axis
-                ylim = axes[0].get_ylim()
-                y_range = ylim[1] - ylim[0]
-                y_val = _plot_df['TargetTPS'].iloc[idx]
-                
-                # If y_val is high up, move tooltip down-right instead of up-right
-                if (y_val - ylim[0]) / y_range > 0.8:
-                     annot.xytext = (10, -100) # Move down
-                else:
-                     annot.xytext = (10, 10) # Default up-right
-
-                annot.set_visible(True)
-                fig.canvas.draw_idle()
-
-        fig.canvas.mpl_connect("motion_notify_event", hover)
+        setup_cursor(fig, axes, plot_df, tps_cols)
         
         if save_plot:
             img_path = file_path.replace('.csv', f'_{title_suffix.replace(" ", "")}.png')
