@@ -1,0 +1,491 @@
+package org.firstinspires.ftc.teamcode.subsystems.scoring;
+
+import android.util.Log;
+
+import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.command.SubsystemBase;
+import com.arcrobotics.ftclib.controller.PIDFController;
+import com.arcrobotics.ftclib.controller.wpilibcontroller.SimpleMotorFeedforward;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.hardware.motors.Motor;
+import com.arcrobotics.ftclib.hardware.motors.MotorEx;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.common.AprilTagPosition;
+import org.firstinspires.ftc.teamcode.datalogger.DataLogger;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
+import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
+import org.firstinspires.ftc.teamcode.subsystems.vision.LimeLightAlign;
+import org.firstinspires.ftc.teamcode.util.WifiMonitor;
+import com.qualcomm.robotcore.hardware.CRServo;
+
+public class Turret extends SubsystemBase {
+
+  private static final String LOG_TAG = Shooter.class.getSimpleName();
+  Telemetry telemetry;
+  GamepadEx gamepad;
+  MotorEx leftFlywheel, rightFlywheel;
+
+  Servo liftServo;
+
+  CRServo turretServo1, turretServo2;
+
+  RGBLightIndicator speedIndicator;
+  DataLogger logger;
+  WifiMonitor wifiMonitor;
+
+  AutoSpeed lastKnownNonDefault;
+
+  @Config
+  public static class TurretConfig {
+
+    public static double ShooterTpsHi = 720;
+
+    public static double ShooterTpsLo = 825;
+
+    public static double RightLauncherStow = 0.34;
+
+    public static double LeftLauncherStow = 0.53;
+
+    public static double FeederShoot = .4;
+
+    public static double FeederReset = .9;
+
+    public static double IntakeMaxPower = 1;
+
+    public static double TiltServoHi = .37;
+
+    public static double TiltServoLo = 0;
+
+    public static double FlywheelAcceptableTpsError = 40;
+
+    public static long AutoSpeedCheckSkipCount = 10;
+
+  }
+
+  @Config
+  public static class TurretControlConfig {
+
+    // PID
+
+            public static double kP = 0.005;
+
+    public static double kI = 0;
+
+    public static double kD = 0;
+
+    // Feedforward
+
+            public static double ks = 0;
+
+    public static double kv_left = 0.000425;
+
+    public static double kv_right = 0.000425;
+
+    public static double ka = 0;
+  }
+
+  SimpleMotorFeedforward leftFeedforward = new SimpleMotorFeedforward(TurretControlConfig.ks, TurretControlConfig.kv_left, TurretControlConfig.ka);
+  SimpleMotorFeedforward rightFeedforward = new SimpleMotorFeedforward(TurretControlConfig.ks, TurretControlConfig.kv_right, TurretControlConfig.ka);
+
+  PIDFController leftPid = new PIDFController(TurretControlConfig.kP, TurretControlConfig.kI, TurretControlConfig.kD, 0.0);
+  PIDFController rightPid = new PIDFController(TurretControlConfig.kP, TurretControlConfig.kI, TurretControlConfig.kD, 0.0);
+
+  LimeLightAlign limelight;
+
+  boolean isDemoMode = false;
+
+  public static final String[] LOG_COLUMNS = {
+      "ShooterReady", "IsShooting", "TargetTPS", "Tilt",
+              "RightTPS", "RightError", "RightPowerPID", "RightPowerFF", "RightPower",
+              "LeftTPS", "LeftError", "LeftPowerPID", "LeftPowerFF", "LeftPower",
+              "RSSI", "LinkSpeed"
+          };
+
+  public Turret(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator) {
+    this(hardwareMap, gamepad, telemetry, speedIndicator, null, "Shooter");
+  }
+
+  public Turret(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator, LimeLightAlign limelight) {
+    this(hardwareMap, gamepad, telemetry, speedIndicator, limelight, "Shooter");
+  }
+
+  public Turret(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator, LimeLightAlign limelight, String opModeName) {
+    this(hardwareMap, gamepad, telemetry, speedIndicator, limelight, "Shooter", false);
+
+  }
+
+  public Turret(HardwareMap hardwareMap, GamepadEx gamepad, Telemetry telemetry, RGBLightIndicator speedIndicator, LimeLightAlign limelight, String opModeName, boolean isDemoMode) {
+    this.gamepad = gamepad;
+    this.telemetry = telemetry;
+    this.limelight = limelight;
+    this.isDemoMode = isDemoMode;
+
+    if(isDemoMode) {
+      autoSpeed = true;
+    }
+
+    this.turretServo1 = hardwareMap.get(CRServo.class,"LeftTurn");
+    this.turretServo2 = hardwareMap.get(CRServo.class,"RightTurn");
+    this.liftServo = hardwareMap.get(Servo.class,"Hood");
+
+    //    this.speedIndicator = speedIndicator;
+
+    this.rightFlywheel = new MotorEx(hardwareMap, "RightFlywheel", Motor.GoBILDA.BARE);
+    this.leftFlywheel = new MotorEx(hardwareMap, "LeftFlywheel", Motor.GoBILDA.BARE);
+
+
+    this.rightFlywheel.setRunMode(Motor.RunMode.RawPower);
+    this.leftFlywheel.setRunMode(Motor.RunMode.RawPower);
+
+    this.leftFlywheel.setInverted(true);
+
+    this.rightFlywheel.setZeroPowerBehavior( Motor.ZeroPowerBehavior.FLOAT);
+    this.leftFlywheel.setZeroPowerBehavior( Motor.ZeroPowerBehavior.FLOAT);
+
+//    speedIndicator.changeRed();
+
+    wifiMonitor = new WifiMonitor();
+
+    logger = new DataLogger(DataLogger.getLogFileName(opModeName, "ShooterLog"));
+    logger.initializeLogging(LOG_COLUMNS);
+//
+//    // Log the PIDF constants at the start of the file
+    logger.logComment("PIDF Config: kP=" + TurretControlConfig.kP + " kI=" + TurretControlConfig.kI + " kD=" + TurretControlConfig.kD);
+    logger.logComment("Feedforward Config: kS=" + TurretControlConfig.ks + " kV_Left=" + TurretControlConfig.kv_left + " kV_Right=" + TurretControlConfig.kv_right + " kA=" + TurretControlConfig.ka);
+
+    if(MainTeleop.Telemetry.Shooter) {
+      telemetry.addData("target velocity", this.targetVelocity);
+      telemetry.addData("target tilt", this.lastTilt);
+
+      telemetry.addData("right velocity", 0);
+      telemetry.addData("right error", 0);
+      telemetry.addData("right power (pid)", 0);
+      telemetry.addData("right power (ff)", 0);
+      telemetry.addData("current right power", 0);
+
+      telemetry.addData("left velocity", 0);
+      telemetry.addData("left error", 0);
+      telemetry.addData("left power (pid)", 0);
+      telemetry.addData("left power (ff)", 0);
+      telemetry.addData("current left power", 0);
+
+      telemetry.update();
+    }
+
+    Log.i(LOG_TAG, "target velocity: " + this.targetVelocity);
+    Log.i(LOG_TAG, "target tilt: " + this.lastTilt);
+  }
+
+  boolean wasLastColorGreen = false;
+  long counter = 0;
+  double lastTilt = 0;
+  boolean isShooting = false;
+
+  public void SetShootingFlag() {
+    isShooting = true;
+  }
+
+  @Override
+  public void periodic() {
+    super.periodic();
+
+    Log.i(LOG_TAG, "AutoSpeed = " + autoSpeed + ", counter = " + counter);
+    // Don't check limelight every time.
+    if(autoSpeed && counter++ == TurretConfig.AutoSpeedCheckSkipCount) {
+
+      AutoSpeed expectedSpeed = GetAutoSpeed();
+      targetVelocity = expectedSpeed.Tps;
+
+      if(expectedSpeed.Tilt != lastTilt) {
+        liftServo.setPosition(expectedSpeed.Tilt + this.tiltDelta);
+        lastTilt = expectedSpeed.Tilt;
+      }
+
+
+      counter = 0;
+    } else {
+      Log.i(LOG_TAG, "AutoSpeed is not used");
+    }
+
+    double rightVelocity = -1 * rightFlywheel.getVelocity();
+    double rightError = targetVelocity - rightVelocity;
+
+    double leftVelocity = -1 * leftFlywheel.getVelocity();
+    double leftError = targetVelocity - leftVelocity;
+
+    if(Math.abs(rightError) < TurretConfig.FlywheelAcceptableTpsError &&
+        Math.abs(leftError) < TurretConfig.FlywheelAcceptableTpsError &&
+        Math.abs(leftVelocity - rightVelocity) < 30)
+    {
+      if(!wasLastColorGreen) {
+        wasLastColorGreen = true;
+        //speedIndicator.changeGreen();
+      }
+    } else {
+      if(wasLastColorGreen) {
+        wasLastColorGreen = false;
+        //speedIndicator.changeRed();
+      }
+    }
+
+    // --- Compute feedback + feedforward ---
+    // PIDFController works in "measurement, setpoint" order
+    double leftPidPower = leftPid.calculate(leftVelocity, targetVelocity);
+    double rightPidPower = rightPid.calculate(rightVelocity, targetVelocity);
+
+    // For a shooter, we usually assume accel ~ 0 in steady state
+    double leftFeedforwardValue = leftFeedforward.calculate(targetVelocity);
+    double rightFeedforwardValue = rightFeedforward.calculate(targetVelocity);
+
+    // Total output to motors (you tune k's so this ends up in [-1, 1])
+    double leftPower = leftFeedforwardValue + leftPidPower;
+    double rightPower = rightFeedforwardValue + rightPidPower;
+
+    leftPower = clamp(leftPower, -1.0, 1.0);
+    rightPower = clamp(rightPower, -1.0, 1.0);
+
+    if(!isDemoMode) {
+      // Don't waste battery on flywheels during demos
+      rightFlywheel.set(rightPower);
+      leftFlywheel.set(leftPower);
+    }
+
+    logger.log(wasLastColorGreen ? 1 : 0, isShooting ? 1 : 0, targetVelocity, lastTilt, rightVelocity, rightError, rightPidPower, rightFeedforwardValue, rightPower, leftVelocity, leftError, leftPidPower, leftFeedforwardValue, leftPower, wifiMonitor.getSignalStrength(), wifiMonitor.getLinkSpeed());
+    isShooting = false;
+
+    if(MainTeleop.Telemetry.Shooter) {
+      telemetry.addData("target velocity", this.targetVelocity);
+      telemetry.addData("tilt", this.lastTilt);
+
+      telemetry.addData("right velocity", rightVelocity);
+      telemetry.addData("right error", rightError);
+      telemetry.addData("right power (pid)", rightPidPower);
+      telemetry.addData("right power (ff)", rightFeedforwardValue);
+      telemetry.addData("current right power", rightPower);
+
+      telemetry.addData("left velocity", leftVelocity);
+      telemetry.addData("left error", leftError);
+      telemetry.addData("left power (pid)", leftPidPower);
+      telemetry.addData("left power (ff)", leftFeedforwardValue);
+      telemetry.addData("current left power", leftPower);
+
+      telemetry.update();
+    }
+
+    Log.i(LOG_TAG, "target velocity: " + this.targetVelocity);
+    Log.i(LOG_TAG, "tilt: " + this.lastTilt);
+  }
+
+  public class AutoSpeed {
+
+    public AutoSpeed(double tps, double tilt) {
+      this.Tps = tps;
+      this.Tilt = tilt;
+    }
+
+    public double Tps;
+
+    public double Tilt;
+    public boolean isDefault() {
+      return Tps == 695 && Tilt == 0.9;
+    }
+  }
+
+  public AutoSpeed GetAutoSpeed() {
+    AutoSpeed result = new AutoSpeed(695, 0.9);
+    if (this.limelight == null) {
+      Log.i(LOG_TAG, "No limelight");
+      if (lastKnownNonDefault != null) {
+        Log.i(LOG_TAG, "Using last known non-default: Tps = " + lastKnownNonDefault.Tps + ", tilt = " + lastKnownNonDefault.Tilt);
+        return lastKnownNonDefault;
+      }
+      return result;
+    }
+    AprilTagPosition position = this.limelight.getAprilTagPosition();
+
+
+    if(position != null) {
+      double distance = position.distance();
+
+      //y = 0.0101722*x^2 - 0.0456217*x + 672.12131
+//      double tps = 0.0101722 * distance * distance - 0.0456217 * distance + 700; //672.12131;
+//      double tilt = getTilt(distance);
+      result = this.GetAutoSpeed(distance);
+      lastKnownNonDefault = result;
+    } else {
+      if (lastKnownNonDefault != null) {
+        Log.i(LOG_TAG, "Using last known non-default: Tps = " + lastKnownNonDefault.Tps + ", tilt = " + lastKnownNonDefault.Tilt);
+        return lastKnownNonDefault;
+      }
+    }
+
+    Log.i(LOG_TAG, "AutoSpeed: tps = " + result.Tps + ", tile: " + result.Tilt);
+    return result;
+  }
+
+  private AutoSpeed GetAutoSpeed(double distance) {
+    Log.i(LOG_TAG, "input distance for GetAutoSpeed = " + distance);
+    if(!isDemoMode) {
+      /*
+      44 - 730, 0.95
+      54 - 710, 0.95
+      64 - 720, 0.95
+      74 - 740, 0.95
+      84 - 740, 0.95
+      94 - 760, 0.95
+      114 - 810, 0.95
+      124 - 825, 0.95
+      134 - 845, 0.95
+      */
+      if (distance < 44) {
+        return new AutoSpeed(730, 0.95);
+      } else if (distance < 54) {
+        return new AutoSpeed(710, 0.95);
+      } else if (distance < 64) {
+        return new AutoSpeed(720, 0.95); // for auto short
+      } else if (distance < 74) {
+        return new AutoSpeed(740, 0.95);
+      } else if (distance < 84) {
+        return new AutoSpeed(740, 0.95);
+      } else if (distance < 94) {
+        return new AutoSpeed(760, 0.95);
+      } else if (distance < 114) {
+        return new AutoSpeed(810, 0.95);
+      } else if (distance < 124) {
+        return new AutoSpeed(825, 0.95);
+      } else if (distance < 134) {
+        return new AutoSpeed(845, 0.95);
+      } else {
+        return new AutoSpeed(720, 0.95);
+      }
+    } else {
+      // Exaggerated tilt to help in demos
+      if (distance < 44) {
+        return new AutoSpeed( 695, 0.95);
+      } else if (distance < 54) {
+        return new AutoSpeed( 695, 0.85);
+      } else if (distance < 64) {
+        return new AutoSpeed( 695, 0.75);
+      } else if (distance < 74) {
+        return new AutoSpeed( 695, 0.65);
+      } else if (distance < 84) {
+        return new AutoSpeed( 695, 0.55);
+      } else if (distance < 94) {
+        return new AutoSpeed( 695, 0.45);
+      } else if (distance < 114) {
+        return new AutoSpeed( 695, 0.45);
+      } else if (distance < 124) {
+        return new AutoSpeed( 695, 0.45);
+      } else if (distance < 134) {
+        return new AutoSpeed( 695, 0.45);
+      } else {
+        return new AutoSpeed( 695, 0.85);
+      }
+    }
+  }
+
+  private double clamp(double value, double min, double max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+  }
+
+  double targetVelocity = TurretConfig.ShooterTpsHi;
+
+  boolean toggleShooter = false;
+  public void ToggleShooter() {
+    if(toggleShooter) {
+      this.targetVelocity = TurretConfig.ShooterTpsLo;
+    } else {
+      this.targetVelocity = TurretConfig.ShooterTpsHi;
+    }
+
+    toggleShooter = !toggleShooter;
+  }
+
+  public void SetTargetTps(double targetTps) {
+    this.targetVelocity = targetTps;
+  }
+
+  public void TurnLeft() {
+    turretServo1.setPower(1);
+    turretServo2.setPower(1);
+  }
+
+  public void TurnRight() {
+    turretServo1.setPower(-1);
+    turretServo2.setPower(-1);
+  }
+
+  public void StopTurret() {
+    turretServo1.setPower(0);
+    turretServo2.setPower(0);
+  }
+
+  public void CloseShoot() {
+    this.liftServo.setPosition(TurretConfig.TiltServoHi);
+    this.targetVelocity = TurretConfig.ShooterTpsLo;
+    this.lastTilt = TurretConfig.TiltServoHi;
+  }
+
+  public void CloseShootWithScale(double scale, double elevationScale) {
+    this.liftServo.setPosition(TurretConfig.TiltServoHi * elevationScale);
+    this.targetVelocity = TurretConfig.ShooterTpsLo * scale;
+    this.lastTilt = TurretConfig.TiltServoHi;
+  }
+
+  public void FarShoot() {
+    this.liftServo.setPosition(TurretConfig.TiltServoLo);
+    this.targetVelocity = TurretConfig.ShooterTpsHi;
+    this.lastTilt = TurretConfig.TiltServoLo;
+
+  }
+
+  public void FarShootWithScale(double scale, double elevationScale) {
+    this.liftServo.setPosition(TurretConfig.TiltServoLo * elevationScale);
+    this.targetVelocity = TurretConfig.ShooterTpsHi * scale;
+    this.lastTilt = TurretConfig.TiltServoLo;
+  }
+
+  public void autonShoot() {
+    AutoSpeed targetSpeed = GetAutoSpeed();
+    this.liftServo.setPosition(targetSpeed.Tilt);
+    this.targetVelocity = targetSpeed.Tps;
+
+  }
+
+  public boolean isReadyToShoot() {
+    return wasLastColorGreen;
+  }
+
+  boolean autoSpeed = false;
+
+  public void AutoSpeedAndTilt() {
+    if(this.limelight != null) {
+      this.autoSpeed = true;
+    }
+  }
+
+  public void DefaultSpeedAndTilt() {
+    this.autoSpeed = false;
+  }
+
+  public void stopLogging() {
+    if (logger != null) {
+      logger.close();
+    }
+  }
+
+  double tiltDelta = 0;
+
+  public void HigherTilt() {
+    this.tiltDelta += 0.05;
+  }
+
+  public void LowerTilt() {
+    this.tiltDelta -= 0.05;
+  }
+}
