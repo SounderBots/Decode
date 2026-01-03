@@ -247,6 +247,10 @@ public class CommandFactory {
         return new ObserveObeliskCommand(limeLightAlign);
     }
 
+    public Command detectBall() {
+        return new DetectBallCommand(limeLightAlign);
+    }
+
     public Command shootRows(ShootRange shootRange, Positions positions) {
         return new IntakeObeliskObservedRowsCommand(shootRange, positions, this).withTelemetry(telemetry);
     }

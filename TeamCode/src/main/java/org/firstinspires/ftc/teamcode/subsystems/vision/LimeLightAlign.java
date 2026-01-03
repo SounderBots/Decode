@@ -21,6 +21,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.command.CommonConstants;
 import org.firstinspires.ftc.teamcode.common.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.common.AprilTagPosition;
+import org.firstinspires.ftc.teamcode.common.BallPosition;
 import org.firstinspires.ftc.teamcode.opmodes.auton.constants.AutonCommonConfigs;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.MainTeleop;
 import org.firstinspires.ftc.teamcode.subsystems.feedback.RGBLightIndicator;
@@ -36,7 +37,7 @@ public class LimeLightAlign extends SubsystemBase {
     protected Telemetry telemetry;
 
     private static final int PIPELINE_ID = 4; // April tag pipeline id
-
+    private static final int DETECTOR_PIPELINE_ID = 3; // Ball detector pipeline id
     private double horizontalAngle, verticalAngle;
 
     Supplier<Pose> petroPathingPoseSupplier;
@@ -141,7 +142,7 @@ public class LimeLightAlign extends SubsystemBase {
 //        return aprilTagEnum;
     }
 
-    public AprilTagPosition getAprilTagPosition(){
+    public AprilTagPosition  getAprilTagPosition(){
         FiducialResult fr = scanAprilTag();
         AprilTagPosition aprilTagPosition = null;
         if (fr != null) {
@@ -197,6 +198,39 @@ public class LimeLightAlign extends SubsystemBase {
         }
 
         return null;
+    }
+
+    public Optional<BallPosition> getBallPosition(){
+        double angle = detectBallAngle();
+        if (angle != -1) {
+            double distance = 0.0d;
+            double verticalAngle = 0.0d;
+            BallPosition ballPosition = new BallPosition(distance, angle, verticalAngle);
+            boolean addTelemetry = MainTeleop.Telemetry.LimeLight;
+            if (addTelemetry) {
+                telemetry.addData("Estimated Distance", ballPosition.distance());
+                telemetry.addData("Estimated Horizontal shift", ballPosition.horizontalAngle());
+                telemetry.addData("Estimated Vertical Shift", ballPosition.verticalAngle());
+            }
+            return Optional.of(ballPosition);
+        }
+        telemetry.update();
+        return Optional.empty();
+    }
+
+    private double detectBallAngle() {
+
+        // Set ball detector pipeline
+        limelight.pipelineSwitch(DETECTOR_PIPELINE_ID);
+        LLResult result = limelight.getLatestResult();
+        double[] pythonOutputs = result.getPythonOutput();
+        telemetry.addData("Python output", pythonOutputs);
+        if (pythonOutputs != null && pythonOutputs.length > 0) {
+            double firstOutput = pythonOutputs[0];
+            telemetry.addData("Ball detector output", firstOutput);
+            return firstOutput;
+        }
+        return -1;
     }
 
     private Optional<FiducialResult> scanObeliskTag() {
