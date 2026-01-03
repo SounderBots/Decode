@@ -8,10 +8,10 @@
 </head>
 <body>
     <div class="container">
-        <div class="header-block">
+            <div class="header-block" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;">
             <div class="header-text">
                 <h1><span class="tag"><a href="https://sounderbots.com/" target="_blank" rel="noopener noreferrer">FTC 23270</a></span> Data Log Analysis</h1>
-                <p>Upload a DataLogger CSV and optionally a customization profile. Profiles are auto-applied only when headers match.</p>
+                <p style="margin-bottom: 6px;">Upload a DataLogger CSV and optionally a customization profile. Profiles are auto-applied only when headers match.</p>
             </div>
             <div class="theme-toggle">
                 <label for="themeSelect">Theme:</label>
@@ -30,6 +30,7 @@
             <li>First column: strictly increasing Timestamp values.</li>
             <li>Profiles apply only when headers match.</li>
         </ul>
+        <p style="margin-top:-4px;">This site uses <a href="https://plotly.com" target="_blank" rel="noopener noreferrer">Plotly</a> to render interactive log analysis graphs; use current evergreen browsers (Chrome/Edge 120+, Firefox 120+, Safari 17+) for best results.</p>
         
         {% if error %}
         <div class="error">{{ error }}</div>
@@ -395,9 +396,9 @@
                 showError('Invalid profile file format.');
                 return;
             }
-            const sameColumns = profile.columns.length === columnsState.length && profile.columns.every((c, i) => c === columnsState[i]);
-            if (!sameColumns) {
-                showError('Profile columns do not match the current file header. It will auto-apply when a matching file is validated.');
+            const missing = profile.columns.filter(c => !columnsState.includes(c));
+            if (missing.length) {
+                showError(`Missing profile columns: ${missing.join(', ')}. It will auto-apply when a compatible file is validated.`);
                 pendingProfileData = profile;
                 return;
             }
