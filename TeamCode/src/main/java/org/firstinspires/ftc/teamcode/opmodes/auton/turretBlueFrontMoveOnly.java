@@ -9,35 +9,35 @@ import org.firstinspires.ftc.teamcode.command.PathType;
 import org.firstinspires.ftc.teamcode.opmodes.auton.constants.ShootRange;
 import org.firstinspires.ftc.teamcode.opmodes.auton.constants.Side;
 
-@Autonomous(name = "turretRedFrontMoveOnly", group = "Red")
+@Autonomous(name = "turretBlueFrontMoveOnly", group = "Blue")
 @Configurable
-public class turretRedFrontMoveOnly extends AutonBase {
+public class turretBlueFrontMoveOnly extends AutonBase {
 
     // Configurable tuning values available in the dashboard
-    public static double heading = 0; // radians
+    public static double heading = 3.14159265; // radians
 
-    public static double startPositionX = 128.0;
+    public static double startPositionX = 16.0;
     public static double startPositionY = 112.5;
 
     public static double DRIVE_SPEED = 0.8;
     public static double returnSpeed = 1;
 
-    public static double shootingSpotX = 100;
+    public static double shootingSpotX = 44;
     public static double shootingSpotY = 95;
 
-    public static double intakeLine1X = 120;
+    public static double intakeLine1X = 24;
     public static double intakeLine1Y = 86;
 
-    public static double intakeLine2X = 112.5;
+    public static double intakeLine2X = 31.5;
     public static double intakeLine2Y = 60;
 
-    public static double classifierLineX = 123;
+    public static double classifierLineX = 21;
     public static double classifierLineY = 63;
-    public static double classifierStrafeX = 134;
+    public static double classifierStrafeX = 10;
     public static double classifierStrafeY = 58;
 
     public static double endParkY = 72;
-    public static double endParkX = 115;
+    public static double endParkX = 29;
 
     public static long preLoadTime = 2000;
     public static long lineTwoTime = 2000;
@@ -65,12 +65,12 @@ public class turretRedFrontMoveOnly extends AutonBase {
         //clear classifier
         Pose p10 = new Pose(shootingSpotX, classifierLineY, heading);
         Pose p11 = new Pose(classifierLineX, classifierLineY, heading);
-        Pose intakeFromClassifier = new Pose(classifierStrafeX, classifierStrafeY, 0.78539816);
+        Pose intakeFromClassifier = new Pose(classifierStrafeX, classifierStrafeY, 2.35619449);
         Pose p12 = new Pose(shootingSpotX, classifierLineY, heading);
         Pose p13 = new Pose(shootingSpotX, shootingSpotY, heading);
 
         //park at end
-        Pose p14 = new Pose(endParkX, endParkY, 3.14159265);
+        Pose p14 = new Pose(endParkX, endParkY, 0);
 
         double driveSpeed = DRIVE_SPEED;
 
