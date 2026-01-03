@@ -80,4 +80,4 @@ def runPipeline(frame, llrobot):
     angle_radians = math.atan(slope)
     angle_degrees = math.degrees(angle_radians)
     print(f"angle: {angle_degrees}")
-  return [[]], frame, []
+  return [[angle_degrees]], frame, []

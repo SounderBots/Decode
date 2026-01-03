@@ -28,9 +28,11 @@ public abstract class AutonBase extends CommandAutoOpMode {
             commandFactory.driveTrainConsiderVError();
         }
         boolean shouldObserveObelisk = (shootRange() == ShootRange.SHORT) && getPositions().observeObelisk();
+        boolean shouldDetectBall = true;
         Command command = commandFactory.shooterAutoAlign().andThen(moveAndShootPreloads())
                 .andThen(shouldObserveObelisk ? moveAndObserveObelisk() : commandFactory.noop())
-                .andThen(commandFactory.shootRows(shootRange(), getPositions()));
+                .andThen(commandFactory.shootRows(shootRange(), getPositions()))
+                .andThen(shouldDetectBall ? moveAndDetectBalls() : commandFactory.noop());
         return moveOutAtLastSecond(command);
     }
 
@@ -173,6 +175,10 @@ public abstract class AutonBase extends CommandAutoOpMode {
 
     public Command moveAndObserveObelisk() {
         return commandFactory.moveTo(getPositions().getObeliskObservePosition(), PathType.LINE, .6).andThen(commandFactory.observeObelisk());
+    }
+
+    public Command moveAndDetectBalls() {
+        return commandFactory.moveTo(getPositions().getOpenGateExitPosition(), PathType.LINE, .6).andThen(commandFactory.detectBall());
     }
 
 }
