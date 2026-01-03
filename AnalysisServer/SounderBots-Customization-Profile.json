@@ -1,0 +1,125 @@
+{
+  "columns": [
+    "Timestamp",
+    "ShooterReady",
+    "IsShooting",
+    "TargetTPS",
+    "Tilt",
+    "RightTPS",
+    "RightPowerPID",
+    "RightPowerFF",
+    "RightPower",
+    "LeftTPS",
+    "LeftPowerPID",
+    "LeftPowerFF",
+    "LeftPower"
+  ],
+  "devices": [
+    {
+      "name": "LeftFlywheel",
+      "measured": "LeftTPS",
+      "target": "TargetTPS",
+      "command": "",
+      "kP": "",
+      "kI": "",
+      "kD": "",
+      "kF": ""
+    },
+    {
+      "name": "RightFlywheel",
+      "measured": "RightTPS",
+      "target": "TargetTPS",
+      "command": "",
+      "kP": "",
+      "kI": "",
+      "kD": "",
+      "kF": ""
+    }
+  ],
+  "events": [
+    {
+      "label": "Ready",
+      "column": "ShooterReady",
+      "color": "#40e772"
+    },
+    {
+      "label": "Shooting",
+      "column": "IsShooting",
+      "color": "#e74c3c",
+      "style": "solid"
+    }
+  ],
+  "subplots": [
+    {
+      "title": "Motor velocity",
+      "columns": [
+        "LeftFlywheel",
+        "RightFlywheel",
+        "Ready",
+        "Shooting"
+      ],
+      "shareY": true,
+      "diff": true,
+      "interest": true,
+      "legendOverrides": [
+        {
+          "key": "target::TargetTPS",
+          "label": "Target"
+        },
+        {
+          "key": "LeftFlywheel::measured",
+          "label": "LeftTPS"
+        },
+        {
+          "key": "RightFlywheel::measured",
+          "label": "RightTPS"
+        },
+        {
+          "key": "Shooting",
+          "label": "Shoot commanded"
+        },
+        {
+          "key": "Ready",
+          "label": "Ready"
+        }
+      ],
+      "events": [
+        "Ready",
+        "Shooting"
+      ],
+      "diffKeys": [
+        "LeftFlywheel::measured",
+        "RightFlywheel::measured"
+      ],
+      "interestTitle": "Shots",
+      "interestColumn": "LeftFlywheel::measured",
+      "interestThreshold": 5,
+      "interestDirection": "falling",
+      "interestThresholdMode": "percent",
+      "interestMinSpacing": 100
+    },
+    {
+      "title": "Motor power",
+      "columns": [
+        "LeftPower",
+        "RightPower"
+      ],
+      "shareY": true,
+      "diff": false,
+      "legendOverrides": [
+        {
+          "key": "LeftPower",
+          "label": "LeftPower"
+        },
+        {
+          "key": "RightPower",
+          "label": "RightPower"
+        }
+      ],
+      "events": [],
+      "interestDirection": "rising",
+      "interestThresholdMode": "percent",
+      "interestMinSpacing": 500
+    }
+  ]
+}

@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTC 23270 Data Log Analysis</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header-block">
+            <div class="header-text">
+                <h1><span class="tag"><a href="https://sounderbots.com/" target="_blank" rel="noopener noreferrer">FTC 23270</a></span> Data Log Analysis</h1>
+                <p>Upload a DataLogger CSV and optionally a customization profile. Profiles are auto-applied only when headers match.</p>
+            </div>
+            <div class="theme-toggle">
+                <label for="themeSelect">Theme:</label>
+                <select id="themeSelect">
+                    <option value="auto">Auto</option>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
+        </div>
+
+        <ul class="requirements">
+            <li>Max file size: 3 MB.</li>
+            <li>File type: CSV only (UTF-8).</li>
+            <li>First row: comment header starting with '#' containing comma-separated column names.</li>
+            <li>First column: strictly increasing Timestamp values.</li>
+            <li>Profiles apply only when headers match.</li>
+        </ul>
+        
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        <form id="uploadForm" action="/analyze" method="post" enctype="multipart/form-data" class="upload-form">
+            <div class="file-inputs">
+                <div class="file-input">
+                    <label for="file">Select DataLogger CSV file</label>
+                    <input type="file" name="file" id="file" accept=".csv" required>
+                    <span id="fileNameDisplay" class="file-name"></span>
+                </div>
+            </div>
+            <div class="file-inputs">
+                <div class="file-input">
+                    <label for="profileFile">Select customization profile (optional)</label>
+                    <input type="file" id="profileFile" accept="application/json,.json" />
+                    <span id="profileNameDisplay" class="file-name"></span>
+                </div>
+            </div>
+            <input type="hidden" name="customization" id="customizationPayload" value="" />
+        </form>
+
+        <!-- Preview and customization scaffold (step 1: static UI only) -->
+        <div id="postValidation" class="post-validation hidden">
+            <div class="panel">
+                <h2>Header Preview</h2>
+                <p class="hint">Show the header row and first three rows</p>
+                <div id="headerPreview" class="preview-table empty">No file selected.</div>
+                <div class="file-input" style="margin-top: 12px;">
+                    <label class="checkbox-label" for="assumePeriodic" title="When checked, loop frequency will be computed from timestamps. Uncheck for irregular rows.">
+                        <input type="checkbox" id="assumePeriodic" name="assume_periodic" form="uploadForm" checked>
+                        Each data row corresponds to a periodic loop
+                    </label>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Customize (Optional)</h2>
+                <p class="hint">Map columns to devices and events, choose subplots, and save/load profiles.</p>
+
+                <details class="card collapsible" id="devicesSection">
+                    <summary>
+                        <span title="Group setpoint/feedback/control columns for one device (motor, servo, etc.).">Devices</span>
+                        <button type="button" id="addDeviceBtn" class="ghost inline">Add device</button>
+                    </summary>
+                    <div id="devicesContainer" class="cards">
+                        <div class="card muted">No devices added. Add a device and map measured/target/command columns.</div>
+                    </div>
+                </details>
+
+                <details class="card collapsible" id="eventsSection">
+                    <summary>
+                        <span title="Show vertical markers from a discrete event column (e.g., artifact launched).">Events</span>
+                        <button type="button" id="addEventBtn" class="ghost inline">Add event</button>
+                    </summary>
+                    <div id="eventsContainer" class="cards">
+                        <div class="card muted">No events configured. Add one to overlay markers from a column.</div>
+                    </div>
+                </details>
+
+                <details class="card collapsible" id="subplotsSection">
+                    <summary>
+                        <span title="Choose which columns to plot together; each card renders as one subplot.">Subplots</span>
+                        <button type="button" id="addSubplotBtn" class="ghost inline">Add subplot</button>
+                    </summary>
+                    <div id="subplotsContainer" class="cards">
+                        <div class="card muted">No subplots configured. Add one and pick columns to display together.</div>
+                    </div>
+                </details>
+
+                <div class="actions-row wrap button-split">
+                    <button type="submit" id="analyzeBtn" class="hidden primary">Analyze</button>
+                    <span class="divider" aria-hidden="true"></span>
+                    <button type="button" class="primary" id="saveProfileBtn">Save customization profile</button>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner" aria-label="Loading"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('file');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const profileNameDisplay = document.getElementById('profileNameDisplay');
+        let errorDiv = document.querySelector('.error');
+        const themeSelect = document.getElementById('themeSelect');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+
+        // New UI elements (step 2)
+        const headerPreview = document.getElementById('headerPreview');
+        const postValidation = document.getElementById('postValidation');
+        const devicesSection = document.getElementById('devicesSection');
+        const devicesContainer = document.getElementById('devicesContainer');
+        const addDeviceBtn = document.getElementById('addDeviceBtn');
+        const eventsSection = document.getElementById('eventsSection');
+        const eventsContainer = document.getElementById('eventsContainer');
+        const addEventBtn = document.getElementById('addEventBtn');
+        const subplotsSection = document.getElementById('subplotsSection');
+        const subplotsContainer = document.getElementById('subplotsContainer');
+        const addSubplotBtn = document.getElementById('addSubplotBtn');
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+        const profileFileInput = document.getElementById('profileFile');
+        const customizationInput = document.getElementById('customizationPayload');
+
+        // Shared state for client-side scaffolding
+        let columnsState = [];
+        let sampleRowsState = [];
+        let devicesState = [];
+        let eventsState = [];
+        let subplotsState = [];
+        let pendingProfileFile = null;
+        let pendingProfileData = null;
+        let lastProfileFilename = '';
+
+        const getEventKey = (evt, idx) => {
+            if (!evt) return '';
+            const lbl = (evt.label || '').trim();
+            const col = (evt.column || '').trim();
+            if (lbl) return lbl;
+            if (col) return col;
+            return `event-${idx}`;
+        };
+
+        const replaceEventKey = (oldKey, newKey) => {
+            if (!oldKey || !newKey || oldKey === newKey) return;
+            subplotsState.forEach((subplot) => {
+                if (!Array.isArray(subplot.events)) return;
+                const mapped = subplot.events.map((k) => (k === oldKey ? newKey : k));
+                subplot.events = Array.from(new Set(mapped));
+            });
+            syncCustomizationInput();
+        };
+
+        const replaceLabelsInSubplots = (oldLabel, newLabel) => {
+            if (!oldLabel || !newLabel || oldLabel === newLabel) return;
+            subplotsState.forEach((subplot) => {
+                if (!Array.isArray(subplot.columns)) return;
+                const mapped = subplot.columns.map((v) => (v === oldLabel ? newLabel : v));
+                const seen = new Set();
+                const deduped = [];
+                mapped.forEach((v) => {
+                    if (seen.has(v)) return;
+                    seen.add(v);
+                    deduped.push(v);
+                });
+                subplot.columns = deduped;
+                if (!Array.isArray(subplot.legendOverrides)) subplot.legendOverrides = [];
+                subplot.legendOverrides = subplot.legendOverrides.map((item) => {
+                    if (!item || typeof item !== 'object') return null;
+                    if (item.key === oldLabel) {
+                        return { key: newLabel, label: item.label || newLabel };
+                    }
+                    if (item.key && item.key.startsWith(`${oldLabel}::`)) {
+                        const suffix = item.key.slice(oldLabel.length);
+                        return { key: `${newLabel}${suffix}`, label: item.label || `${newLabel}${suffix}` };
+                    }
+                    return item;
+                }).filter(Boolean);
+            });
+            syncCustomizationInput();
+        };
+
+        const ensureLegendOverrides = (subplot) => {
+            if (!Array.isArray(subplot.legendOverrides)) subplot.legendOverrides = [];
+
+            const cleanLabel = (val, fallback) => {
+                const str = (val || fallback || '').toString();
+                return str.slice(0, 20);
+            };
+
+            const deviceMap = Object.fromEntries(devicesState.filter(d => d && d.name).map(d => [d.name, d]));
+            const targetCounts = {};
+            (subplot.columns || []).forEach((col) => {
+                const dev = deviceMap[col];
+                if (dev && dev.target) {
+                    targetCounts[dev.target] = (targetCounts[dev.target] || 0) + 1;
+                }
+            });
+
+            const expected = [];
+            const sharedTargetAdded = new Set();
+            (subplot.columns || []).forEach((col) => {
+                const dev = deviceMap[col];
+                if (dev) {
+                    if (dev.measured) {
+                        expected.push({ key: `${col}::measured`, fallback: `${col} measured` });
+                    }
+                    if (dev.target) {
+                        const shared = targetCounts[dev.target] > 1;
+                        const key = shared ? `target::${dev.target}` : `${col}::target`;
+                        const fallback = shared ? 'target' : `${col} target`;
+                        if (shared && sharedTargetAdded.has(key)) {
+                            // already accounted
+                        } else {
+                            expected.push({ key, fallback });
+                            if (shared) sharedTargetAdded.add(key);
+                        }
+                    }
+                    if (dev.command) {
+                        expected.push({ key: `${col}::command`, fallback: `${col} command` });
+                    }
+                } else {
+                    expected.push({ key: col, fallback: col });
+                }
+            });
+
+            const existingMap = new Map();
+            subplot.legendOverrides.forEach((ov) => {
+                if (ov && ov.key) existingMap.set(ov.key, cleanLabel(ov.label, ov.key));
+            });
+
+            const used = new Set();
+            const result = [];
+
+            // Preserve explicit ordering from existing overrides first
+            subplot.legendOverrides.forEach((ov) => {
+                if (!ov || !ov.key) return;
+                const expMatch = expected.find((e) => e.key === ov.key);
+                if (!expMatch || used.has(ov.key)) return;
+                result.push({ key: ov.key, label: cleanLabel(ov.label, expMatch.fallback) });
+                used.add(ov.key);
+            });
+
+            // Append any missing expected items in generated order
+            expected.forEach((exp) => {
+                if (used.has(exp.key)) return;
+                const label = cleanLabel(existingMap.get(exp.key), exp.fallback);
+                result.push({ key: exp.key, label });
+                used.add(exp.key);
+            });
+
+            subplot.legendOverrides = result;
+            return result;
+        };
+
+        const ensureSubplotEvents = (subplot) => {
+            // Auto-derive events for a subplot: only events whose key appears in the subplot columns.
+            const colSet = new Set(subplot.columns || []);
+            const derived = eventsState
+                .map((evt, idx) => ({ key: getEventKey(evt, idx), label: evt.label || evt.column }))
+                .filter(ev => ev.key && colSet.has(ev.key))
+                .map(ev => ev.key);
+            subplot.events = Array.from(new Set(derived));
+            return subplot.events;
+        };
+
+        const cloneState = (value) => JSON.parse(JSON.stringify(value || []));
+
+        const canonicalizeSubplot = (sp) => {
+            if (!sp || typeof sp !== 'object') return sp;
+            const copy = { ...sp };
+
+            // Align field names with report page expectations
+            if (!copy.interestColumn && copy.interestSeries) copy.interestColumn = copy.interestSeries;
+            if (copy.interestThreshold === undefined && copy.interestThresholdValue !== undefined) {
+                copy.interestThreshold = copy.interestThresholdValue;
+            }
+            if (copy.interestMinSpacing === undefined && copy.interestMinSpacingMs !== undefined) {
+                copy.interestMinSpacing = copy.interestMinSpacingMs;
+            }
+
+            // Normalize values
+            if (copy.interestThresholdMode === 'abs') copy.interestThresholdMode = 'absolute';
+            if (copy.interestDirection === 'either') copy.interestDirection = 'both';
+
+            // Provide sane defaults if fields are missing
+            if (copy.interestDirection === undefined) copy.interestDirection = 'rising';
+            if (copy.interestThresholdMode === undefined) copy.interestThresholdMode = 'percent';
+            if (copy.interestMinSpacing === undefined) copy.interestMinSpacing = 500;
+
+            // Drop legacy fields to keep saved profiles clean
+            delete copy.interestSeries;
+            delete copy.interestThresholdValue;
+            delete copy.interestMinSpacingMs;
+
+            return copy;
+        };
+        const syncCustomizationInput = () => {
+            if (customizationInput) {
+                customizationInput.value = JSON.stringify(buildProfile());
+            }
+        };
+        const buildProfile = () => ({
+            columns: columnsState,
+            devices: cloneState(devicesState),
+            events: cloneState(eventsState),
+            subplots: cloneState(subplotsState)
+        });
+
+        const applyThemePreference = (pref) => {
+            const root = document.documentElement;
+            if (pref === 'light' || pref === 'dark') {
+                root.setAttribute('data-theme', pref);
+            } else {
+                root.removeAttribute('data-theme');
+            }
+        };
+
+        const initTheme = () => {
+            const saved = localStorage.getItem('themePreference') || 'auto';
+            themeSelect.value = saved;
+            applyThemePreference(saved);
+        };
+
+        themeSelect.addEventListener('change', () => {
+            const pref = themeSelect.value;
+            localStorage.setItem('themePreference', pref);
+            applyThemePreference(pref);
+        });
+
+        initTheme();
+        const maxSizeBytes = 3 * 1024 * 1024;
+
+        const showError = (msg) => {
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                form.parentElement.insertBefore(errorDiv, form);
+            }
+            errorDiv.textContent = msg;
+            errorDiv.style.display = 'block';
+        };
+
+        const clearError = () => {
+            if (errorDiv) {
+                errorDiv.textContent = '';
+                errorDiv.style.display = 'none';
+            }
+        };
+
+        const setPostValidationVisible = (visible) => {
+            if (!postValidation) return;
+            if (visible) {
+                postValidation.classList.remove('hidden');
+            } else {
+                postValidation.classList.add('hidden');
+            }
+        };
+
+        const setAnalyzeVisible = (visible) => {
+            if (!analyzeBtn) return;
+            if (visible) {
+                analyzeBtn.classList.remove('hidden');
+            } else {
+                analyzeBtn.classList.add('hidden');
+            }
+        };
+
+        const applyProfile = (profile) => {
+            if (!columnsState.length) {
+                showError('Load and validate a CSV file before applying a profile.');
+                return;
+            }
+            if (!profile || !Array.isArray(profile.columns)) {
+                showError('Invalid profile file format.');
+                return;
+            }
+            const sameColumns = profile.columns.length === columnsState.length && profile.columns.every((c, i) => c === columnsState[i]);
+            if (!sameColumns) {
+                showError('Profile columns do not match the current file header. It will auto-apply when a matching file is validated.');
+                pendingProfileData = profile;
+                return;
+            }
+            devicesState = cloneState(profile.devices || []);
+            eventsState = cloneState(profile.events || []);
+            subplotsState = cloneState(profile.subplots || []).map(canonicalizeSubplot);
+            clearError();
+            renderDevices();
+            renderEvents();
+            renderSubplots();
+            syncCustomizationInput();
+            setPostValidationVisible(true);
+            setAnalyzeVisible(true);
+            if (devicesSection && devicesState.length) devicesSection.open = true;
+            if (eventsSection && eventsState.length) eventsSection.open = true;
+            if (subplotsSection && subplotsState.length) subplotsSection.open = true;
+            pendingProfileFile = null;
+            pendingProfileData = null;
+        };
+
+        const downloadProfile = (profile, filename) => {
+            const blob = new Blob([JSON.stringify(profile, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 500);
+        };
+
+        const saveProfileInteractive = async (profile, suggestedName) => {
+            // Try modern save picker when available; fall back to download.
+            if (window.showSaveFilePicker) {
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName,
+                        types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(JSON.stringify(profile, null, 2));
+                    await writable.close();
+                    return true;
+                } catch (err) {
+                    if (err?.name === 'AbortError') return false; // user canceled
+                }
+            }
+            downloadProfile(profile, suggestedName);
+            return true;
+        };
+
+        const tryApplyPendingProfile = () => {
+            if (!columnsState.length) return;
+            if (pendingProfileData) {
+                const profileToApply = pendingProfileData;
+                pendingProfileData = null; // prevent loops
+                applyProfile(profileToApply);
+            } else if (pendingProfileFile) {
+                loadProfileFromFile(pendingProfileFile, true);
+                pendingProfileFile = null; // apply once, then clear so it can't override live edits
+            }
+        };
+
+        const loadProfileFromFile = (file, silentIfDeferred = false) => {
+            if (!file) {
+                showError('Choose a profile file first.');
+                return;
+            }
+            if (!columnsState.length) {
+                pendingProfileFile = file;
+                if (!silentIfDeferred) {
+                    showError('Profile selected. It will load after a CSV is validated.');
+                }
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    lastProfileFilename = file.name || '';
+                    pendingProfileFile = file;
+                    pendingProfileData = json;
+                    pendingProfileFile = null;
+                    applyProfile(json);
+                } catch (err) {
+                    showError('Invalid profile file format.');
+                }
+            };
+            reader.onerror = () => {
+                showError('Could not read profile file.');
+            };
+            reader.readAsText(file);
+        };
+
+        const renderHeaderPreview = (cols, sampleRows) => {
+            if (!headerPreview) return;
+            if (!cols.length) {
+                headerPreview.classList.add('empty');
+                headerPreview.textContent = 'No file selected.';
+                return;
+            }
+            headerPreview.classList.remove('empty');
+            const limitedRows = (sampleRows || []).slice(0, 3);
+            const table = document.createElement('table');
+            table.className = 'preview-table-inner';
+            const thead = document.createElement('thead');
+            const headRow = document.createElement('tr');
+            cols.forEach(c => {
+                const th = document.createElement('th');
+                th.textContent = c;
+                headRow.appendChild(th);
+            });
+            thead.appendChild(headRow);
+            table.appendChild(thead);
+            const tbody = document.createElement('tbody');
+            limitedRows.forEach(row => {
+                const tr = document.createElement('tr');
+                cols.forEach((_, idx) => {
+                    const td = document.createElement('td');
+                    td.textContent = row[idx] ?? '';
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            headerPreview.innerHTML = '';
+            headerPreview.appendChild(table);
+        };
+
+        const createSelect = (idPrefix, options, placeholder, allowEmpty = true, multiple = false) => {
+            const select = document.createElement('select');
+            if (idPrefix) select.id = idPrefix;
+            if (multiple) select.multiple = true;
+            select.className = 'mapped-select';
+            if (allowEmpty) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = placeholder || 'Select';
+                select.appendChild(opt);
+            }
+            options.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                select.appendChild(opt);
+            });
+            return select;
+        };
+
+        const renderDevices = () => {
+            if (!devicesContainer) return;
+            devicesContainer.innerHTML = '';
+            if (!devicesState.length) {
+                const card = document.createElement('div');
+                card.className = 'card muted';
+                card.textContent = 'No devices added. Add a device and map target/measured/command columns.';
+                devicesContainer.appendChild(card);
+                return;
+            }
+            devicesState.forEach((device, idx) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                const nameRow = document.createElement('div');
+                nameRow.className = 'row';
+                const label = document.createElement('label');
+                label.textContent = 'Device name';
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = device.name;
+                input.placeholder = 'e.g., Left Flywheel';
+                input.addEventListener('input', (e) => {
+                    const prevName = device.name;
+                    device.name = e.target.value;
+                    replaceLabelsInSubplots(prevName, device.name);
+                    renderSubplots();
+                    syncCustomizationInput();
+                });
+                nameRow.appendChild(label);
+                nameRow.appendChild(input);
+                card.appendChild(nameRow);
+
+                const lowerColumns = columnsState.map(c => c.toLowerCase());
+                const hasKP = lowerColumns.includes('kp');
+                const hasKI = lowerColumns.includes('ki');
+                const hasKD = lowerColumns.includes('kd');
+                const hasKF = lowerColumns.includes('kf');
+                const roles = [
+                    { key: 'target', label: 'Target', title: 'Setpoint column for this device.' },
+                    { key: 'measured', label: 'Measured', title: 'Feedback/telemetry column for the actual value.' },
+                    { key: 'command', label: 'Command/Power', title: 'Control output or power column driving the device.' },
+                    ...(hasKP ? [{ key: 'kP', label: 'kP' }] : []),
+                    ...(hasKI ? [{ key: 'kI', label: 'kI' }] : []),
+                    ...(hasKD ? [{ key: 'kD', label: 'kD' }] : []),
+                    ...(hasKF ? [{ key: 'kF', label: 'kF' }] : []),
+                ];
+
+                const options = columnsState.slice(1); // skip Timestamp
+                roles.forEach(role => {
+                    const row = document.createElement('div');
+                    row.className = 'row';
+                    const rLabel = document.createElement('label');
+                    rLabel.textContent = role.label;
+                    if (role.title) rLabel.title = role.title;
+                    const select = createSelect('', options, 'None', true, false);
+                    select.value = device[role.key] || '';
+                    select.addEventListener('change', (e) => {
+                        syncCustomizationInput();
+                        device[role.key] = e.target.value;
+                    });
+                    row.appendChild(rLabel);
+                    row.appendChild(select);
+                    card.appendChild(row);
+                });
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'primary inline compact';
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    devicesState.splice(idx, 1);
+                    renderSubplots();
+                    renderDevices();
+                    syncCustomizationInput();
+                });
+                card.appendChild(removeBtn);
+                devicesContainer.appendChild(card);
+            });
+        };
+
+        const renderEvents = () => {
+            if (!eventsContainer) return;
+            eventsContainer.innerHTML = '';
+            if (!eventsState.length) {
+                const card = document.createElement('div');
+                card.className = 'card muted';
+                card.textContent = 'No events configured. Add one to overlay markers from a column.';
+                eventsContainer.appendChild(card);
+                return;
+            }
+            const options = columnsState.slice(1);
+            eventsState.forEach((evt, idx) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                const row1 = document.createElement('div');
+                row1.className = 'row';
+                const labelInput = document.createElement('input');
+                labelInput.type = 'text';
+                labelInput.placeholder = 'Event label';
+                labelInput.value = evt.label || '';
+                labelInput.addEventListener('input', (e) => {
+                    const prevKey = getEventKey(evt, idx);
+                    evt.label = e.target.value;
+                    const nextKey = getEventKey(evt, idx);
+                    replaceLabelsInSubplots(prevKey, nextKey);
+                    replaceEventKey(prevKey, nextKey);
+                    renderSubplots();
+                    syncCustomizationInput();
+                });
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'primary inline compact';
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    eventsState.splice(idx, 1);
+                    renderEvents();
+                    renderSubplots();
+                    syncCustomizationInput();
+                });
+                row1.appendChild(labelInput);
+                row1.appendChild(removeBtn);
+                card.appendChild(row1);
+
+                const row2 = document.createElement('div');
+                row2.className = 'row gap';
+                const colLabel = document.createElement('label');
+                colLabel.textContent = 'Event column';
+                const select = createSelect('', options, 'Select', true, false);
+                select.value = evt.column || '';
+
+                const styleLabel = document.createElement('label');
+                styleLabel.textContent = 'Line style';
+                const styleSelect = document.createElement('select');
+                styleSelect.className = 'mapped-select';
+                ['dash', 'solid'].forEach(val => {
+                    const opt = document.createElement('option');
+                    opt.value = val;
+                    opt.textContent = val;
+                    styleSelect.appendChild(opt);
+                });
+                styleSelect.value = evt.style || 'dash';
+                styleSelect.addEventListener('change', (e) => {
+                    evt.style = e.target.value || 'dash';
+                    syncCustomizationInput();
+                });
+
+                const colorLabel = document.createElement('label');
+                colorLabel.textContent = 'Color';
+                const colorInput = document.createElement('input');
+                colorInput.type = 'color';
+                colorInput.value = evt.color || '#e74c3c';
+                colorInput.addEventListener('input', (e) => {
+                    evt.color = e.target.value;
+                    syncCustomizationInput();
+                });
+
+                const updateEventStyleEnabled = () => {
+                    const enabled = !!evt.column;
+                    styleSelect.disabled = !enabled;
+                    colorInput.disabled = !enabled;
+                };
+                updateEventStyleEnabled();
+
+                select.addEventListener('change', (e) => {
+                    const prevKey = getEventKey(evt, idx);
+                    evt.column = e.target.value;
+                    const nextKey = getEventKey(evt, idx);
+                    replaceEventKey(prevKey, nextKey);
+                    updateEventStyleEnabled();
+                    syncCustomizationInput();
+                });
+
+                row2.appendChild(colLabel);
+                row2.appendChild(select);
+                card.appendChild(row2);
+
+                const row3 = document.createElement('div');
+                row3.className = 'row gap';
+                row3.appendChild(styleLabel);
+                row3.appendChild(styleSelect);
+                row3.appendChild(colorLabel);
+                row3.appendChild(colorInput);
+                card.appendChild(row3);
+
+                eventsContainer.appendChild(card);
+            });
+            syncCustomizationInput();
+        };
+
+        const renderSubplots = () => {
+            if (!subplotsContainer) return;
+            subplotsContainer.innerHTML = '';
+            if (!subplotsState.length) {
+                const card = document.createElement('div');
+                card.className = 'card muted';
+                card.textContent = 'No subplots configured. Add one and pick columns to display together.';
+                subplotsContainer.appendChild(card);
+                return;
+            }
+            const deviceNames = devicesState.map(d => d.name).filter(Boolean);
+            const eventNames = eventsState.map(e => e.label).filter(Boolean);
+            const options = Array.from(new Set([...columnsState.slice(1), ...deviceNames, ...eventNames]));
+            subplotsState.forEach((subplot, idx) => {
+                ensureLegendOverrides(subplot);
+                const legendOptions = ensureLegendOverrides(subplot);
+                ensureSubplotEvents(subplot);
+                const columnCount = (subplot.columns || []).length;
+                const card = document.createElement('div');
+                card.className = 'card';
+                const titleRow = document.createElement('div');
+                titleRow.className = 'row';
+                const title = document.createElement('input');
+                title.type = 'text';
+                title.placeholder = 'Subplot title';
+                title.value = subplot.title || '';
+                title.addEventListener('input', (e) => {
+                    subplot.title = e.target.value;
+                    syncCustomizationInput();
+                });
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'primary inline compact';
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    subplotsState.splice(idx, 1);
+                    renderSubplots();
+                    syncCustomizationInput();
+                });
+                titleRow.appendChild(title);
+                titleRow.appendChild(removeBtn);
+                card.appendChild(titleRow);
+
+                const row = document.createElement('div');
+                row.className = 'row gap';
+                const label = document.createElement('label');
+                label.textContent = 'Columns/devices to add';
+                const select = createSelect('', options, 'Select', true, false);
+                const addBtn = document.createElement('button');
+                addBtn.type = 'button';
+                addBtn.className = 'ghost inline';
+                addBtn.textContent = 'Add';
+                addBtn.addEventListener('click', () => {
+                    const choice = select.value;
+                    if (!choice) return;
+                    const merged = Array.from(new Set([...(subplot.columns || []), choice]));
+                    subplot.columns = merged;
+                    renderSubplots();
+                    syncCustomizationInput();
+                });
+                row.appendChild(label);
+                row.appendChild(select);
+                row.appendChild(addBtn);
+                card.appendChild(row);
+
+                const chips = document.createElement('div');
+                chips.className = 'chips';
+                if (!subplot.columns || !subplot.columns.length) {
+                    const empty = document.createElement('span');
+                    empty.className = 'muted';
+                    empty.textContent = 'No columns/devices added yet. Use the dropdown and Add.';
+                    chips.appendChild(empty);
+                } else {
+                    subplot.columns.forEach((value) => {
+                        const chip = document.createElement('span');
+                        chip.className = 'chip';
+                        chip.textContent = value;
+                        chip.title = 'Click to remove';
+                        chip.addEventListener('click', () => {
+                            subplot.columns = subplot.columns.filter(v => v !== value);
+                            renderSubplots();
+                            syncCustomizationInput();
+                        });
+                        chips.appendChild(chip);
+                    });
+                }
+                card.appendChild(chips);
+
+                const legendItems = ensureLegendOverrides(subplot);
+                const legendWrap = document.createElement('div');
+                legendWrap.className = 'legend-section';
+                const legendTitle = document.createElement('p');
+                legendTitle.className = 'hint';
+                legendTitle.textContent = 'Legend preview';
+                legendWrap.appendChild(legendTitle);
+
+                const legendList = document.createElement('div');
+                legendList.className = 'legend-list';
+
+                let dragIdx = null;
+
+                const currentLegend = () => {
+                    if (Array.isArray(subplot.legendOverrides) && subplot.legendOverrides.length) {
+                        return [...subplot.legendOverrides];
+                    }
+                    return [...legendItems];
+                };
+
+                const moveLegend = (from, to) => {
+                    const current = currentLegend();
+                    if (to < 0 || to >= current.length) return;
+                    const updated = [...current];
+                    const [item] = updated.splice(from, 1);
+                    updated.splice(to, 0, item);
+                    subplot.legendOverrides = updated;
+                    renderSubplots();
+                    syncCustomizationInput();
+                };
+
+                legendItems.forEach((item, lIdx) => {
+                    const row = document.createElement('div');
+                    row.className = 'legend-row';
+                    row.draggable = true;
+
+                    const keyLabel = document.createElement('span');
+                    keyLabel.className = 'legend-key';
+                    keyLabel.textContent = (item.key || '').replace(/::/g, '.');
+                    row.appendChild(keyLabel);
+
+                    const nameInput = document.createElement('input');
+                    nameInput.type = 'text';
+                    nameInput.value = item.label || item.key;
+                    nameInput.placeholder = 'Legend label';
+                    nameInput.maxLength = 20;
+                    nameInput.size = 20;
+                    nameInput.addEventListener('input', (e) => {
+                        item.label = e.target.value || item.key;
+                        syncCustomizationInput();
+                        renderSubplots();
+                    });
+                    row.appendChild(nameInput);
+
+                    const controls = document.createElement('div');
+                    controls.className = 'legend-controls';
+                    const upBtn = document.createElement('button');
+                    upBtn.type = 'button';
+                    upBtn.className = 'ghost inline compact';
+                    upBtn.textContent = '↑';
+                    upBtn.addEventListener('click', () => moveLegend(lIdx, lIdx - 1));
+                    const downBtn = document.createElement('button');
+                    downBtn.type = 'button';
+                    downBtn.className = 'ghost inline compact';
+                    downBtn.textContent = '↓';
+                    downBtn.addEventListener('click', () => moveLegend(lIdx, lIdx + 1));
+                    controls.appendChild(upBtn);
+                    controls.appendChild(downBtn);
+                    row.appendChild(controls);
+
+                    row.addEventListener('dragstart', (e) => {
+                        dragIdx = lIdx;
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+                    row.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        row.classList.add('drag-over');
+                        e.dataTransfer.dropEffect = 'move';
+                    });
+                    row.addEventListener('dragleave', () => {
+                        row.classList.remove('drag-over');
+                    });
+                    row.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        row.classList.remove('drag-over');
+                        if (dragIdx === null) return;
+                        moveLegend(dragIdx, lIdx);
+                        dragIdx = null;
+                    });
+
+                    legendList.appendChild(row);
+                });
+
+                legendWrap.appendChild(legendList);
+                card.appendChild(legendWrap);
+
+                const advancedWrap = document.createElement('details');
+                advancedWrap.className = 'advanced-section';
+                advancedWrap.open = !!(subplot.diff || subplot.interest);
+                const advSummary = document.createElement('summary');
+                advSummary.className = 'advanced-summary';
+                const advTitle = document.createElement('span');
+                advTitle.className = 'hint advanced-title';
+                advTitle.textContent = 'Advanced settings';
+                advSummary.appendChild(advTitle);
+                advancedWrap.appendChild(advSummary);
+                const advancedContent = document.createElement('div');
+                advancedContent.className = 'advanced-content';
+                advancedWrap.appendChild(advancedContent);
+
+                ensureSubplotEvents(subplot);
+
+                const toggles = document.createElement('div');
+                toggles.className = 'row wrap gap toggles-row';
+
+                const diff = document.createElement('label');
+                diff.className = 'diff-inline';
+                diff.title = 'Use diff band for sync analysis between two data time series.';
+                const diffChk = document.createElement('input');
+                diffChk.type = 'checkbox';
+                if (columnCount < 2) {
+                    subplot.diff = false;
+                    subplot.diffKeys = [];
+                }
+                diffChk.disabled = columnCount < 2;
+                diffChk.checked = !!subplot.diff;
+                diffChk.addEventListener('change', (e) => {
+                    subplot.diff = e.target.checked;
+                    if (e.target.checked) advancedWrap.open = true;
+                    if (subplot.diff && (!Array.isArray(subplot.diffKeys) || subplot.diffKeys.length < 2)) {
+                        const keys = (legendOptions || []).map(o => o.key).filter(Boolean);
+                        if (keys.length >= 2) {
+                            subplot.diffKeys = [keys[0], keys[1]];
+                        }
+                    }
+                    syncCustomizationInput();
+                    renderSubplots();
+                });
+                const diffLabel = document.createElement('span');
+                diffLabel.textContent = 'Diff band';
+                diff.appendChild(diffChk);
+                diff.appendChild(diffLabel);
+
+                if (subplot.diff) {
+                    const pair = Array.isArray(subplot.diffKeys) ? subplot.diffKeys.slice(0, 2) : [];
+                    const keys = (legendOptions || []).map(o => o.key);
+                    if (!pair[0] || !keys.includes(pair[0])) pair[0] = keys[0];
+                    if (!pair[1] || !keys.includes(pair[1])) pair[1] = keys[1] || keys[0];
+                    subplot.diffKeys = pair;
+
+                    const selectA = document.createElement('select');
+                    selectA.className = 'mapped-select';
+                    (legendOptions || []).forEach((opt) => {
+                        const o = document.createElement('option');
+                        o.value = opt.key;
+                        o.textContent = opt.label || opt.key;
+                        selectA.appendChild(o);
+                    });
+                    selectA.value = pair[0] || '';
+                    selectA.title = 'Series 1';
+                    selectA.addEventListener('change', (e) => {
+                        subplot.diffKeys = [e.target.value, selectB.value];
+                        syncCustomizationInput();
+                    });
+
+                    const selectB = document.createElement('select');
+                    selectB.className = 'mapped-select';
+                    (legendOptions || []).forEach((opt) => {
+                        const o = document.createElement('option');
+                        o.value = opt.key;
+                        o.textContent = opt.label || opt.key;
+                        selectB.appendChild(o);
+                    });
+                    selectB.value = pair[1] || '';
+                    selectB.title = 'Series 2';
+                    selectB.addEventListener('change', (e) => {
+                        subplot.diffKeys = [selectA.value, e.target.value];
+                        syncCustomizationInput();
+                    });
+
+                    const labelA = document.createElement('span');
+                    labelA.textContent = 'Series 1';
+                    const labelB = document.createElement('span');
+                    labelB.textContent = 'Series 2';
+
+                    diff.appendChild(labelA);
+                    diff.appendChild(selectA);
+                    diff.appendChild(labelB);
+                    diff.appendChild(selectB);
+                }
+
+                toggles.appendChild(diff);
+                advancedContent.appendChild(toggles);
+
+                const interestRow = document.createElement('div');
+                interestRow.className = 'row wrap gap interest-row';
+                const interest = document.createElement('label');
+                interest.className = 'interest-toggle';
+                interest.title = 'Generate a Time of Interest table for this subplot.';
+                const interestChk = document.createElement('input');
+                interestChk.type = 'checkbox';
+                if (columnCount < 1) {
+                    subplot.interest = false;
+                }
+                interestChk.disabled = columnCount < 1;
+                interestChk.checked = !!subplot.interest;
+                interestChk.addEventListener('change', (e) => {
+                    subplot.interest = e.target.checked;
+                    if (e.target.checked) advancedWrap.open = true;
+                    syncCustomizationInput();
+                    renderSubplots();
+                });
+                const interestText = document.createElement('span');
+                interestText.textContent = 'Identify time of interest';
+                interest.appendChild(interestChk);
+                interest.appendChild(interestText);
+                interestRow.appendChild(interest);
+
+                if (subplot.interest) {
+                    const titleLabel = document.createElement('label');
+                    titleLabel.textContent = 'Name';
+                    const titleInput = document.createElement('input');
+                    titleInput.type = 'text';
+                    titleInput.maxLength = 32;
+                    titleInput.placeholder = 'e.g., Velocity Dips';
+                    titleInput.value = subplot.interestTitle || '';
+                    titleInput.addEventListener('input', (e) => {
+                        subplot.interestTitle = e.target.value;
+                        syncCustomizationInput();
+                    });
+                    interestRow.appendChild(titleLabel);
+                    interestRow.appendChild(titleInput);
+
+                    advancedContent.appendChild(interestRow);
+
+                    const toiBlock = document.createElement('div');
+                    toiBlock.className = 'interest-settings';
+
+                    const seriesRow = document.createElement('div');
+                    seriesRow.className = 'row wrap gap toi-row';
+
+                    const seriesLabel = document.createElement('label');
+                    seriesLabel.textContent = 'Series';
+                    const seriesSelect = document.createElement('select');
+                    seriesSelect.className = 'mapped-select';
+                    const seriesPlaceholder = document.createElement('option');
+                    seriesPlaceholder.value = '';
+                    seriesPlaceholder.textContent = 'Select';
+                    seriesSelect.appendChild(seriesPlaceholder);
+                    (legendOptions || []).forEach((opt) => {
+                        const o = document.createElement('option');
+                        o.value = opt.key;
+                        o.textContent = opt.label || opt.key;
+                        seriesSelect.appendChild(o);
+                    });
+                    const defaultSeries = subplot.interestColumn || ((legendOptions && legendOptions[0] && legendOptions[0].key) ? legendOptions[0].key : '');
+                    seriesSelect.value = defaultSeries;
+                    seriesSelect.addEventListener('change', (e) => {
+                        subplot.interest = true;
+                        subplot.interestColumn = e.target.value;
+                        syncCustomizationInput();
+                    });
+                    seriesLabel.appendChild(seriesSelect);
+                    seriesRow.appendChild(seriesLabel);
+
+                    const dirLabel = document.createElement('label');
+                    dirLabel.textContent = 'Direction';
+                    const dirSelect = document.createElement('select');
+                    dirSelect.className = 'mapped-select';
+                    ['rising','falling','both'].forEach(val => {
+                        const opt = document.createElement('option');
+                        opt.value = val;
+                        opt.textContent = val;
+                        dirSelect.appendChild(opt);
+                    });
+                    dirSelect.value = subplot.interestDirection || 'rising';
+                    dirSelect.addEventListener('change', (e) => {
+                        subplot.interest = true;
+                        subplot.interestDirection = e.target.value;
+                        syncCustomizationInput();
+                    });
+                    dirLabel.appendChild(dirSelect);
+                    seriesRow.appendChild(dirLabel);
+
+                    toiBlock.appendChild(seriesRow);
+
+                    const threshRow = document.createElement('div');
+                    threshRow.className = 'row wrap gap toi-row';
+
+                    const threshLabel = document.createElement('label');
+                    const threshTitle = document.createElement('span');
+                    threshTitle.textContent = 'Threshold';
+                    const threshInput = document.createElement('input');
+                    threshInput.type = 'number';
+                    threshInput.step = 'any';
+                    threshInput.min = '0';
+                    threshInput.value = subplot.interestThreshold ?? 10;
+                    threshInput.style.width = '90px';
+                    threshInput.addEventListener('input', (e) => {
+                        const val = parseFloat(e.target.value);
+                        subplot.interest = true;
+                        subplot.interestThreshold = Number.isFinite(val) ? val : '';
+                        syncCustomizationInput();
+                    });
+                    const threshMode = document.createElement('select');
+                    threshMode.className = 'mapped-select';
+                    [{k:'percent', v:'% range'}, {k:'absolute', v:'abs'}].forEach(item => {
+                        const opt = document.createElement('option');
+                        opt.value = item.k;
+                        opt.textContent = item.v;
+                        threshMode.appendChild(opt);
+                    });
+                    threshMode.value = subplot.interestThresholdMode || 'percent';
+                    threshMode.addEventListener('change', (e) => {
+                        subplot.interest = true;
+                        subplot.interestThresholdMode = e.target.value;
+                        syncCustomizationInput();
+                    });
+                    const threshControls = document.createElement('div');
+                    threshControls.className = 'interest-thresh-controls';
+                    threshControls.appendChild(threshInput);
+                    threshControls.appendChild(threshMode);
+                    const spacingLabel = document.createElement('label');
+                    spacingLabel.textContent = 'Min spacing (ms)';
+                    const spacingInput = document.createElement('input');
+                    spacingInput.type = 'number';
+                    spacingInput.min = '0';
+                    spacingInput.value = subplot.interestMinSpacing ?? 150;
+                    spacingInput.style.width = '90px';
+                    spacingInput.addEventListener('input', (e) => {
+                        const val = parseFloat(e.target.value);
+                        subplot.interest = true;
+                        subplot.interestMinSpacing = Number.isFinite(val) ? val : '';
+                        syncCustomizationInput();
+                    });
+                    spacingLabel.appendChild(spacingInput);
+
+                    threshLabel.appendChild(threshTitle);
+                    threshLabel.appendChild(threshControls);
+                    threshRow.appendChild(threshLabel);
+                    threshRow.appendChild(spacingLabel);
+                    toiBlock.appendChild(threshRow);
+
+                    advancedContent.appendChild(toiBlock);
+                } else {
+                    advancedContent.appendChild(interestRow);
+                }
+                card.appendChild(advancedWrap);
+
+                subplotsContainer.appendChild(card);
+            });
+            syncCustomizationInput();
+        };
+
+        const addDevice = () => {
+            if (!columnsState.length) return;
+            devicesState.push({
+                name: '',
+                measured: '',
+                target: '',
+                command: '',
+                kP: '',
+                kI: '',
+                kD: '',
+                kF: ''
+            });
+            if (devicesSection) devicesSection.open = true;
+            renderDevices();
+            renderSubplots();
+            syncCustomizationInput();
+        };
+
+        const addSubplot = () => {
+            if (!columnsState.length) return;
+            subplotsState.push({ title: '', columns: [], shareY: false, diff: false, interest: false, legendOverrides: [] });
+            if (subplotsSection) subplotsSection.open = true;
+            renderSubplots();
+            syncCustomizationInput();
+        };
+
+        const addEvent = () => {
+            if (!columnsState.length) return;
+            eventsState.push({ label: '', column: '', color: '#e74c3c', style: 'dash' });
+            if (eventsSection) eventsSection.open = true;
+            renderEvents();
+            renderSubplots();
+            syncCustomizationInput();
+        };
+
+        const validateFile = (file, onSuccess) => {
+            clearError();
+            setPostValidationVisible(false);
+            setAnalyzeVisible(false);
+            if (!file) {
+                showError('Please choose a file.');
+                return;
+            }
+            if (file.size > maxSizeBytes) {
+                showError('File too large. Limit is 3 MB.');
+                return;
+            }
+            const nameOk = file.name.toLowerCase().endsWith('.csv');
+            if (!nameOk && !(file.type === 'text/csv' || file.type === 'application/csv')) {
+                showError('Only CSV files are accepted.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const text = ev.target.result;
+                    if (!text || !text.length) {
+                        showError('File is empty.');
+                        return;
+                    }
+                    const lines = text.split(/\r?\n/).filter(l => l.length > 0);
+                    if (!lines.length) {
+                        showError('File is empty.');
+                        return;
+                    }
+                    const headerLine = lines[0].trim();
+                    if (!headerLine.startsWith('#')) {
+                        showError("First row must be a comment header starting with '#'.");
+                        return;
+                    }
+                    const header = headerLine.replace(/^#+/, '').trim();
+                    if (!header.includes(',')) {
+                        showError('Header row must contain comma-separated column names.');
+                        return;
+                    }
+                    const columns = header.split(',').map(s => s.trim());
+                    if (!columns.length || columns[0] !== 'Timestamp') {
+                        showError("First column must be 'Timestamp'.");
+                        return;
+                    }
+
+                    const dataLines = lines.slice(1).filter(l => !l.trim().startsWith('#'));
+                    if (!dataLines.length) {
+                        showError('No data rows found.');
+                        return;
+                    }
+
+                    let prev = -Infinity;
+                    const sampleRows = [];
+                    for (let i = 0; i < dataLines.length; i += 1) {
+                        const parts = dataLines[i].split(',');
+                        const t = parseFloat(parts[0]);
+                        if (!Number.isFinite(t)) {
+                            showError('Timestamp column contains invalid values.');
+                            return;
+                        }
+                        if (t <= prev) {
+                            showError('Timestamp column must be strictly increasing.');
+                            return;
+                        }
+                        prev = t;
+                        if (sampleRows.length < 3) sampleRows.push(parts);
+                    }
+
+                    // Update client-side state for preview and mapping
+                    columnsState = columns;
+                    sampleRowsState = sampleRows;
+                    renderHeaderPreview(columnsState, sampleRowsState);
+                    renderDevices();
+                    renderEvents();
+                    renderSubplots();
+                    syncCustomizationInput();
+                    setPostValidationVisible(true);
+                    setAnalyzeVisible(true);
+                    tryApplyPendingProfile();
+
+                    if (onSuccess) onSuccess();
+                } catch (err) {
+                    showError('Could not validate file.');
+                }
+            };
+            reader.onerror = () => {
+                showError('Could not read file.');
+            };
+            reader.readAsText(file);
+        };
+
+        fileInput.addEventListener('change', () => {
+            clearError();
+            const file = fileInput.files[0];
+            if (fileNameDisplay) {
+                fileNameDisplay.textContent = file ? file.name : '';
+            }
+            validateFile(file, null);
+            tryApplyPendingProfile();
+            syncCustomizationInput();
+        });
+
+        if (profileFileInput) {
+            profileFileInput.addEventListener('change', () => {
+                clearError();
+                const pf = profileFileInput.files && profileFileInput.files[0];
+                if (profileNameDisplay) {
+                    profileNameDisplay.textContent = pf ? pf.name : '';
+                }
+                if (pf) {
+                    pendingProfileFile = pf;
+                    loadProfileFromFile(pf, true);
+                }
+            });
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const file = fileInput.files[0];
+            validateFile(file, () => {
+                syncCustomizationInput();
+                if (loadingOverlay) loadingOverlay.classList.add('active');
+                form.submit();
+            });
+        });
+
+        if (analyzeBtn) {
+            analyzeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const file = fileInput.files[0];
+                validateFile(file, () => {
+                    syncCustomizationInput();
+                    if (loadingOverlay) loadingOverlay.classList.add('active');
+                    if (typeof form.requestSubmit === 'function') {
+                        form.requestSubmit();
+                    } else {
+                        form.submit();
+                    }
+                });
+            });
+        }
+
+        // Button hooks (placeholders; state only)
+        if (addDeviceBtn) {
+            addDeviceBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                addDevice();
+                syncCustomizationInput();
+            });
+        }
+
+        if (addSubplotBtn) {
+            addSubplotBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                addSubplot();
+                syncCustomizationInput();
+            });
+        }
+
+        if (addEventBtn) {
+            addEventBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                addEvent();
+                syncCustomizationInput();
+            });
+        }
+
+        if (saveProfileBtn) {
+            saveProfileBtn.addEventListener('click', async () => {
+                clearError();
+                if (!columnsState.length) {
+                    showError('Validate a CSV before saving a profile.');
+                    return;
+                }
+                const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const defaultName = `customization-profile-${stamp}.json`;
+                try {
+                    const usedPicker = await saveProfileInteractive(buildProfile(), defaultName);
+                    if (!usedPicker && !window.showSaveFilePicker) {
+                        const name = prompt('Save profile as:', defaultName) || defaultName;
+                        const safeName = name.trim() || defaultName;
+                        const finalName = safeName.toLowerCase().endsWith('.json') ? safeName : `${safeName}.json`;
+                        downloadProfile(buildProfile(), finalName);
+                    }
+                } catch (err) {
+                    showError('Could not save profile. Your browser may not support the save picker.');
+                }
+            });
+        }
+
+        if (profileFileInput) {
+            profileFileInput.addEventListener('change', () => {
+                clearError();
+                if (profileFileInput.files && profileFileInput.files[0]) {
+                    pendingProfileFile = profileFileInput.files[0];
+                    loadProfileFromFile(profileFileInput.files[0], true);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

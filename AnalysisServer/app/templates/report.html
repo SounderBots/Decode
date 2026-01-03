@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Report - {{ filename }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- Pin Plotly.js to a recent version and bust CDN cache -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js?v=2.27.0"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="report-header header-block">
+            <div class="header-text">
+                <div class="title-row" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <h1 style="margin: 0;">Analysis Report</h1>
+                </div>
+                <div class="header-actions" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
+                    <a href="/" class="back-link">← Analyze Another File</a>
+                </div>
+            </div>
+            <div class="theme-toggle">
+                <label for="themeSelect">Theme:</label>
+                <select id="themeSelect">
+                    <option value="auto">Auto</option>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="page-flex">
+            <aside class="left-rail">
+                {% if loop_stats_enabled %}
+                <details class="card">
+                    <summary>Loop Frequency</summary>
+                    {% if loop_stats %}
+                    <ul>
+                        <li class="stat-line"><strong>Median:</strong> {{ "%.2f"|format(loop_stats.median_ms) }} ms ({{ "%.1f"|format(loop_stats.hz) }} Hz)</li>
+                        <li class="stat-line"><strong>Min/Max:</strong> {{ "%.2f"|format(loop_stats.min_ms) }} / {{ "%.2f"|format(loop_stats.max_ms) }} ms</li>
+                        <li class="stat-line"><strong>Mean:</strong> {{ "%.2f"|format(loop_stats.mean_ms) }} ms</li>
+                    </ul>
+                    {% if loop_stats.spikes %}
+                    <p><strong>Top Spikes:</strong></p>
+                    <ul>
+                        {% for spike in loop_stats.spikes %}
+                        <li class="clickable-list-item" data-spike-time="{{ "%.3f"|format(spike.time) }}">{{ "%.2f"|format(spike.val) }} ms at {{ "%.3f"|format(spike.time) }}s</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% else %}
+                    <p>No timestamp data.</p>
+                    {% endif %}
+                </details>
+                {% endif %}
+
+                {% set toi_rows = (toi_payload.rows if toi_payload and toi_payload.rows is defined else []) %}
+                {% if interest_subplots %}
+                <details class="card" open>
+                    <summary>Times of Interest</summary>
+                    
+                    <!-- TOI Controls Bar -->
+                    <div class="toi-controls-bar" style="padding: 8px; background: rgba(0,0,0,0.03); border-bottom: 1px solid #e5e7eb; margin-bottom: 8px; font-size: 0.9em;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                            <select id="toiSubplotSelect" style="padding: 2px;" title="Select Subplot"></select>
+                            <select id="toiSeriesSelect" style="padding: 2px; max-width: 120px;" title="Select Series"></select>
+                            <select id="toiDirection" style="padding: 2px;" title="Crossing Direction">
+                                <option value="rising">Rising</option>
+                                <option value="falling">Falling</option>
+                                <option value="either">Either</option>
+                            </select>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <select id="toiThresholdMode" style="padding: 2px;">
+                                    <option value="absolute">Abs</option>
+                                    <option value="percent">%</option>
+                                </select>
+                                <input type="number" id="toiThresholdVal" step="any" style="width: 60px; padding: 2px;" placeholder="Val">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <label for="toiMinSpacing" style="font-size: 0.85em;">Min ms:</label>
+                                <input type="number" id="toiMinSpacing" step="1" value="500" style="width: 50px; padding: 2px;">
+                            </div>
+                            <button id="toiApplyBtn" type="button" style="padding: 2px 8px; cursor: pointer;">Apply</button>
+                        </div>
+                        <div id="toiStatusMsg" style="margin-top: 4px; font-size: 0.85em; color: #666; min-height: 1.2em;"></div>
+                    </div>
+
+                    {% for subplot in interest_subplots %}
+                    <div class="table-scroll shot-table-scroll" id="toi-table-container-{{ subplot.index }}" style="margin-top: 8px;">
+                        <h4 style="margin: 0 0 6px 0; text-align: center;">{{ subplot.interest_title or subplot.title }}</h4>
+                        <table class="mini-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:42px" title="Index">#</th>
+                                    <th title="Time in seconds relative to first log">Time</th>
+                                    <th title="Start diff band value">Start diff band</th>
+                                    <th title="Max diff band value">Max diff band</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if toi_rows %}
+                                    {% for shot in toi_rows %}
+                                    {% set has_start = (shot.start_diff is defined and shot.start_diff is not none) %}
+                                    {% set has_drop = (shot.max_drop_diff is defined and shot.max_drop_diff is not none) %}
+                                    <tr class="{{ 'error' if (has_start and shot.start_diff > 0) else 'success' }} clickable-row" data-shot-time="{{ "%.6f"|format(shot.time) }}">
+                                        <td>{{ shot.index }}</td>
+                                        <td>{{ "%.3f"|format(shot.time) }}</td>
+                                        <td>{{ "%.1f"|format(shot.start_diff) if has_start else '-' }}</td>
+                                        <td>{{ "%.1f"|format(shot.max_drop_diff) if has_drop else '-' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" style="text-align:center; color:#6b7280;">No times identified yet.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+
+                    <div style="margin-top: 10px; display: flex; justify-content: center;">
+                        <button id="toiSaveProfileBtn" type="button" class="primary" style="padding: 6px 10px;">Save Customization Profile</button>
+                    </div>
+                </details>
+                {% endif %}
+            </aside>
+
+            <div class="right-pane">
+                <div class="card meta-card" style="margin-bottom: 12px;">
+                    <h3 style="margin: 0 0 6px 0;">Log File</h3>
+                    <ul class="meta-list">
+                        <li class="stat-line"><strong>Name:</strong> {{ filename }}</li>
+                        {% if file_size_kb is not none %}
+                        <li class="stat-line"><strong>Size:</strong> {{ "%.1f"|format(file_size_kb) }} KB</li>
+                        {% endif %}
+                    </ul>
+                    {% if metadata_lines %}
+                    <p style="margin: 6px 0 4px 0;"><strong>Metadata:</strong></p>
+                    <ul class="meta-list">
+                        {% for line in metadata_lines[:4] %}
+                        <li>{{ line }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p style="margin: 6px 0 0 0;">No metadata provided.</p>
+                    {% endif %}
+                </div>
+                <div id="analysisPlot" class="plot-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script id="plotData" type="application/json">{{ analysis_plot | tojson | safe }}</script>
+    {% if custom_plot is not none %}
+    <script id="customPlotData" type="application/json">{{ custom_plot | tojson | safe }}</script>
+    {% endif %}
+    <script id="customizationData" type="application/json">{{ customization_payload | tojson | safe }}</script>
+    {% if session_id is defined %}
+    <script id="sessionIdData" type="application/json">{{ session_id | tojson | safe }}</script>
+    {% endif %}
+
+    <script>
+        const plotData = JSON.parse(document.getElementById('plotData').textContent);
+        const customPlotEl = document.getElementById('customPlotData');
+        const customPlotData = customPlotEl ? JSON.parse(customPlotEl.textContent || '{}') : null;
+        const mainPlotData = (customPlotData && customPlotData.data) ? customPlotData : plotData;
+        const sessionIdEl = document.getElementById('sessionIdData');
+        const sessionId = sessionIdEl ? JSON.parse(sessionIdEl.textContent || 'null') : null;
+        if (customPlotData && (!customPlotData.data || !customPlotData.data.length)) {
+            console.warn('customPlotData present but empty; falling back to default plot');
+        }
+        const themeSelect = document.getElementById('themeSelect');
+
+        const themeColors = {
+            light: {
+                paper: '#f8f9fa',
+                plot: '#f8f9fa',
+                text: '#1f2933',
+                grid: '#e5e7eb',
+                legendBg: '#f8f9fa',
+                hoverBg: '#ffffff',
+                hoverText: '#1f2933',
+            },
+            dark: {
+                paper: '#0f172a',
+                plot: '#0f172a',
+                text: '#e5e7eb',
+                grid: '#334155',
+                legendBg: '#0f172a',
+                hoverBg: '#111827',
+                hoverText: '#e5e7eb',
+            }
+        };
+
+        const getLegendKeys = (layout) => Object.keys(layout || {}).filter(k => k === 'legend' || k.startsWith('legend'));
+
+        const getSystemTheme = () => (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+        const applyThemePreference = (pref) => {
+            const root = document.documentElement;
+            if (pref === 'light' || pref === 'dark') {
+                root.setAttribute('data-theme', pref);
+            } else {
+                root.removeAttribute('data-theme');
+            }
+        };
+
+        const getEffectiveTheme = () => {
+            const pref = localStorage.getItem('themePreference') || 'auto';
+            if (pref === 'light' || pref === 'dark') return pref;
+            return getSystemTheme();
+        };
+
+        const initThemeControl = () => {
+            const saved = localStorage.getItem('themePreference') || 'auto';
+            if (themeSelect) {
+                themeSelect.value = saved;
+                themeSelect.addEventListener('change', () => {
+                    const pref = themeSelect.value;
+                    localStorage.setItem('themePreference', pref);
+                    applyThemePreference(pref);
+                    const mode = getEffectiveTheme();
+                    applyThemeRelayout(mode, plotData, plotDiv);
+                    if (customPlotData && customPlotDiv) {
+                        applyThemeRelayout(mode, customPlotData, customPlotDiv);
+                    }
+                });
+            }
+            applyThemePreference(saved);
+        };
+
+        const applyThemeToLayout = (layout, mode) => {
+            const colors = themeColors[mode] || themeColors.light;
+            layout.paper_bgcolor = colors.paper;
+            layout.plot_bgcolor = colors.plot;
+            layout.font = layout.font || {};
+            layout.font.color = colors.text;
+            const legendKeys = getLegendKeys(layout);
+            legendKeys.forEach(key => {
+                layout[key] = Object.assign({}, layout[key], { bgcolor: colors.legendBg, bordercolor: colors.grid });
+            });
+            layout.hoverlabel = Object.assign({}, layout.hoverlabel, { bgcolor: colors.hoverBg, bordercolor: colors.grid, font: { color: colors.hoverText } });
+
+            const axisKeys = Object.keys(layout).filter(k => k.startsWith('xaxis') || k.startsWith('yaxis'));
+            axisKeys.forEach(k => {
+                layout[k] = Object.assign({}, layout[k], {
+                    gridcolor: colors.grid,
+                    linecolor: colors.grid,
+                    zerolinecolor: colors.grid,
+                    tickcolor: colors.grid,
+                    title: layout[k]?.title || undefined,
+                });
+                if (layout[k].title && layout[k].title.font) {
+                    layout[k].title.font.color = colors.text;
+                }
+            });
+        };
+
+        const applyThemeRelayout = (mode, targetData, targetDiv) => {
+            if (!targetData || !targetDiv) return;
+            const colors = themeColors[mode] || themeColors.light;
+            const updates = {
+                paper_bgcolor: colors.paper,
+                plot_bgcolor: colors.plot,
+                font: { color: colors.text },
+                hoverlabel: { bgcolor: colors.hoverBg, bordercolor: colors.grid, font: { color: colors.hoverText } },
+            };
+            const axisUpdates = {};
+            const layout = targetData.layout || {};
+            Object.keys(layout).forEach(k => {
+                if (k.startsWith('xaxis') || k.startsWith('yaxis')) {
+                    axisUpdates[`${k}.gridcolor`] = colors.grid;
+                    axisUpdates[`${k}.linecolor`] = colors.grid;
+                    axisUpdates[`${k}.zerolinecolor`] = colors.grid;
+                    axisUpdates[`${k}.tickcolor`] = colors.grid;
+                    axisUpdates[`${k}.title.font.color`] = colors.text;
+                }
+            });
+            const legendUpdates = {};
+            const legendKeys = getLegendKeys(layout);
+            legendKeys.forEach(key => {
+                legendUpdates[`${key}.bgcolor`] = colors.legendBg;
+                legendUpdates[`${key}.bordercolor`] = colors.grid;
+            });
+            Plotly.relayout(targetDiv, Object.assign({}, updates, axisUpdates, legendUpdates));
+        };
+        // Debug: log trace names and lengths to verify data reaching the client
+        if (mainPlotData && mainPlotData.data) {
+            const summary = mainPlotData.data.map(d => ({
+                name: d.name,
+                x: Array.isArray(d.x) ? d.x.length : null,
+                y: Array.isArray(d.y) ? d.y.length : null
+            }));
+            console.log('Plot traces:', mainPlotData.data.length, summary);
+        } else {
+            console.warn('plotData missing or malformed', mainPlotData);
+        }
+
+        const plotDiv = document.getElementById('analysisPlot');
+
+        const getDataTraceIndices = () => {
+            const meta = mainPlotData?.layout?.meta;
+            if (meta && Array.isArray(meta.data_trace_indices)) {
+                return meta.data_trace_indices;
+            }
+            // Fallback: assume all traces are data-bearing
+            return mainPlotData?.data ? mainPlotData.data.map((_, i) => i) : [];
+        };
+
+            const shotTables = Array.from(document.querySelectorAll('.shot-table-scroll'));
+            const leftRail = document.querySelector('.left-rail');
+            const detailToggles = Array.from(document.querySelectorAll('.left-rail details.card'));
+
+            const adjustShotTableHeight = () => {
+                if (!shotTables.length) return;
+                const container = leftRail || document.querySelector('.right-pane');
+                if (!container) return;
+                const rect = container.getBoundingClientRect();
+                const available = window.innerHeight - rect.top - 40;
+                const maxH = Math.max(220, available);
+                shotTables.forEach(tbl => {
+                    tbl.style.maxHeight = `${maxH}px`;
+                });
+            };
+
+        adjustShotTableHeight();
+        window.addEventListener('resize', adjustShotTableHeight);
+        detailToggles.forEach(d => d.addEventListener('toggle', adjustShotTableHeight));
+
+        initThemeControl();
+        const initialTheme = getEffectiveTheme();
+        applyThemeToLayout(mainPlotData.layout, initialTheme);
+
+        Plotly.newPlot(plotDiv, mainPlotData.data, mainPlotData.layout).then(() => {
+            const dataIndices = getDataTraceIndices();
+            if (!dataIndices.length) return;
+
+            const mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+            if (mq && mq.addEventListener) {
+                mq.addEventListener('change', (e) => {
+                    const pref = localStorage.getItem('themePreference') || 'auto';
+                    if (pref === 'auto') {
+                        const mode = e.matches ? 'dark' : 'light';
+                            applyThemeRelayout(mode, mainPlotData, plotDiv);
+                    }
+                });
+            }
+
+            const controlIndices = mainPlotData.data.reduce((acc, trace, idx) => {
+                if (trace && trace.name === 'Show all') acc.show = idx;
+                if (trace && trace.name === 'Hide all') acc.hide = idx;
+                return acc;
+            }, {});
+
+            const setControlState = (mode) => {
+                const showActive = { color: '#1f78ff', width: 5 };
+                const showInactive = { color: '#9ca3af', width: 3 };
+                const hideActive = { color: '#1f78ff', width: 5 };
+                const hideInactive = { color: '#9ca3af', width: 3 };
+
+                if (controlIndices.show != null) {
+                    const opts = mode === 'show' ? showActive : showInactive;
+                    Plotly.restyle(plotDiv, {
+                        'line.color': opts.color,
+                        'line.width': opts.width,
+                    }, [controlIndices.show]);
+                }
+                if (controlIndices.hide != null) {
+                    const opts = mode === 'hide' ? hideActive : hideInactive;
+                    Plotly.restyle(plotDiv, {
+                        'line.color': opts.color,
+                        'line.width': opts.width,
+                    }, [controlIndices.hide]);
+                }
+            };
+
+            // Default state: show all
+            setControlState('show');
+
+            plotDiv.on('plotly_legendclick', (ev) => {
+                const traceIndex = ev.curveNumber;
+                if (traceIndex == null) return true;
+                const trace = plotData.data[traceIndex];
+                if (!trace || !trace.name) return true;
+
+                if (trace.name === 'Show all') {
+                    Plotly.restyle(plotDiv, 'visible', true, dataIndices);
+                    setControlState('show');
+                    return false; // block default toggle
+                }
+                if (trace.name === 'Hide all') {
+                    // Use 'legendonly' so legend entries remain visible
+                    Plotly.restyle(plotDiv, 'visible', 'legendonly', dataIndices);
+                    setControlState('hide');
+                    return false;
+                }
+                return true;
+            });
+
+            const collectBounds = () => {
+                let minVal = Infinity;
+                let maxVal = -Infinity;
+                dataIndices.forEach(idx => {
+                    const tr = mainPlotData.data[idx];
+                    if (!tr || !Array.isArray(tr.x)) return;
+                    for (let i = 0; i < tr.x.length; i += 1) {
+                        const v = tr.x[i];
+                        if (typeof v === 'number' && Number.isFinite(v)) {
+                            if (v < minVal) minVal = v;
+                            if (v > maxVal) maxVal = v;
+                        }
+                    }
+                });
+                if (!Number.isFinite(minVal) || !Number.isFinite(maxVal)) {
+                    return { tMin: null, tMax: null };
+                }
+                return { tMin: minVal, tMax: maxVal };
+            };
+
+            const { tMin, tMax } = collectBounds();
+
+            let axisNames = Object.keys(mainPlotData?.layout || {}).filter(k => k.startsWith('xaxis'));
+            if (!axisNames.length) {
+                axisNames = ['xaxis'];
+            }
+
+            const axisNameToRef = (name) => (name === 'xaxis' ? 'x' : name.replace('axis', ''));
+
+            const currentShapes = () => {
+                const layoutShapes = plotDiv?.layout?.shapes;
+                return Array.isArray(layoutShapes) ? layoutShapes : [];
+            };
+
+            const setRanges = (lo, hi, auto) => {
+                const layout = {};
+                axisNames.forEach(name => {
+                    layout[`${name}.autorange`] = auto;
+                    layout[`${name}.range`] = auto ? null : [lo, hi];
+                });
+                Plotly.relayout(plotDiv, layout);
+            };
+
+            const focusOnTime = (t) => {
+                if (t == null || tMin == null || tMax == null) return;
+                const fullSpan = Math.max(0.2, tMax - tMin);
+                const targetSpan = Math.min(fullSpan, Math.max(0.8, Math.min(3.0, fullSpan * 0.12)));
+                const half = targetSpan / 2;
+                let left = t - half;
+                let right = t + half;
+                if (left < tMin) {
+                    left = tMin;
+                    right = Math.min(tMax, left + targetSpan);
+                }
+                if (right > tMax) {
+                    right = tMax;
+                    left = Math.max(tMin, right - targetSpan);
+                }
+                const lo = Math.min(left, right);
+                const hi = Math.max(left, right);
+                Plotly.restyle(plotDiv, 'visible', true, dataIndices); // ensure data traces show
+                setRanges(lo, hi, false);
+            };
+
+            // Hover marker helpers
+            const hoverShapeTag = '_toi_hover_marker';
+            const buildHoverShapes = (t) => axisNames.map(name => ({
+                type: 'line',
+                x0: t,
+                x1: t,
+                y0: 0,
+                y1: 1,
+                xref: axisNameToRef(name),
+                yref: 'paper',
+                line: { color: '#d62728', width: 2, dash: 'dot' },
+                layer: 'above',
+                [hoverShapeTag]: true,
+            }));
+
+            const clearHoverShapes = () => {
+                const shapes = currentShapes().filter(s => !s[hoverShapeTag]);
+                Plotly.relayout(plotDiv, { shapes });
+            };
+
+            const setHoverShapes = (t) => {
+                if (t == null) return;
+                const baseShapes = currentShapes().filter(s => !s[hoverShapeTag]);
+                const newShapes = baseShapes.concat(buildHoverShapes(t));
+                Plotly.relayout(plotDiv, { shapes: newShapes });
+            };
+
+            // Expose for TOI table interactions defined later in the script
+            window.focusOnTime = focusOnTime;
+            window.setHoverShapes = setHoverShapes;
+            window.clearHoverShapes = clearHoverShapes;
+
+            const clearRowSelection = () => {
+                document.querySelectorAll('.clickable-row.selected').forEach(el => el.classList.remove('selected'));
+                document.querySelectorAll('.clickable-list-item.selected').forEach(el => el.classList.remove('selected'));
+            };
+
+            const resetFocus = () => {
+                clearRowSelection();
+                Plotly.restyle(plotDiv, 'visible', true, dataIndices);
+                setRanges(tMin ?? 0, tMax ?? 1, true);
+            };
+
+            document.addEventListener('keydown', (ev) => {
+                if (ev.key === 'Escape') {
+                    resetFocus();
+                }
+            });
+
+            document.querySelectorAll('[data-shot-time]').forEach(el => {
+                el.style.cursor = 'pointer';
+                el.addEventListener('click', () => {
+                    const t = parseFloat(el.dataset.shotTime);
+                    clearRowSelection();
+                    el.classList.add('selected');
+                    focusOnTime(t);
+                });
+                el.addEventListener('mouseenter', () => {
+                    const t = parseFloat(el.dataset.shotTime);
+                    if (!Number.isNaN(t) && typeof setHoverShapes === 'function') {
+                        setHoverShapes(t);
+                    }
+                });
+                el.addEventListener('mouseleave', () => {
+                    if (typeof clearHoverShapes === 'function') {
+                        clearHoverShapes();
+                    }
+                });
+            });
+
+            document.querySelectorAll('[data-spike-time]').forEach(el => {
+                el.style.cursor = 'pointer';
+                el.addEventListener('click', () => {
+                    const t = parseFloat(el.dataset.spikeTime);
+                    clearRowSelection();
+                    el.classList.add('selected');
+                    focusOnTime(t);
+                });
+                el.addEventListener('mouseenter', () => {
+                    const t = parseFloat(el.dataset.spikeTime);
+                    if (!Number.isNaN(t) && typeof setHoverShapes === 'function') {
+                        setHoverShapes(t);
+                    }
+                });
+                el.addEventListener('mouseleave', () => {
+                    if (typeof clearHoverShapes === 'function') {
+                        clearHoverShapes();
+                    }
+                });
+            });
+        });
+
+    </script>
+
+    <!-- --- TOI Controls Logic --- -->
+    <script>
+        (function() {
+            const customizationEl = document.getElementById('customizationData');
+            let customization = customizationEl ? JSON.parse(customizationEl.textContent || '{}') : {};
+            const MAX_TOI_SHOWN = 50;
+
+            // Normalize interest settings sent from the uploader page (which uses slightly different keys/values)
+            const normalizeInterestSettings = () => {
+                if (!customization || !Array.isArray(customization.subplots)) return;
+                customization.subplots = customization.subplots.map((sp) => {
+                    if (!sp) return sp;
+
+                    // Carry over interestSeries -> interestColumn
+                    if (!sp.interestColumn && sp.interestSeries) {
+                        sp.interestColumn = sp.interestSeries;
+                    }
+
+                    // Threshold value
+                    if (sp.interestThreshold === undefined && sp.interest_threshold === undefined) {
+                        if (sp.interestThresholdValue !== undefined) {
+                            sp.interestThreshold = sp.interestThresholdValue;
+                        }
+                    }
+
+                    // Threshold mode: uploader uses 'abs'/'percent'; viewer expects 'absolute'/'percent'
+                    const mode = sp.interestThresholdMode || sp.interest_threshold_mode;
+                    if (mode === 'abs') {
+                        sp.interestThresholdMode = 'absolute';
+                    } else if (mode) {
+                        sp.interestThresholdMode = mode; // keep percent or already-normalized values
+                    }
+
+                    // Direction: uploader uses 'either'; viewer expects 'both'
+                    const dir = sp.interestDirection || sp.interest_direction;
+                    if (dir === 'either') {
+                        sp.interestDirection = 'both';
+                    } else if (dir) {
+                        sp.interestDirection = dir;
+                    }
+
+                    // Min spacing: uploader uses interestMinSpacingMs (ms)
+                    if (sp.interestMinSpacing === undefined && sp.interest_min_spacing === undefined) {
+                        if (sp.interestMinSpacingMs !== undefined) {
+                            sp.interestMinSpacing = sp.interestMinSpacingMs;
+                        }
+                    }
+
+                    return sp;
+                });
+            };
+            normalizeInterestSettings();
+            
+            const els = {
+                subplot: document.getElementById('toiSubplotSelect'),
+                series: document.getElementById('toiSeriesSelect'),
+                direction: document.getElementById('toiDirection'),
+                mode: document.getElementById('toiThresholdMode'),
+                val: document.getElementById('toiThresholdVal'),
+                spacing: document.getElementById('toiMinSpacing'),
+                apply: document.getElementById('toiApplyBtn'),
+                save: document.getElementById('toiSaveProfileBtn'),
+                status: document.getElementById('toiStatusMsg')
+            };
+
+            const getDisplayTitle = (sp, idx) => {
+                if (!sp) return `Subplot ${idx + 1}`;
+                return sp.interestTitle ?? sp.interest_title ?? sp.title ?? `Subplot ${idx + 1}`;
+            };
+
+            if (!els.subplot || !customization.subplots) return;
+
+            function populateSubplots() {
+                els.subplot.innerHTML = '';
+                customization.subplots.forEach((sp, idx) => {
+                    // Only show subplots that are marked as interest or have a container
+                    if (document.getElementById(`toi-table-container-${idx}`)) {
+                        const opt = document.createElement('option');
+                        opt.value = idx;
+                        opt.textContent = getDisplayTitle(sp, idx);
+                        els.subplot.appendChild(opt);
+                    }
+                });
+                if (els.subplot.options.length > 0) {
+                    updateSeriesOptions();
+                    autoApplyInitialSettings();
+                } else {
+                    // No TOI tables found
+                    els.apply.disabled = true;
+                }
+            }
+
+            function autoApplyInitialSettings() {
+                // Walk every TOI-enabled subplot and run recomputeTOI once so tables reflect uploaded settings.
+                const opts = Array.from(els.subplot.options);
+                if (!opts.length) return;
+
+                const originalSelection = els.subplot.value;
+
+                opts.forEach(opt => {
+                    els.subplot.value = opt.value;
+                    updateSeriesOptions(); // refresh series list for this subplot and load its saved settings
+
+                    const sp = customization.subplots[parseInt(opt.value, 10)];
+                    if (!sp) return;
+                    const threshold = sp.interestThreshold ?? sp.interest_threshold;
+                    const column = sp.interestColumn ?? sp.interest_column;
+                    if (threshold === undefined || !column) return; // skip incomplete configs
+
+                    // Only recompute when we have both pieces; loadCurrentSettings already set field values
+                    recomputeTOI();
+                });
+
+                // Restore the user's first option selection
+                if (originalSelection !== undefined && originalSelection !== null) {
+                    els.subplot.value = originalSelection;
+                    updateSeriesOptions();
+                }
+            }
+
+            function updateSeriesOptions() {
+                const idx = parseInt(els.subplot.value);
+                const sp = customization.subplots[idx];
+                els.series.innerHTML = '';
+                
+                // Filter traces belonging to this subplot
+                // Subplot 0 corresponds to 'x'/'y', Subplot 1 to 'x2'/'y2', etc.
+                const targetXAxis = idx === 0 ? 'x' : `x${idx + 1}`;
+                const targetYAxis = idx === 0 ? 'y' : `y${idx + 1}`;
+
+                if (mainPlotData && mainPlotData.data) {
+                    mainPlotData.data.forEach(trace => {
+                        // Plotly defaults xaxis to 'x' and yaxis to 'y' if undefined
+                        const traceX = trace.xaxis || 'x';
+                        const traceY = trace.yaxis || 'y';
+                        
+                        // Check if trace belongs to the selected subplot axes
+                        if (traceX === targetXAxis && traceY === targetYAxis && trace.name) {
+                            const opt = document.createElement('option');
+                            opt.value = trace.name;
+                            opt.textContent = trace.name;
+                            opt.dataset.source = trace.customdata && trace.customdata[0] && trace.customdata[0].source ? trace.customdata[0].source : ''; // optional provenance
+                            els.series.appendChild(opt);
+                        }
+                    });
+                }
+                
+                // Load current settings if any
+                loadCurrentSettings(sp);
+            }
+
+            function loadCurrentSettings(sp) {
+                if (!sp) return;
+
+                // Helper to get value checking both camelCase and snake_case
+                const getVal = (camel, snake) => {
+                    if (sp[camel] !== undefined) return sp[camel];
+                    if (sp[snake] !== undefined) return sp[snake];
+                    return undefined;
+                };
+
+                const direction = getVal('interestDirection', 'interest_direction');
+                const mode = getVal('interestThresholdMode', 'interest_threshold_mode');
+                const threshold = getVal('interestThreshold', 'interest_threshold');
+                const minSpacing = getVal('interestMinSpacing', 'interest_min_spacing');
+                const column = getVal('interestColumn', 'interest_column');
+
+                els.direction.value = direction || 'rising';
+                els.mode.value = mode || 'absolute';
+                els.val.value = threshold !== undefined ? threshold : '';
+                els.spacing.value = minSpacing !== undefined ? minSpacing : 500;
+                
+                // Try to select the interest column if set
+                if (column) {
+                    // 1. Try direct match
+                    let matched = false;
+                    const options = Array.from(els.series.options);
+                    
+                    if (options.some(o => o.value === column)) {
+                        els.series.value = column;
+                        matched = true;
+                    } 
+                    
+                    // 2. Try resolving via legendOverrides if not matched
+                    if (!matched && sp.legendOverrides) {
+                        const normalizeKey = (k) => {
+                             if (k && k.includes('.') && !k.includes('::')) {
+                                 return k.split('.').join('::');
+                             }
+                             return k;
+                        };
+                        
+                        const normalizedInterestCol = normalizeKey(column);
+                        const override = sp.legendOverrides.find(o => {
+                            const k = normalizeKey(o.key);
+                            return k === normalizedInterestCol;
+                        });
+                        
+                        if (override && override.label) {
+                             if (options.some(o => o.value === override.label)) {
+                                 els.series.value = override.label;
+                                 matched = true;
+                             }
+                        }
+                    }
+
+                    // 3. Fallback: Try to find a trace that *contains* the column name if it's a device
+                    // (e.g. "FrontLeft" -> "FrontLeft measured")
+                    if (!matched) {
+                         const potentialMatch = options.find(o => o.value.startsWith(column + " "));
+                         if (potentialMatch) {
+                             els.series.value = potentialMatch.value;
+                             matched = true;
+                         }
+                    }
+
+                    // 4. Fallback to first option to avoid empty selection
+                    if (!matched && options.length) {
+                        els.series.value = options[0].value;
+                    }
+                }
+            }
+
+            function findTrace(name) {
+                if (!mainPlotData || !mainPlotData.data) return null;
+                return mainPlotData.data.find(d => d.name === name);
+            }
+
+            function resolveTraceNameFromKey(key, sp) {
+                if (!key) return null;
+                const overrides = sp && sp.legendOverrides;
+                if (overrides) {
+                    const match = overrides.find(o => o.key === key);
+                    if (match && match.label) return match.label;
+                }
+                if (key.includes('::')) {
+                    const tail = key.split('::').pop();
+                    if (tail) return tail;
+                }
+                return key;
+            }
+
+            function nearestValue(trace, t) {
+                if (!trace || !Array.isArray(trace.x) || !Array.isArray(trace.y)) return null;
+                if (!Number.isFinite(t)) return null;
+                const xs = trace.x;
+                const ys = trace.y;
+                const n = Math.min(xs.length, ys.length);
+                if (n === 0) return null;
+
+                const asNumber = (v) => typeof v === 'number' ? v : parseFloat(v);
+
+                // Quick monotonic check using a few samples; fallback to linear scan if not monotonic.
+                let monotonic = true;
+                let last = asNumber(xs[0]);
+                if (!Number.isFinite(last)) monotonic = false;
+                const samples = Math.min(n - 1, 10);
+                for (let i = 1; monotonic && i <= samples; i++) {
+                    const idx = Math.floor((i * n) / (samples + 1));
+                    const val = asNumber(xs[idx]);
+                    if (!Number.isFinite(val)) continue;
+                    if (val < last) {
+                        monotonic = false;
+                        break;
+                    }
+                    last = val;
+                }
+
+                let bestIdx = 0;
+                if (monotonic) {
+                    // Binary search for nearest on monotonic x
+                    let lo = 0;
+                    let hi = n - 1;
+                    while (lo <= hi) {
+                        const mid = (lo + hi) >> 1;
+                        const midVal = asNumber(xs[mid]);
+                        if (!Number.isFinite(midVal)) {
+                            // Skip bad points by moving inward
+                            lo = mid + 1;
+                            continue;
+                        }
+                        if (midVal < t) {
+                            lo = mid + 1;
+                        } else if (midVal > t) {
+                            hi = mid - 1;
+                        } else {
+                            bestIdx = mid;
+                            break;
+                        }
+                    }
+
+                    // Choose closest between neighbors around lo/hi
+                    const candidates = [];
+                    if (lo < n) candidates.push(lo);
+                    if (hi >= 0) candidates.push(hi);
+                    if (bestIdx === 0 && candidates.length) {
+                        bestIdx = candidates.reduce((best, idx) => {
+                            const val = asNumber(xs[idx]);
+                            if (!Number.isFinite(val)) return best;
+                            const bestVal = asNumber(xs[best]);
+                            const currDist = Math.abs(val - t);
+                            const bestDist = Math.abs(bestVal - t);
+                            return currDist < bestDist ? idx : best;
+                        }, candidates[0]);
+                    }
+                } else {
+                    // Fallback: linear scan if x is not monotonic
+                    let bestDist = Infinity;
+                    for (let i = 0; i < n; i++) {
+                        const tx = asNumber(xs[i]);
+                        if (!Number.isFinite(tx)) continue;
+                        const dist = Math.abs(tx - t);
+                        if (dist < bestDist) {
+                            bestDist = dist;
+                            bestIdx = i;
+                        }
+                    }
+                }
+
+                const val = asNumber(ys[bestIdx]);
+                return Number.isFinite(val) ? val : null;
+            }
+
+            async function recomputeTOI() {
+                const idx = els.subplot.value;
+                const sp = customization.subplots[idx];
+                const colName = els.series.value;
+                const direction = els.direction.value;
+                const mode = els.mode.value;
+                const val = parseFloat(els.val.value);
+                const minSpacing = parseInt(els.spacing.value, 10) || 0;
+
+                const resolveColumnForServer = (keyLike, displayName, subplot) => {
+                    const devices = (customization.devices || []).filter(d => d && d.name);
+                    if (!keyLike && !displayName) return displayName;
+
+                    const key = keyLike || displayName;
+                    if (key.includes('::')) {
+                        const parts = key.split('::');
+                        if (parts.length === 2) {
+                            const [devName, role] = parts;
+                            if (devName === 'target' && role) {
+                                return role; // shared target column name
+                            }
+                            const dev = devices.find(d => d.name === devName);
+                            if (dev) {
+                                if (role === 'measured' && dev.measured) return dev.measured;
+                                if (role === 'target' && dev.target) return dev.target;
+                                if (role === 'command' && dev.command) return dev.command;
+                            }
+                        }
+                    }
+                    return key;
+                };
+
+                if (!sessionId) {
+                    els.status.textContent = "Session is missing; reload the page and re-upload the log.";
+                    return;
+                }
+
+                if (isNaN(val)) {
+                    els.status.textContent = "Please enter a valid threshold value.";
+                    return;
+                }
+
+                // Reverse lookup for interestColumn to ensure we save the data key, not the display label
+                const selectedOption = els.series.options[els.series.selectedIndex];
+                const sourceKey = selectedOption && selectedOption.dataset ? selectedOption.dataset.source : null;
+                let originalKey = sourceKey || colName;
+                if (sp.legendOverrides) {
+                    const override = sp.legendOverrides.find(o => o.label === colName);
+                    if (override && override.key) {
+                        originalKey = override.key;
+                    }
+                }
+
+                // Update Customization State (client-side persistence)
+                sp.interest = true;
+                sp.interestColumn = originalKey;
+                sp.interestDirection = direction;
+                sp.interestThresholdMode = mode;
+                sp.interestThreshold = val;
+                sp.interestMinSpacing = minSpacing;
+
+                const serverColumn = resolveColumnForServer(originalKey, colName, sp);
+
+                const payload = {
+                    sessionId: sessionId,
+                    subplots: [
+                        {
+                            subplotIndex: parseInt(idx, 10),
+                            column: serverColumn,
+                            direction,
+                            thresholdMode: mode,
+                            thresholdValue: val,
+                            minSpacingMs: minSpacing,
+                            maxRows: MAX_TOI_SHOWN,
+                        },
+                    ],
+                };
+
+                els.apply.disabled = true;
+                els.status.textContent = "Detecting changes on server...";
+                try {
+                    const res = await fetch('/updateToiSettings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    });
+
+                    if (!res.ok) {
+                        const text = await res.text();
+                        els.status.textContent = `Server error (${res.status}): ${text || 'Unknown error'}`;
+                        return;
+                    }
+
+                    const data = await res.json();
+                    const match = (data.subplots || []).find(s => s.index === parseInt(idx, 10)) || { rows: [] };
+
+                    // Resolve diff traces for band display if available
+                    let diffTraceA = null;
+                    let diffTraceB = null;
+                    if (sp && sp.diff && Array.isArray(sp.diffKeys) && sp.diffKeys.length >= 2) {
+                        const keyA = sp.diffKeys[0];
+                        const keyB = sp.diffKeys[1];
+                        const nameA = resolveTraceNameFromKey(keyA, sp);
+                        const nameB = resolveTraceNameFromKey(keyB, sp);
+                        diffTraceA = findTrace(nameA);
+                        diffTraceB = findTrace(nameB);
+                        if (!diffTraceA || !diffTraceB) {
+                            diffTraceA = null;
+                            diffTraceB = null;
+                        }
+                    }
+
+                    const rows = (match.rows || []).map((row, i) => {
+                        const time = row.time;
+                        let startDiff = row.start_diff ?? row.startDiff;
+                        let maxDiff = row.max_drop_diff ?? row.maxDiff ?? row.max_diff;
+
+                        if ((startDiff === undefined || startDiff === null || !Number.isFinite(startDiff)) && diffTraceA && diffTraceB) {
+                            const aVal = nearestValue(diffTraceA, time);
+                            const bVal = nearestValue(diffTraceB, time);
+                            if (Number.isFinite(aVal) && Number.isFinite(bVal)) {
+                                const bandDiff = Math.abs(aVal - bVal);
+                                startDiff = bandDiff;
+                                maxDiff = bandDiff;
+                            }
+                        }
+
+                        return {
+                            index: i + 1,
+                            time,
+                            startDiff,
+                            maxDiff,
+                        };
+                    });
+
+                    const capped = rows.length >= MAX_TOI_SHOWN;
+                    const warnText = (data.warnings && data.warnings.length) ? ` Warnings: ${data.warnings.join('; ')}` : '';
+                        els.status.textContent = `Server returned ${rows.length}${capped ? '+' : ''} change(s).${warnText}`;
+
+                    renderTable(idx, rows, getDisplayTitle(sp, parseInt(idx, 10)));
+                } catch (err) {
+                    els.status.textContent = `Request failed: ${err}`;
+                } finally {
+                    els.apply.disabled = false;
+                }
+            }
+
+            function renderTable(subplotIdx, shots, title) {
+                const container = document.getElementById(`toi-table-container-${subplotIdx}`);
+                if (!container) return;
+
+                let html = `<h4 style="margin: 0 0 6px 0; text-align: center;">${title}</h4>
+                        <table class="mini-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:42px" title="Index">#</th>
+                                    <th title="Time in seconds relative to first log">Time</th>
+                                    <th title="Start diff band value">Start diff band</th>
+                                    <th title="Max diff band value">Max diff band</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                
+                if (shots.length === 0) {
+                    html += `<tr><td colspan="4" style="text-align:center; color:#888;">No events found</td></tr>`;
+                } else {
+                    shots.forEach(shot => {
+                        const startDiff = Number.isFinite(shot.startDiff) ? shot.startDiff : null;
+                        const maxDiff = Number.isFinite(shot.maxDiff) ? shot.maxDiff : null;
+                        const rowClass = (Number.isFinite(startDiff) && startDiff > 0) ? 'toi-row-warn' : 'toi-row-ok';
+                        html += `<tr class="clickable-row ${rowClass}" data-shot-time="${shot.time.toFixed(6)}" style="cursor:pointer;">
+                                    <td>${shot.index}</td>
+                                    <td>${shot.time.toFixed(3)}</td>
+                                    <td>${startDiff !== null ? startDiff.toFixed(1) : '-'}</td>
+                                    <td>${maxDiff !== null ? maxDiff.toFixed(1) : '-'}</td>
+                                </tr>`;
+                    });
+                    // If we capped the results, append a note
+                    if (shots.length === MAX_TOI_SHOWN) {
+                        html += `<tr><td colspan="4" style="text-align:center; color:#888; font-style: italic;">Showing first ${MAX_TOI_SHOWN} changes; additional changes exist.</td></tr>`;
+                    }
+                }
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+                
+                // Re-attach click listeners for the new rows
+                // We need to access the focusOnTime function which is defined in the outer scope.
+                // Since this IIFE is inside the main script block, it should have access if focusOnTime is defined in the same scope.
+                // Wait, focusOnTime is defined in the outer scope (inside the main DOMContentLoaded or script block).
+                // Yes, it is.
+                
+                const rows = container.querySelectorAll('.clickable-row');
+                rows.forEach(row => {
+                    row.addEventListener('click', () => {
+                        const t = parseFloat(row.dataset.shotTime);
+                        if (!isNaN(t)) {
+                            // Call the existing focus logic
+                            // We need to clear selection first
+                            document.querySelectorAll('.clickable-row.selected').forEach(el => el.classList.remove('selected'));
+                            document.querySelectorAll('.clickable-list-item.selected').forEach(el => el.classList.remove('selected'));
+                            
+                            row.classList.add('selected');
+                            // Assuming focusOnTime is available in scope. 
+                            // It is defined as const focusOnTime = ... in the parent block.
+                            if (typeof focusOnTime === 'function') {
+                                focusOnTime(t);
+                            }
+                        }
+                    });
+                    row.addEventListener('mouseenter', () => {
+                        const t = parseFloat(row.dataset.shotTime);
+                        if (!isNaN(t) && typeof setHoverShapes === 'function') {
+                            setHoverShapes(t);
+                        }
+                    });
+                    row.addEventListener('mouseleave', () => {
+                        if (typeof clearHoverShapes === 'function') {
+                            clearHoverShapes();
+                        }
+                    });
+                });
+            }
+
+            const downloadProfile = (profile, filename) => {
+                const blob = new Blob([JSON.stringify(profile, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 500);
+            };
+
+            const saveProfileInteractive = async (profile, suggestedName) => {
+                if (window.showSaveFilePicker) {
+                    try {
+                        const handle = await window.showSaveFilePicker({
+                            suggestedName,
+                            types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+                        });
+                        const writable = await handle.createWritable();
+                        await writable.write(JSON.stringify(profile, null, 2));
+                        await writable.close();
+                        return true;
+                    } catch (err) {
+                        if (err?.name === 'AbortError') return false; // user canceled
+                    }
+                }
+                downloadProfile(profile, suggestedName);
+                return true;
+            };
+
+            async function saveProfile() {
+                if (!customization || typeof customization !== 'object') {
+                    alert('Nothing to save yet.');
+                    return;
+                }
+                const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const defaultName = `analysis-profile-${stamp}.json`;
+                try {
+                    const usedPicker = await saveProfileInteractive(customization, defaultName);
+                    if (!usedPicker && !window.showSaveFilePicker) {
+                        const name = prompt('Save profile as:', defaultName) || defaultName;
+                        const safeName = name.trim() || defaultName;
+                        const finalName = safeName.toLowerCase().endsWith('.json') ? safeName : `${safeName}.json`;
+                        downloadProfile(customization, finalName);
+                    }
+                } catch (err) {
+                    alert('Could not save profile. Your browser may not support the save picker.');
+                }
+            }
+
+            els.subplot.addEventListener('change', updateSeriesOptions);
+            els.apply.addEventListener('click', () => { recomputeTOI(); });
+            els.save.addEventListener('click', saveProfile);
+
+            // Init
+            populateSubplots();
+        })();
+    </script>
+</body>
+</html>
