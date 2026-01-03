@@ -23,6 +23,7 @@ RUN pip install --no-cache-dir --no-deps starlette==0.49.1
 
 # Copy the rest of the application code
 COPY ./app /code/app
+COPY ./doc /code/doc
 
 # Make port 80 available to the world outside this container
 EXPOSE 80
