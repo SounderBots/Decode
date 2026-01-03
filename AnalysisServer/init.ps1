@@ -25,7 +25,7 @@ function Resolve-Python311 {
 
 $pyCmd = Resolve-Python311
 if (-not $pyCmd) {
-    throw "Python 3.11 not found. Install it (64-bit) via winget: winget install -e --id Python.Python.3.11, or from https://www.python.org/downloads/release/python-3110/, then rerun init.ps1."
+    throw "Python 3.11 not found. Install it (64-bit) via winget: winget install -e --id Python.Python.3.11, or download the installer from https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe, or from https://www.python.org/downloads/release/python-3110/, then rerun init.ps1."
 }
 
 if (Test-Path $VenvPath) {
